@@ -1,4 +1,5 @@
 using Infraestructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Domain.Interfaces;
 using Application.Interfaces;
 using Application.Services;
@@ -12,6 +13,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 #region Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
