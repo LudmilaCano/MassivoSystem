@@ -56,20 +56,6 @@ namespace Application.Services
             _userRepository.UpdateAsync(user).Wait();
         }
 
-        public bool ValidateLogin(UserLoginRequest userLoginRequest)
-        {
-            User? user = _userRepository.ListAsync().Result
-                .FirstOrDefault(u => (u.IdentificationNumber == userLoginRequest.DniOrEmail || u.Email == userLoginRequest.DniOrEmail)
-                                     && u.Password == userLoginRequest.Password);
-
-            if (user == null)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         public void ChangeUserRole(RoleChangeRequest roleChangeRequest)
         {
             User? user = _userRepository.GetByIdAsync(roleChangeRequest.UserId).Result;
