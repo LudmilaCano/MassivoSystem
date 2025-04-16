@@ -1,0 +1,85 @@
+﻿using Application.Interfaces;
+using Application.Models.Requests;
+using Domain.Entities;
+using Domain.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Services
+{
+    public class UserService : IUserService
+    {
+        private readonly IUserRepository _userRepository;
+        public UserService(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
+
+        public void SignUpUser(UserSignUpRequest userSignUpRequest)
+        {
+            var user = new User
+            {
+                FirstName = userSignUpRequest.FirstName,
+                LastName = userSignUpRequest.LastName,
+                IdentificationNumber = userSignUpRequest.DniNumber,
+                Email = userSignUpRequest.Email ?? "",
+                Password = userSignUpRequest.Password,
+                City = userSignUpRequest.City,
+                Province = userSignUpRequest.Province
+            };
+            _userRepository.AddAsync(user).Wait();
+        }
+
+        public void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser)
+        {
+            User? user = _userRepository.GetByIdAsync(idUser).Result;
+            if (user == null)
+            {
+                throw new ArgumentNullException("User not found");
+            }
+
+            user.FirstName = userUpdateRequest.FirstName;
+            user.LastName = userUpdateRequest.LastName;
+            user.IdentificationNumber = userUpdateRequest.DniNumber;
+            user.Email = userUpdateRequest.Email ?? user.Email;
+            if (!string.IsNullOrEmpty(userUpdateRequest.Password))
+            {
+                user.Password = userUpdateRequest.Password;
+            }
+            user.City = userUpdateRequest.City;
+            user.Province = userUpdateRequest.Province;
+
+            _userRepository.UpdateAsync(user).Wait();
+        }
+
+        public bool ValidateLogin(UserLoginRequest userLoginRequest)
+        {
+            User? user = _userRepository.ListAsync().Result
+                .FirstOrDefault(u => (u.IdentificationNumber == userLoginRequest.DniOrEmail || u.Email == userLoginRequest.DniOrEmail)
+                                     && u.Password == userLoginRequest.Password);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public void ChangeUserRole(RoleChangeRequest roleChangeRequest)
+        {
+            User? user = _userRepository.GetByIdAsync(roleChangeRequest.UserId).Result;
+            if (user == null)
+            {
+                throw new ArgumentNullException("User not found");
+            }
+
+            user.Role = roleChangeRequest.NewRole;
+            _userRepository.UpdateAsync(user).Wait();
+        }
+    }
+}
