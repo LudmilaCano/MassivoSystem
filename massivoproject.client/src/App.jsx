@@ -2,6 +2,7 @@ import './App.css'
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import MainLayout from './layout/MainLayout.jsx'
 import Login from './components/Login.jsx'
+import Register from './components/Register.jsx'
 
 function App() {
 
@@ -21,7 +22,15 @@ function App() {
 
         </Login>
       ),
-    }
+    },
+    {
+        path: "/register",
+        element: (
+          <Register>
+  
+          </Register>
+        ),
+      }
   ])
 
   return (
