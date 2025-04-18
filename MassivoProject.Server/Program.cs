@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Domain.Interfaces;
 using Application.Interfaces;
 using Application.Services;
+using Infraestructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 #region Services
 builder.Services.AddScoped<IUserService, UserService>();
+//validador unicidad DNI y Email
+builder.Services.AddScoped<IUserUniquenessChecker, UserUniquenessChecker>();
 #endregion
 
 var app = builder.Build();
