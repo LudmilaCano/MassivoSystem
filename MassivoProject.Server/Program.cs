@@ -4,10 +4,14 @@ using Domain.Interfaces;
 using Application.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using Application.Services;
+<<<<<<< HEAD
 using System.Security.Claims;
 using System.Text;
 using Infraestructure.Services;
 using Microsoft.OpenApi.Models;
+=======
+using Infraestructure.Services;
+>>>>>>> PPF-21-Backend-Validar-unicidad-de-DNI-y-Email
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,9 +74,14 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 #region Services
 builder.Services.AddScoped<IUserService, UserService>();
+<<<<<<< HEAD
 
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+=======
+//validador unicidad DNI y Email
+builder.Services.AddScoped<IUserUniquenessChecker, UserUniquenessChecker>();
+>>>>>>> PPF-21-Backend-Validar-unicidad-de-DNI-y-Email
 #endregion
 
 var app = builder.Build();
