@@ -1,146 +1,136 @@
-// import React from 'react'
-// import Colors from '../layout/Colors'
-// import { Paper } from '@mui/material'
-// import logo from '../images/logo2.png'
-
-// const Login = () => {
-//   return (
-//     <div style={{ backgroundColor: Colors.azul, width: '100%', boxSizing: 'border-box', height: '100vh', justifyContent: 'center', alignItems: 'center', display: 'flex' }}>{/*Acá un fondo?*/}
-//       <Paper elevation={5} sx={{ width: '55%', boxSizing: 'border-box', height: '75vh', borderRadius: 10, display: 'flex', overflow: 'hidden' }}>
-//         <div style={{ flex: 0.5, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-//           <div style={{ height: '80%', width: '80%' }}>
-//             <div style={{ height: '30%', width: '100%' }}>
-//               <div style={{ height: '40%', width: '100%' }}>
-//                 <img src={logo} alt="Logo" style={{ width: 'auto', height: '7vh', objectFit: 'contain', }} />
-//               </div>
-//               <div style={{ height: '40%', width: '100%' }}>
-//                 <p style={{ fontSize: 25, fontWeight: 'bold', textTransform: 'uppercase'}}>Bienvenido!</p>
-//               </div>
-//               <div style={{ height: '20%', width: '100%', display: 'flex' }}>
-//                 <div style={{ width: '100%', height: '90%', borderWidth: 1, borderRadius: 15, borderColor: 'grey', alignContent: 'center' }}>
-//                   <p>Iniciar sesión con Google?</p>
-//                 </div>
-//               </div>
-//             </div>
-//             <div style={{ height: '55%', width: '100%' }}>
-//               <div style={{ height: '20%', width: '100%' }}>
-//               </div>
-//               <div style={{ height: '20%', width: '100%' }}></div>
-//               <div style={{ height: '20%', width: '100%' }}></div>
-//               <div style={{ height: '20%', width: '100%' }}></div>
-//               <div style={{ height: '20%', width: '100%' }}></div>
-
-//             </div>
-//             <div style={{ height: '15%', width: '100%' }}>
-//               <div style={{ height: '50%', width: '100%' }}></div>
-//               <div style={{ height: '50%', width: '100%' }}></div>
-
-//             </div>
-//           </div>
-//         </div>
-//         <div style={{ flex: 0.5, backgroundColor: '#F3F3F3', alignContent: 'center' }}>
-//           Acá una imagen ?
-//         </div>
-//       </Paper>
-//     </div>
-//   )
-// }
-
-// export default Login
-
-
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   TextField,
   Button,
   Typography,
   Divider,
-  Checkbox,
-  FormControlLabel,
   Paper,
   Link,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import Grid from '@mui/material/Grid'
-import GoogleIcon from '@mui/icons-material/Google';
+import LoginIcon from '@mui/icons-material/Login';
 import Colors from '../layout/Colors';
+import loginIllustration from '../images/login.svg';
+import Logo2 from '../images/logo2.png'
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import {Visibility, VisibilityOff} from '@mui/icons-material';
 
-export default function LoginPage() {
+
+
+const Login = () => {
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  
+
+  const handlePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  }
+
+
   return (
-    <div style={{ backgroundColor: Colors.azul, width: '100%', boxSizing: 'border-box', height: '100vh', justifyContent: 'center', alignItems: 'center', display: 'flex' }}>{/*Acá un fondo?*/}
-      <Grid container sx={{ minHeight: '80vh', maxWidth: '80vw' }}>
-        {/* Left side (Form) */}
+    <div style={{ backgroundColor: Colors.azul, width: '100%', boxSizing: 'border-box', minHeight: '100vh', justifyContent: 'center', alignItems: 'center', display: 'flex' }}>{/*Acá un fondo?*/}
+      <Grid container sx={{ maxHeight: '80vh', maxWidth: '60vw' }}>
         <Grid item xs={12} md={6} component={Paper} elevation={6} square>
           <Box
             sx={{
-              my: 8,
+              mt: 4,
+              mb: 8,
               mx: 4,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
             }}
           >
-            <Typography variant="h4" gutterBottom>Welcome Back</Typography>
+            <Box
+              component="img"
+              src={Logo2}
+              alt="Logo"
+              sx={{ width: { xs: '30vw', md: '15vw' }, mb: '5vh' }}
+            />
 
-            <Button
-              variant="outlined"
-              fullWidth
-              startIcon={<GoogleIcon />}
-              sx={{ mb: 2 }}
-            >
-              Log in with Google
-            </Button>
+            <Typography variant="h4" gutterBottom>Inicio de Sesión</Typography>
 
-            <Divider sx={{ width: '100%', my: 2 }}>OR LOGIN WITH EMAIL</Divider>
 
             <TextField
               margin="normal"
-              fullWidth
-              label="Email Address"
+              label="Email"
               autoComplete="email"
+              sx={{ width: { xs: '50vw', md: '20vw','& label.Mui-focused': {color: '#139AA0'},'& .MuiOutlinedInput-root': {'&.Mui-focused fieldset': {borderColor: '#139AA0'}}}}}
             />
             <TextField
               margin="normal"
-              fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
+              sx={{ width: { xs: '50vw', md: '20vw','& label.Mui-focused': {color: '#139AA0'},'& .MuiOutlinedInput-root': {'&.Mui-focused fieldset': {borderColor: '#139AA0'}}}}}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handlePasswordVisibility}
+                      edge="end"
+                      aria-label="change password visibility"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
             />
 
-            <FormControlLabel
-              control={<Checkbox color="primary" />}
-              label="Keep me logged in"
-            />
+            <Box sx={{ width: { xs: '50vw', md: '20vw' }, display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+              <Link href="#" variant="body2" sx={{color: '#139AA0'}}>
+                Olvidé mi contraseña
+              </Link>
+            </Box>
 
             <Button
-              fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ width: { xs: '50vw', md: '20vw' }, mt: 3, mb: 2, backgroundColor: '#139AA0' }}
+              endIcon={<LoginIcon />}
             >
-              Log In
+              INGRESAR
             </Button>
 
-            <Link href="#" variant="body2">
-              Forgot your password?
-            </Link>
 
             <Typography variant="body2" sx={{ mt: 2 }}>
-              Don't have an account? <Link href="#">Sign up</Link>
+              No tenés una cuenta? <Link href="#" sx={{color: '#139AA0'}}>REGISTRARME</Link>
             </Typography>
+
+            <Divider sx={{ width: '100%', my: 2, borderColor: (theme) => theme.palette.grey[500] }}></Divider>
+
+
+            <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
+              <GoogleLogin
+                onSuccess={credentialResponse => {
+                  console.log(credentialResponse);
+                }}
+                onError={() => {
+                  console.log('Login Failed');
+                }}
+                size='large'
+                ux_mode='redirect'
+                width={'100%'}
+              />
+            </GoogleOAuthProvider>
+
           </Box>
         </Grid>
 
-        {/* Right side (Image or Illustration) */}
         <Grid
           item
           xs={false}
           md={6}
           sx={{
-            backgroundImage: `url('/path/to/your/image.svg')`,
+            backgroundImage: `url(${loginIllustration})`,
             backgroundRepeat: 'no-repeat',
             backgroundColor: (theme) =>
-              theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
-            backgroundSize: 'cover',
+              theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[900],
+            backgroundSize: 'contain',
             backgroundPosition: 'center',
           }}
         />
@@ -148,3 +138,6 @@ export default function LoginPage() {
     </div>
   );
 }
+
+
+export default Login;
