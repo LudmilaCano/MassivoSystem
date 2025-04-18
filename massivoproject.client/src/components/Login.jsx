@@ -16,7 +16,7 @@ import Colors from '../layout/Colors';
 import loginIllustration from '../images/login.svg';
 import Logo2 from '../images/logo2.png'
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import {Visibility, VisibilityOff} from '@mui/icons-material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 
 
@@ -58,14 +58,14 @@ const Login = () => {
               margin="normal"
               label="Email"
               autoComplete="email"
-              sx={{ width: { xs: '50vw', md: '20vw','& label.Mui-focused': {color: '#139AA0'},'& .MuiOutlinedInput-root': {'&.Mui-focused fieldset': {borderColor: '#139AA0'}}}}}
+              sx={{ width: { xs: '50vw', md: '20vw', '& label.Mui-focused': { color: '#139AA0' }, '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#139AA0' } } } }}
             />
             <TextField
               margin="normal"
               label="Password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
-              sx={{ width: { xs: '50vw', md: '20vw','& label.Mui-focused': {color: '#139AA0'},'& .MuiOutlinedInput-root': {'&.Mui-focused fieldset': {borderColor: '#139AA0'}}}}}
+              sx={{ width: { xs: '50vw', md: '20vw', '& label.Mui-focused': { color: '#139AA0' }, '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#139AA0' } } } }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -82,7 +82,7 @@ const Login = () => {
             />
 
             <Box sx={{ width: { xs: '50vw', md: '20vw' }, display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Link href="#" variant="body2" sx={{color: '#139AA0'}}>
+              <Link href="#" variant="body2" sx={{ color: '#139AA0' }}>
                 Olvidé mi contraseña
               </Link>
             </Box>
@@ -97,7 +97,7 @@ const Login = () => {
 
 
             <Typography variant="body2" sx={{ mt: 2 }}>
-              No tenés una cuenta? <Link href="#" sx={{color: '#139AA0'}}>REGISTRARME</Link>
+              No tenés una cuenta? <Link href="#" sx={{ color: '#139AA0' }}>REGISTRARME</Link>
             </Typography>
 
             <Divider sx={{ width: '100%', my: 2, borderColor: (theme) => theme.palette.grey[500] }}></Divider>
@@ -137,6 +137,6 @@ const Login = () => {
     </div>
   );
 
-
+}
 
 export default Login;
