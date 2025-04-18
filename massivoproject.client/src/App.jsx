@@ -6,8 +6,17 @@ import Register from './components/Register.jsx'
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './layout/Theme.jsx';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { initializeAuth } from './redux/AuthSlice';
 
 function App() {
+  
+   const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(initializeAuth());
+    }, []);
 
   const router = createBrowserRouter([
     {

@@ -24,7 +24,6 @@ const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  
 
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -137,7 +136,7 @@ const Login = () => {
       </Grid>
     </div>
   );
-}
+
 
 
 export default Login;

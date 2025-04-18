@@ -13,5 +13,10 @@ namespace Infraestructure.Data
         public UserRepository(ApplicationDbContext context) : base(context)
         {
         }
+
+        public User? GetUserByEmail(string? email)
+        {
+            return _context.Users.SingleOrDefault(p => p.Email == email);
+        }
     }
 }
