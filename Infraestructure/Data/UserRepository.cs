@@ -16,11 +16,10 @@ namespace Infraestructure.Data
         {
         }
 
-<<<<<<< HEAD
         public User? GetUserByEmail(string? email)
         {
-            return _context.Users.SingleOrDefault(p => p.Email == email);
-=======
+            return _dbContext.Users.SingleOrDefault(p => p.Email == email);
+        }
         public async Task<bool> ExistsByIdentificationNumberAsync(string identificationNumber)
         {
             return await _dbContext.Set<User>()
@@ -31,7 +30,6 @@ namespace Infraestructure.Data
         {
             return await _dbContext.Set<User>()
                 .AnyAsync(u => u.Email == email);
->>>>>>> PPF-21-Backend-Validar-unicidad-de-DNI-y-Email
         }
     }
 }
