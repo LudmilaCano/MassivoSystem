@@ -2,6 +2,7 @@ import './App.css'
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import MainLayout from './layout/MainLayout.jsx'
 import Login from './components/Login.jsx'
+import CustomerProfile from './components/Customer_profile/CustomerProfile.jsx'
 
 function App() {
 
@@ -20,6 +21,14 @@ function App() {
         <Login>
 
         </Login>
+      ),
+    },
+    {
+      path: "/profile",
+      element: (
+        <CustomerProfile>
+
+        </CustomerProfile>
       ),
     }
   ])

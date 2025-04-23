@@ -19,6 +19,12 @@ const Header = () => {
         navigate("/login");
     }
 
+    const profile = () => {
+        navigate("/profile");
+    }
+
+
+
 
     return (
         <div style={{ backgroundColor: Colors.azul, width: '100%', padding: '10px 20px', boxSizing: 'border-box'}}>
@@ -60,6 +66,11 @@ const Header = () => {
                         <div style={{  alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
                             <Button variant='outlined' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', color: Colors.naranjaOscuro, borderColor: Colors.naranjaOscuro, borderWidth: 3, fontWeight: '600' }}>
                                 Registro
+                            </Button>
+                        </div>
+                        <div style={{  alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
+                            <Button onClick={() => profile()} variant='outlined' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', color: Colors.naranjaOscuro, borderColor: Colors.naranjaOscuro, borderWidth: 3, fontWeight: '600' }}>
+                                Profile
                             </Button>
                         </div>
 
