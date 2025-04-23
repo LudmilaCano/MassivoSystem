@@ -17,6 +17,7 @@ import loginIllustration from '../images/login.svg';
 import Logo2 from '../images/logo2.png'
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Navigate } from 'react-router';
 
 
 
@@ -28,6 +29,7 @@ const Login = () => {
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
   }
+
 
 
   return (
@@ -97,7 +99,7 @@ const Login = () => {
 
 
             <Typography variant="body2" sx={{ mt: 2 }}>
-              No tenés una cuenta? <Link href="#" sx={{ color: '#139AA0' }}>REGISTRARME</Link>
+              No tenés una cuenta? <Link href='/register' sx={{ color: '#139AA0' }}>REGISTRARME</Link>
             </Typography>
 
             <Divider sx={{ width: '100%', my: 2, borderColor: (theme) => theme.palette.grey[500] }}></Divider>
