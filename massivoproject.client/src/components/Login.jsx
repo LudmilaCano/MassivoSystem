@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 import {
     Box,
     TextField,
@@ -14,10 +15,11 @@ import Grid from '@mui/material/Grid'
 import LoginIcon from '@mui/icons-material/Login';
 import Colors from '../layout/Colors';
 import loginIllustration from '../images/login.svg';
-import Logo2 from '../images/logo2.png'
+import Logo2 from '../images/logo2.png';
+import CircularProgress from '@mui/material/CircularProgress';
 //import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import {AuthenticationService} from '../api/AuthenticationEndPoints';
+import { AuthenticationService } from '../api/AuthenticationEndPoints';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setToken } from '../redux/authSlice';
@@ -28,20 +30,66 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [dniOrEmail, setDniOrEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        let hasError = false;
+
+        setEmailError('');
+        setPasswordError('');
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Expresión para habilitar solo mail en este campo.
+        if (!dniOrEmail) {
+            setEmailError('Debe ingresar este campo');
+            hasError = true;
+        } else if (!emailRegex.test(dniOrEmail)) {
+            setEmailError('Formato de email inválido');
+            hasError = true;
+        }
+
+        if (password && !dniOrEmail) {
+            setEmailError('Debe ingresar este campo');
+            hasError = true;
+        }
+
+        if (!password) {
+            setPasswordError('Debe ingresar este campo');
+            hasError = true;
+        }
+
+        if (hasError) return;
+        setLoading(true);
+
         try {
             const token = await AuthenticationService(dniOrEmail, password);
+            console.log(token)
             if (token) {
                 dispatch(setToken(token));
-                navigate('/'); // provisorio, navega a home después del login sin importar el rol de usuario
-            }
+                navigate('/');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Bienvenido',
+                    
+                });
+            } 
         } catch (err) {
-            console.error('Login error', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de autenticación',
+                text: 'Usuario o contraseña incorrectos',
+                confirmButtonColor: '#139AA0',
+            });
+
+            setDniOrEmail("");
+            setPassword("");
+        }finally {
+        setLoading(false); 
         }
     };
 
@@ -78,17 +126,32 @@ const Login = () => {
                             margin="normal"
                             label="Email"
                             autoComplete="email"
-                            sx={{ width: { xs: '50vw', md: '20vw', '& label.Mui-focused': { color: '#139AA0' }, '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#139AA0' } } } }}
+                            error={!!emailError}
+                            helperText={emailError}
+                            sx={{
+                                width: { xs: '50vw', md: '20vw' },
+                                '& label.Mui-focused': { color: '#139AA0' },
+                                '& .MuiOutlinedInput-root': {
+                                    '&.Mui-focused fieldset': { borderColor: '#139AA0' }
+                                }
+                            }}
+                            value={dniOrEmail}
                             onChange={(e) => setDniOrEmail(e.target.value)}
-
                         />
                         <TextField
                             margin="normal"
                             label="Password"
                             type={showPassword ? 'text' : 'password'}
                             autoComplete="current-password"
-                            sx={{ width: { xs: '50vw', md: '20vw', '& label.Mui-focused': { color: '#139AA0' }, '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#139AA0' } } } }}
-
+                            error={!!passwordError}
+                            helperText={passwordError}
+                            sx={{
+                                width: { xs: '50vw', md: '20vw' },
+                                '& label.Mui-focused': { color: '#139AA0' },
+                                '& .MuiOutlinedInput-root': {
+                                    '&.Mui-focused fieldset': { borderColor: '#139AA0' }
+                                }
+                            }}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -102,8 +165,8 @@ const Login = () => {
                                     </InputAdornment>
                                 )
                             }}
+                            value={password}
                             onChange={(e) => setPassword(e.target.value)}
-
                         />
 
                         <Box sx={{ width: { xs: '50vw', md: '20vw' }, display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
