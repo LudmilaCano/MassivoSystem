@@ -33,7 +33,7 @@ namespace Infraestructure.Services
                 throw new Exception("User authentication failed");
             }
 
-            var securityPassword = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["AutenticacionService:SecretForKey"] ?? ""));
+            var securityPassword = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["AuthenticacionService:SecretForKey"] ?? ""));
             var credentials = new SigningCredentials(securityPassword, SecurityAlgorithms.HmacSha256);
 
             //Los claims son datos en clave->valor que nos permite guardar data del usuario.
