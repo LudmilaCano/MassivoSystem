@@ -58,7 +58,7 @@ builder.Services.AddAuthentication("Bearer")
             ValidIssuer = builder.Configuration["AutenticacionService:Issuer"],
             ValidAudience = builder.Configuration["AutenticacionService:Audience"],
             RoleClaimType = ClaimTypes.Role,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["AutenticacionService:SecretForKey"] ?? ""))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["AuthenticacionService:SecretForKey"] ?? ""))
         };
     }
 );
@@ -75,6 +75,19 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 //validador unicidad DNI y Email
 builder.Services.AddScoped<IUserUniquenessChecker, UserUniquenessChecker>();
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("https://localhost:5173") 
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 #endregion
 
 var app = builder.Build();
@@ -90,6 +103,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 
