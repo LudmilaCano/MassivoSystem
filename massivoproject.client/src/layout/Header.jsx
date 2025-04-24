@@ -19,10 +19,17 @@ const Header = () => {
         navigate("/login");
     }
 
+
     const profile = () => {
         navigate("/profile");
     }
 
+
+
+
+    const registro = () =>{
+        navigate("/register");
+    }
 
 
 
@@ -64,7 +71,7 @@ const Header = () => {
                             </Button>
                         </div>
                         <div style={{  alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
-                            <Button variant='outlined' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', color: Colors.naranjaOscuro, borderColor: Colors.naranjaOscuro, borderWidth: 3, fontWeight: '600' }}>
+                            <Button onClick={()=> registro()} variant='outlined' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', color: Colors.naranjaOscuro, borderColor: Colors.naranjaOscuro, borderWidth: 3, fontWeight: '600' }}>
                                 Registro
                             </Button>
                         </div>

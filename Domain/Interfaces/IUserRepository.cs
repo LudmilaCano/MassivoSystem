@@ -9,5 +9,8 @@ namespace Domain.Interfaces
 {
     public interface IUserRepository : IRepositoryBase<User>
     {
+        User? GetUserByEmail(string? email);
+        Task<bool> ExistsByIdentificationNumberAsync(string identificationNumber);
+        Task<bool> ExistsByEmailAsync(string email);
     }
 }
