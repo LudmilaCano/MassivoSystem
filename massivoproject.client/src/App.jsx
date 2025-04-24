@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import MainLayout from './layout/MainLayout.jsx'
 import Login from './components/Login.jsx'
 import Register from './components/Register.jsx'
+import Home from './components/Home.jsx'
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './layout/Theme.jsx';
@@ -11,38 +12,34 @@ import { useDispatch } from 'react-redux';
 import { initializeAuth } from './redux/AuthSlice';
 
 function App() {
-  
-   const dispatch = useDispatch();
 
-    useEffect(() => {
-        dispatch(initializeAuth());
-    }, []);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(initializeAuth());
+  }, []);
 
   const router = createBrowserRouter([
     {
       path: "/",
       element: (
         <MainLayout>
-          
+          <Home />
         </MainLayout>
       ),
     },
     {
       path: "/login",
       element: (
-        <Login>
-
-        </Login>
+        <Login />
       ),
     },
     {
-        path: "/register",
-        element: (
-          <Register>
-  
-          </Register>
-        ),
-      }
+      path: "/register",
+      element: (
+        <Register />
+      ),
+    }
   ])
 
   return (

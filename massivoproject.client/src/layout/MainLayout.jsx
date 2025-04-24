@@ -1,9 +1,8 @@
 import React from 'react'
 import Header from './Header.jsx'
-import Home from '../components/Home.jsx'
 import Footer from './Footer.jsx'
 
-const MainLayout = () => {
+const MainLayout = ({children}) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <header>
@@ -11,7 +10,7 @@ const MainLayout = () => {
       </header>
       
       <main style={{ flex: 1 }}>
-        <Home />
+        {children}
       </main>
       
       <footer>

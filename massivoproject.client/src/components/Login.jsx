@@ -21,7 +21,7 @@ import { Navigate } from 'react-router';
 import { AuthenticationService } from '../api/AuthenticationEndPoints';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setToken } from '../redux/authSlice';
+import { setToken } from '../redux/AuthSlice';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
