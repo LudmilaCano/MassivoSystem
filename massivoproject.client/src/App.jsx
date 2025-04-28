@@ -46,9 +46,10 @@ function App() {
     {
       path: "/profile",
       element: (
-        <CustomerProfile>
-
-        </CustomerProfile>
+        <MainLayout>
+        <CustomerProfile/>
+        </MainLayout>
+        
       ),
     }
   ])
