@@ -127,11 +127,7 @@ namespace MassivoApp.Server.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-<<<<<<< Updated upstream
-            var users = await _userRepository.GetAllAsync();
-=======
             var users = _userService.GetUsers();
->>>>>>> Stashed changes
             return Ok(users);
         }
 
@@ -149,4 +145,3 @@ namespace MassivoApp.Server.Controllers
         }
     }
 }
-
