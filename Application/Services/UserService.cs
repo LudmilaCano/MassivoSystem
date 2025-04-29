@@ -19,6 +19,16 @@ namespace Application.Services
             _userRepository = userRepository;
         }
 
+        public List<User> GetUsers()
+        {
+            return _userRepository.ListAsync().Result ?? new List<User>();
+        }
+
+        public User? GetUserById(int idUser)
+        {
+            return _userRepository.GetByIdAsync(idUser).Result;
+        }
+
         public void SignUpUser(UserSignUpRequest userSignUpRequest)
         {
             var user = new User
@@ -65,6 +75,17 @@ namespace Application.Services
             }
 
             user.Role = roleChangeRequest.NewRole;
+            _userRepository.UpdateAsync(user).Wait();
+        }
+
+        public void DesactiveUser(int idUser)
+        {
+            User? user = _userRepository.GetByIdAsync(idUser).Result;
+            if (user == null)
+            {
+                throw new ArgumentNullException("User not found");
+            }
+            user.IsActive = Domain.Enums.EntityState.Inactive;
             _userRepository.UpdateAsync(user).Wait();
         }
     }
