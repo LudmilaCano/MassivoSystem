@@ -48,27 +48,6 @@ namespace MassivoApp.Server.Controllers
             return StatusCode(StatusCodes.Status201Created, new { Message = "Usuario registrado correctamente." });
         }
 
-
-        // Autenticacion de usuario y retorno de token JWT
-
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] UserLoginRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            try
-            {
-                var token = _authService.Authenticate(request);
-                return Ok(new { Token = token });
-            }
-            catch (Exception)
-            {
-                return Unauthorized(new { Message = "Credenciales inválidas." });
-            }
-        }
-
-
         // Actualizar datos de un usuario existente
 
         [Authorize]
@@ -110,7 +89,7 @@ namespace MassivoApp.Server.Controllers
         }
 
 
-        // Inactivar un usuario (Admin) "Faltaria agregar en IUserServices"
+        // Inactivar un usuario (Admin) 
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
@@ -118,7 +97,7 @@ namespace MassivoApp.Server.Controllers
         {
             try
             {
-                _userService.DeactivateUser(id); 
+                _userService.DesactiveUser(id);
                 return NoContent();
             }
             catch (ArgumentNullException)
@@ -127,17 +106,34 @@ namespace MassivoApp.Server.Controllers
             }
         }
 
+        // Eliminar un usuario (Admin)
 
-        // Listar todos los usuarios (Admin) "Faltaria agregar en IUserRepository"
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}/hard")]
+        public async Task<IActionResult> HardDelete(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+                return NotFound(new { Message = "Usuario no encontrado." });
+
+            await _userRepository.DeleteAsync(user);
+            return NoContent();
+        }
+
+
+        // Listar todos los usuarios (Admin)
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public IActionResult GetAll()
         {
+<<<<<<< Updated upstream
             var users = await _userRepository.GetAllAsync();
+=======
+            var users = _userService.GetUsers();
+>>>>>>> Stashed changes
             return Ok(users);
         }
-
 
         // Traer datos de un usuario por su ID
 
