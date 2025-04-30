@@ -24,7 +24,10 @@ namespace Domain.Entities
         public string Role { get; set; }
         public EntityState IsActive { get; set; } = EntityState.Active;
 
-        public User() { }
+        public User() {
+
+            Role = "User";
+        }
         public User(string firstName, string lastName, DateOnly birthDate, string identificationNumber, string email, string password, string city, string province, string userType)
         {
             FirstName = firstName;

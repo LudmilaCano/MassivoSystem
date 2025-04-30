@@ -12,6 +12,9 @@ namespace Application.Models.Requests
         [StringLength(20, MinimumLength = 2, ErrorMessage = "El apellido debe tener entre 2 y 20 caracteres.")]
         public string LastName { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
+        public DateOnly BirthDate { get; set; }
+
         [RegularExpression(@"^\d{8,9}$", ErrorMessage = "El número de documento debe tener 8 o 9 dígitos.")]
         [Required(ErrorMessage = "El número de documento es obligatorio.")]
         public string DniNumber { get; set; } = string.Empty;

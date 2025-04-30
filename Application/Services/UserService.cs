@@ -35,6 +35,7 @@ namespace Application.Services
             {
                 FirstName = userSignUpRequest.FirstName,
                 LastName = userSignUpRequest.LastName,
+                BirthDate = userSignUpRequest.BirthDate,
                 IdentificationNumber = userSignUpRequest.DniNumber,
                 Email = userSignUpRequest.Email ?? "",
                 Password = userSignUpRequest.Password,
