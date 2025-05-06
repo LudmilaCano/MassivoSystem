@@ -1,15 +1,21 @@
 import { Button, Typography } from '@mui/material'
-import React, { useState } from 'react'
+//import React, { useState } from 'react'
 import MenuIcon from '@mui/icons-material/Menu';
 import Colors from './Colors.jsx';
 import logo from '../Images/logo.png';
 import { useNavigate } from 'react-router';
+import { useDispatch, useSelector} from 'react-redux';
+import { logout } from '../redux/AuthSlice';
 
 const Header = () => {
 
-    const [logueado, setLogueado] = useState(false);
+    //const [logueado, setLogueado] = useState(false);
+    const token = useSelector(state => state.auth.token);
+    const logueado = !!token;
+    //Esto es necesario hacerlo asi porque todo lo referido a login/logout y token esta almacenado en la slice de redux, no se puede hacer con state o context
 
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const abrirMenu = () => {
         console.log('abrir menu');
@@ -17,6 +23,11 @@ const Header = () => {
 
     const inicioSesion = () => {
         navigate("/login");
+    }
+
+    const cerrarSesion = () => {
+        dispatch(logout());
+        navigate("/");
     }
 
     const registro = () =>{
@@ -30,7 +41,9 @@ const Header = () => {
             {logueado ?
                 <div style={{ flex: 1, justifyContent: 'center', alignContent: 'center', display: 'flex' }}>
                     <div style={{ flex: 0.2, justifyContent: 'center', alignContent: 'center' }}>
-                        Acá lo que vaya en el header logueado
+                        {/*Acá lo que vaya en el header logueado*/}
+                        <Button onClick={() => cerrarSesion()} variant='contained' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', height: 'auto', color: Colors.azul, backgroundColor: Colors.naranjaOscuro }}>Cerrar Sesión</Button>
+
                     </div>
                 </div>
                 :
@@ -56,7 +69,7 @@ const Header = () => {
                                 Contacto
                             </Button>
                         </div>
-                        <div style={{  alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
+                        <div style={{ alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
                             <Button onClick={() => inicioSesion()} variant='contained' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', height: 'auto', color: Colors.azul, backgroundColor: Colors.naranjaOscuro }}>
                                 <Typography variant='body1'>Iniciar Sesión</Typography>
                             </Button>
