@@ -58,7 +58,7 @@ builder.Services.AddAuthentication("Bearer")
             ValidIssuer = builder.Configuration["AutenticacionService:Issuer"],
             ValidAudience = builder.Configuration["AutenticacionService:Audience"],
             RoleClaimType = ClaimTypes.Role,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["AuthenticacionService:SecretForKey"] ?? ""))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["AutenticacionService:SecretForKey"] ?? ""))
         };
     }
 );
