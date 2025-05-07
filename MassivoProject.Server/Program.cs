@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using Infraestructure.Services;
 using Microsoft.OpenApi.Models;
+using MassivoProject.Server.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,6 +91,12 @@ builder.Services.AddCors(options =>
 
 #endregion
 
+#region Exceptions
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<GlobalExceptionFilter>();
+});
+#endregion
 var app = builder.Build();
 
 app.UseDefaultFiles();
