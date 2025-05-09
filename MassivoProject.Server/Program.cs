@@ -9,6 +9,7 @@ using System.Text;
 using Infraestructure.Services;
 using Microsoft.OpenApi.Models;
 using MassivoProject.Server.Exceptions;
+using MassivoProject.Server.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,12 +95,6 @@ builder.Services.AddCors(options =>
 
 #endregion
 
-#region Exceptions
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<GlobalExceptionFilter>();
-});
-#endregion
 var app = builder.Build();
 
 app.UseDefaultFiles();
@@ -111,6 +106,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+#region Exceptions
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+#endregion
 
 app.UseHttpsRedirection();
 
