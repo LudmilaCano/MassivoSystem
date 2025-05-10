@@ -10,6 +10,7 @@ import theme from './layout/Theme.jsx';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { initializeAuth } from './redux/AuthSlice';
+import AddVehicle from './components/AddVehicle.jsx'
 
 function App() {
 
@@ -39,6 +40,12 @@ function App() {
       element: (
         <Register />
       ),
+    },
+    {
+      path:"/add-vehicle",
+      element:(
+        <AddVehicle/>
+      )
     }
   ])
 
