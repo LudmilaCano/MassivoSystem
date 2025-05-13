@@ -10,6 +10,7 @@ import theme from './layout/Theme.jsx';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { initializeAuth } from './redux/AuthSlice';
+import VehicleList from './components/VehicleList.jsx'
 
 function App() {
 
@@ -39,7 +40,15 @@ function App() {
       element: (
         <Register />
       ),
-    }
+    },
+    {
+      path: "/vehicle-list",
+      element: (
+        <MainLayout>
+          <VehicleList />
+        </MainLayout>
+      ),
+    },
   ])
 
   return (
