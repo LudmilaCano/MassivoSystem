@@ -46,15 +46,16 @@ function App() {
       ),
     },
     {
-
       path: "/profile",
       element: (
         <MainLayout>
-        <CustomerProfile/>
+          <CustomerProfile />
         </MainLayout>
-        
+
       ),
 
+    },
+    {
       path: "/vehicle-list",
       element: (
         <MainLayout>
@@ -63,9 +64,9 @@ function App() {
       ),
     },
     {
-      path:"/add-vehicle",
-      element:(
-        <AddVehicle/>
+      path: "/add-vehicle",
+      element: (
+        <AddVehicle />
       )
 
     }

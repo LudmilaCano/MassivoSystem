@@ -33,9 +33,6 @@ const Header = () => {
 
 
 
-
-    const registro = () =>{
-
     const cerrarSesion = () => {
         dispatch(logout());
         navigate("/");
