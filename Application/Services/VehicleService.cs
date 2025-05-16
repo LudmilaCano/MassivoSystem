@@ -71,7 +71,6 @@ namespace Application.Services
                 YearModel = vehicle.YearModel,
                 Capacity = vehicle.Capacity,
                 Available = vehicle.Available,
-                From = vehicle.From,
                 DriverName = vehicle.DriverName
             };
         }
@@ -95,8 +94,7 @@ namespace Application.Services
                 Type = request.Type,
                 YearModel = request.YearModel,
                 Capacity = request.Capacity,
-                Available = request.Available > 0 ? request.Available : request.Capacity,
-                From = request.From,
+                Available = 0,
                 IsActive = EntityState.Active
             };
 
@@ -128,7 +126,7 @@ namespace Application.Services
             vehicle.Type = request.Type;
             vehicle.YearModel = request.YearModel;
             vehicle.Capacity = request.Capacity;
-            vehicle.Available = request.Available;
+            vehicle.Available = 0;
             vehicle.From = request.From ?? vehicle.From;
 
             await _vehicleRepository.UpdateAsync(vehicle);
