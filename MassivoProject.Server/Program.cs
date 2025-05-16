@@ -70,12 +70,14 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProvinceRepository, ProvinceRepository>();
 builder.Services.AddScoped<ICityRepository, CityRepository>();
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 #endregion
 
 #region Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProvinceService, ProvinceService>();
 builder.Services.AddScoped<ICityService, CityService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 //validador unicidad DNI y Email
