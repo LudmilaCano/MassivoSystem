@@ -8,6 +8,8 @@ using System.Security.Claims;
 using System.Text;
 using Infraestructure.Services;
 using Microsoft.OpenApi.Models;
+using MassivoProject.Server.Exceptions;
+using MassivoProject.Server.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,7 +60,7 @@ builder.Services.AddAuthentication("Bearer")
             ValidIssuer = builder.Configuration["AutenticacionService:Issuer"],
             ValidAudience = builder.Configuration["AutenticacionService:Audience"],
             RoleClaimType = ClaimTypes.Role,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["AuthenticacionService:SecretForKey"] ?? ""))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["AutenticacionService:SecretForKey"] ?? ""))
         };
     }
 );
@@ -66,11 +68,14 @@ builder.Services.AddAuthentication("Bearer")
 
 #region Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProvinceRepository, ProvinceRepository>();
+builder.Services.AddScoped<ICityRepository, CityRepository>();
 #endregion
 
 #region Services
 builder.Services.AddScoped<IUserService, UserService>();
-
+builder.Services.AddScoped<IProvinceService, ProvinceService>();
+builder.Services.AddScoped<ICityService, CityService>();
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 //validador unicidad DNI y Email
@@ -101,6 +106,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+#region Exceptions
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+#endregion
 
 app.UseHttpsRedirection();
 

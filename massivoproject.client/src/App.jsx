@@ -13,6 +13,8 @@ import theme from './layout/Theme.jsx';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { initializeAuth } from './redux/AuthSlice';
+import VehicleList from './components/VehicleList.jsx'
+import AddVehicle from './components/AddVehicle.jsx'
 
 function App() {
 
@@ -44,6 +46,7 @@ function App() {
       ),
     },
     {
+
       path: "/profile",
       element: (
         <MainLayout>
@@ -51,6 +54,20 @@ function App() {
         </MainLayout>
         
       ),
+
+      path: "/vehicle-list",
+      element: (
+        <MainLayout>
+          <VehicleList />
+        </MainLayout>
+      ),
+    },
+    {
+      path:"/add-vehicle",
+      element:(
+        <AddVehicle/>
+      )
+
     }
   ])
 
