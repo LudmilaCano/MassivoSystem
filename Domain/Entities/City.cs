@@ -14,5 +14,7 @@ namespace Domain.Entities
         public int ProvinceId { get; set; }
         public Province Province { get; set; }
         public bool IsActive { get; set; }
+        public double Latitude { get; set; }    
+        public double Longitude { get; set; }
     }
 }

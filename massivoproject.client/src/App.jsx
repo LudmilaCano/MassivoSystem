@@ -15,6 +15,7 @@ import { useDispatch } from 'react-redux';
 import { initializeAuth } from './redux/AuthSlice';
 import VehicleList from './components/VehicleList.jsx'
 import AddVehicle from './components/AddVehicle.jsx'
+import TripDetail from './components/TripDetail.jsx'
 
 function App() {
 
@@ -60,6 +61,14 @@ function App() {
       element: (
         <MainLayout>
           <VehicleList />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/vehicle-list/2",
+      element: (
+        <MainLayout>
+          <TripDetail />
         </MainLayout>
       ),
     },

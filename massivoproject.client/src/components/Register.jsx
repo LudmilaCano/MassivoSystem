@@ -8,8 +8,9 @@ import Logo2 from '../images/logo2.png';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useNavigate } from 'react-router';
-import Swal from 'sweetalert2';
 import { createUser } from '../api/UserEndpoints';
+import useSwalAlert from '../hooks/useSwalAlert';
+
 
 const states = ['Buenos Aires', 'Córdoba', 'Mendoza', 'Santa Fe'];
 const citiesByState = {
@@ -36,6 +37,8 @@ const Register = () => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+    const { showAlert } = useSwalAlert();
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -141,13 +144,9 @@ const Register = () => {
             console.log("formdata modificado: ", formattedData)
             try {
                 await createUser(formattedData);
-                Swal.fire({
-                    title: '¡Registro Exitoso!',
-                    text: 'Te has registrado correctamente. Ahora te redirigiremos al inicio.',
-                    icon: 'success',
-                    showConfirmButton: false,
-                    timer: 2000,
-                }).then(() => {
+                
+               showAlert('¡Registro Exitoso!', 'success')
+                    .then(() => {
 
                     setFormData({ // limpiar formulario.
                         nombre: '',
@@ -170,13 +169,7 @@ const Register = () => {
                 if (err.response?.data?.message) {
                     message = err.response.data.message;
                 }
-
-                Swal.fire({
-                    title: 'Error',
-                    text: message,
-                    icon: 'error',
-                    confirmButtonText: 'Aceptar'
-                });
+                showAlert(message, 'error');
             }
         }
 

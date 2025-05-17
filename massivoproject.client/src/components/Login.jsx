@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Swal from 'sweetalert2';
 import {
     Box,
     TextField,
@@ -23,6 +22,7 @@ import { AuthenticationService } from '../api/AuthenticationEndPoints';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setToken } from '../redux/AuthSlice';
+import useSwalAlert from '../hooks/useSwalAlert';
 
 
 
@@ -35,6 +35,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { showAlert } = useSwalAlert();
 
 
     const handleLogin = async (e) => {
@@ -72,19 +73,12 @@ const Login = () => {
             if (token) {
                 dispatch(setToken(token));
                 navigate('/');
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Bienvenido',
-                    
-                });
+                
+                showAlert('Bienvenido', 'success');
             } 
         } catch (err) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de autenticación',
-                text: 'Usuario o contraseña incorrectos',
-                confirmButtonColor: '#139AA0',
-            });
+           
+            showAlert('Usuario o contraseña incorrectos', 'error');
 
             setDniOrEmail("");
             setPassword("");

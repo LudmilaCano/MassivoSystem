@@ -6,7 +6,7 @@ import Colors from '../layout/Colors';
 import loginIllustration from '../images/add-vehicle.svg';
 import Logo2 from '../images/logo2.png';
 import { useNavigate } from 'react-router';
-import Swal from 'sweetalert2';
+import useSwalAlert from '../hooks/useSwalAlert';
 
 const typeOfVehicles = ['Combi', 'Mini-Bus', 'Auto', 'Colectivo'];
 
@@ -22,6 +22,7 @@ const AddVehicle = () => {
     });
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
+    const { showAlert } = useSwalAlert();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -82,23 +83,17 @@ const AddVehicle = () => {
             console.log("formdata modificado: ", formattedData)
             try {
                 // Llamar a la API para registrar el vehículo
-                Swal.fire({
-                    title: '¡Registro de Vehículo Exitoso!',
-                    text: 'El Vehículo se ha registrado correctamente. Ahora te redirigiremos al inicio.',
-                    icon: 'success',
-                    showConfirmButton: false,
-                    timer: 2000,
-                }).then(() => {
+                
+                showAlert('El Vehículo se ha registrado correctamente. Ahora te redirigiremos al inicio.', 'success');
 
-                    setFormData({ // limpiar formulario.
-                        patente: '',
-                        capacidad: '',
-                        modelo: '',        
-                        tipoVehiculo: ''
-                    });
-
-                    navigate('/');
+                setFormData({ // limpiar formulario.
+                    patente: '',
+                    capacidad: '',
+                    modelo: '',        
+                    tipoVehiculo: ''
                 });
+
+                navigate('/');
             } catch (err) {
 
                 // esto es temporario hasta que tengamos un middleware de excepciones en el back, y un interceptor en el front
@@ -107,13 +102,7 @@ const AddVehicle = () => {
                 if (err.response?.data?.message) {
                     message = err.response.data.message;
                 }
-
-                Swal.fire({
-                    title: 'Error',
-                    text: message,
-                    icon: 'error',
-                    confirmButtonText: 'Aceptar'
-                });
+                showAlert(message, 'error');
             }
         }
 
