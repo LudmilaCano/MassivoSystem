@@ -8,6 +8,7 @@ namespace Infraestructure.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Province> Provinces { get; set; }
         public DbSet<City>  Cities { get; set; }
+        public DbSet<Vehicle> Vehicles { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -23,6 +24,12 @@ namespace Infraestructure.Data
                 .WithMany()
                 .HasForeignKey(c => c.ProvinceId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Vehicle>()
+                .HasOne(v => v.User)
+                .WithMany()
+                .HasForeignKey(v => v.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
