@@ -3,6 +3,7 @@ using System;
 using Infraestructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infraestructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250516201846_AddVehicleFields")]
+    partial class AddVehicleFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -25,12 +28,6 @@ namespace Infraestructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("REAL");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("REAL");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -132,6 +129,10 @@ namespace Infraestructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("From")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -143,8 +144,9 @@ namespace Infraestructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
