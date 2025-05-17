@@ -32,7 +32,7 @@ namespace Application.Services
                 YearModel = v.YearModel,
                 Capacity = v.Capacity,
                 Available = v.Available,
-                From = v.From,
+                //From = v.From,
                 DriverName = v.DriverName,
             }).ToList();
         }
@@ -50,7 +50,7 @@ namespace Application.Services
                 YearModel = v.YearModel,
                 Capacity = v.Capacity,
                 Available = v.Available,
-                From = v.From,
+                //From = v.From,
                 DriverName = v.DriverName
             }).ToList();
         }
@@ -127,7 +127,7 @@ namespace Application.Services
             vehicle.YearModel = request.YearModel;
             vehicle.Capacity = request.Capacity;
             vehicle.Available = 0;
-            vehicle.From = request.From ?? vehicle.From;
+            //vehicle.From = request.From ?? vehicle.From;
 
             await _vehicleRepository.UpdateAsync(vehicle);
         }
