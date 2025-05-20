@@ -23,7 +23,7 @@ import { AuthenticationService } from '../api/AuthenticationEndPoints';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setToken } from '../redux/AuthSlice';
-
+import CustomerProfile from './Customer_profile/CustomerProfile';
 
 
 const Login = () => {
@@ -71,7 +71,7 @@ const Login = () => {
             console.log(token)
             if (token) {
                 dispatch(setToken(token));
-                navigate('/');
+                navigate('/profile');
                 Swal.fire({
                     icon: 'success',
                     title: 'Bienvenido',
