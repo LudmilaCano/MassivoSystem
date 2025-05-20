@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper, Link, InputAdornment, IconButton, MenuItem } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
@@ -10,14 +10,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
 import { createUser } from '../api/UserEndpoints';
+import { getAllProvince } from '../api/ProvinceEndpoints';
+import { getCitiesByProvince } from '../api/CityEndpoints';
 
-const states = ['Buenos Aires', 'Córdoba', 'Mendoza', 'Santa Fe'];
-const citiesByState = {
-    'Buenos Aires': ['La Plata', 'Mar del Plata', 'Tigre'],
-    'Córdoba': ['Córdoba', 'Villa Carlos Paz'],
-    'Mendoza': ['Mendoza', 'San Rafael'],
-    'Santa Fe': ['Rosario', 'Santa Fe Capital'],
-};
+
 
 const Register = () => {
     // Estados
@@ -36,6 +32,42 @@ const Register = () => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+
+    const [provinces, setProvinces] = useState([]);
+    const [cities, setCities] = useState([]);
+
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            try {
+                const data = await getAllProvince();
+                console.log('Provincias obtenidas:', data);
+                setProvinces(data.result);
+            } catch (error) {
+                console.error("Error al obtener provincias:", error);
+            }
+        };
+        fetchProvinces();
+    }, []);
+
+    useEffect(() => {
+        const fetchCities = async () => {
+            if (formData.provincia) {
+                try {
+                    const selectedProvince = provinces.find(p => p.name === formData.provincia);
+                    const data = await getCitiesByProvince(selectedProvince.id);
+                    setCities(data);
+                } catch (error) {
+                    console.error("Error al obtener ciudades:", error);
+                }
+            } else {
+                setCities([]); // Limpia las ciudades si no hay provincia seleccionada
+            }
+        };
+        fetchCities();
+    }, [formData.provincia, provinces]);
+
+
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -137,7 +169,7 @@ const Register = () => {
                 city: formData.ciudad,
                 birthDate: formData.dob.toISOString().split('T')[0]
             };
-     
+
             console.log("formdata modificado: ", formattedData)
             try {
                 await createUser(formattedData);
@@ -296,9 +328,9 @@ const Register = () => {
                                 helperText={errors.provincia}
                                 sx={textFieldStyle}
                             >
-                                {states.map((state) => (
-                                    <MenuItem key={state} value={state}>
-                                        {state}
+                                {provinces.map((provincia) => (
+                                    <MenuItem key={provincia.id} value={provincia.name}>
+                                        {provincia.name}
                                     </MenuItem>
                                 ))}
                             </TextField>
@@ -316,9 +348,9 @@ const Register = () => {
                                 error={!!errors.ciudad}
                                 helperText={errors.ciudad}
                             >
-                                {(citiesByState[formData.provincia] || []).map((city) => (
-                                    <MenuItem key={city} value={city}>
-                                        {city}
+                                {cities.map((city) => (
+                                    <MenuItem key={city.id} value={city.name}>
+                                        {city.name}
                                     </MenuItem>
                                 ))}
                             </TextField>
