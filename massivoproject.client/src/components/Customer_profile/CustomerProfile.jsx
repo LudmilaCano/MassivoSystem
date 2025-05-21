@@ -30,6 +30,8 @@ const modalStyle = {
   gap: 2,
 };
 
+// ...imports (sin cambios)
+
 const CustomerProfile = () => {
   const { userId } = useSelector((state) => state.auth);
   const [userData, setUserData] = useState(null);
@@ -42,10 +44,30 @@ const CustomerProfile = () => {
     const fetchUser = async () => {
       try {
         const data = await getUserById(userId);
-        setUserData(data);
-        setEditData(data);
+        console.log("Usuario traído del backend:", data);
+        setUserData({
+          ...data,
+          dniNumber: data.identificationNumber || "", // 👈 TAMBIÉN ACÁ
+        });
+        setEditData({
+          userId: data.userId,
+          firstName: data.firstName || "",
+          lastName: data.lastName || "",
+          email: data.email || "",
+          dniNumber: data.identificationNumber || "", // ✅ cambiamos a dniNumber
+          profilePic: data.profilePic || "",
+          password: "",
+          birthDate: data.birthDate || "",
+          phone: data.phone || "",
+          province: data.province || "",
+          city: data.city || "",
+          role: data.role || "User",
+          isActive: data.isActive ?? 1,
+        });
+        
+
         if (data.profilePic) {
-          setProfilePic(data.profilePic); // solo si usás imagenes base64 o URL
+          setProfilePic(data.profilePic);
         }
       } catch (error) {
         console.error("Error cargando datos del usuario:", error);
@@ -56,13 +78,40 @@ const CustomerProfile = () => {
 
   const handleSave = async () => {
     try {
-      await updateUser(userId, editData);
-      setUserData(editData);
+      const payload = {
+        UserId: userId,
+        FirstName: editData.firstName,
+        LastName: editData.lastName,
+        DniNumber: editData.dniNumber, // ✅ este campo con mayúsculas exactas
+        Email: editData.email,
+        Password: editData.password || null,
+        City: editData.city || "",
+        Province: editData.province || ""
+      };
+
+      console.log("Payload a enviar:", payload);
+      await updateUser(userId, payload);
+
+      setUserData({
+        ...userData,
+        firstName: editData.firstName,
+        lastName: editData.lastName,
+        dniNumber: editData.dniNumber,
+        email: editData.email,
+        city: editData.city,
+        province: editData.province,
+        profilePic: editData.profilePic || userData.profilePic
+      });
+
       setOpen(false);
       setGuardado(true);
       setTimeout(() => setGuardado(false), 1500);
     } catch (error) {
-      console.error("Error al actualizar usuario:", error);
+      if (error.response) {
+        console.error("Error al actualizar usuario:", error.response.data);
+      } else {
+        console.error("Error al actualizar usuario:", error.message);
+      }
     }
   };
 
@@ -99,15 +148,11 @@ const CustomerProfile = () => {
         </div>
         <div className="form-group">
           <label>DNI</label>
-          <input type="text" value={userData.identificationNumber} disabled />
+          <input type="text" value={userData.dniNumber} disabled /> {/* ✅ */}
         </div>
         <div className="form-group">
           <label>Mail</label>
           <input type="email" value={userData.email} disabled />
-        </div>
-        <div className="form-group">
-          <label>Teléfono</label>
-          <input type="text" value={userData.phone} disabled />
         </div>
 
         <Button
@@ -161,32 +206,26 @@ const CustomerProfile = () => {
 
           <TextField
             label="Nombre"
-            value={editData.name}
-            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+            value={editData.firstName}
+            onChange={(e) => setEditData({ ...editData, firstName: e.target.value })}
             fullWidth
           />
           <TextField
             label="Apellido"
-            value={editData.lastname}
-            onChange={(e) => setEditData({ ...editData, lastname: e.target.value })}
+            value={editData.lastName}
+            onChange={(e) => setEditData({ ...editData, lastName: e.target.value })}
             fullWidth
           />
           <TextField
             label="DNI"
-            value={editData.dni}
-            onChange={(e) => setEditData({ ...editData, dni: e.target.value })}
+            value={editData.dniNumber} // ✅ corregido aquí
+            onChange={(e) => setEditData({ ...editData, dniNumber: e.target.value })}
             fullWidth
           />
           <TextField
             label="Email"
             value={editData.email}
             onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-            fullWidth
-          />
-          <TextField
-            label="Teléfono"
-            value={editData.phone}
-            onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
             fullWidth
           />
 

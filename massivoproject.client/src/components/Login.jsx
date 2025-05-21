@@ -71,7 +71,7 @@ const Login = () => {
             console.log(token)
             if (token) {
                 dispatch(setToken(token));
-                navigate('/profile');
+                navigate('/');
                 Swal.fire({
                     icon: 'success',
                     title: 'Bienvenido',
