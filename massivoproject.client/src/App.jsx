@@ -58,7 +58,7 @@ function App() {
     },
     {
       path: "/vehicle-list",
-      element: (
+      element:(
         <MainLayout>
           <VehicleList />
         </MainLayout>

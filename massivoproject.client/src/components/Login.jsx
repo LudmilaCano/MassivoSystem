@@ -22,7 +22,11 @@ import { AuthenticationService } from '../api/AuthenticationEndPoints';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setToken } from '../redux/AuthSlice';
+
 import useSwalAlert from '../hooks/useSwalAlert';
+
+
+import CustomerProfile from './Customer_profile/CustomerProfile';
 
 
 
