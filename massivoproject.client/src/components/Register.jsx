@@ -41,6 +41,9 @@ const Register = () => {
     const [provinces, setProvinces] = useState([]);
     const [cities, setCities] = useState([]);
 
+    const [sortedProvinces, setSortedProvinces] = useState([]);
+    const [sortedCities, setSortedCities] = useState([]);
+
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
@@ -53,6 +56,14 @@ const Register = () => {
         };
         fetchProvinces();
     }, []);
+
+    useEffect(() => {
+        setSortedProvinces(() => [...provinces].sort((a, b) => a.name.localeCompare(b.name)));
+    }, [provinces])
+
+    useEffect(() => {
+        setSortedCities(() => [...cities].sort((a, b) => a.name.localeCompare(b.name)));
+    }, [cities])
 
     useEffect(() => {
         const fetchCities = async () => {
@@ -178,24 +189,24 @@ const Register = () => {
             console.log("formdata modificado: ", formattedData)
             try {
                 await createUser(formattedData);
-                
-               showAlert('¡Registro Exitoso!', 'success')
+
+                showAlert('¡Registro Exitoso!', 'success')
                     .then(() => {
 
-                    setFormData({ // limpiar formulario.
-                        nombre: '',
-                        apellido: '',
-                        dni: '',
-                        email: '',
-                        password: '',
-                        repeatPassword: '',
-                        provincia: '',
-                        ciudad: '',
-                        dob: null,
-                    });
+                        setFormData({ // limpiar formulario.
+                            nombre: '',
+                            apellido: '',
+                            dni: '',
+                            email: '',
+                            password: '',
+                            repeatPassword: '',
+                            provincia: '',
+                            ciudad: '',
+                            dob: null,
+                        });
 
-                    navigate('/');
-                });
+                        navigate('/');
+                    });
             } catch (err) {
                 // esto es temporario hasta que tengamos un middleware de excepciones en el back, y un interceptor en el front
                 let message = 'Ocurrió un error al registrar el usuario.';
@@ -323,7 +334,7 @@ const Register = () => {
                                 helperText={errors.provincia}
                                 sx={textFieldStyle}
                             >
-                                {provinces.map((provincia) => (
+                                {sortedProvinces.map((provincia) => (
                                     <MenuItem key={provincia.id} value={provincia.name}>
                                         {provincia.name}
                                     </MenuItem>
@@ -343,7 +354,7 @@ const Register = () => {
                                 error={!!errors.ciudad}
                                 helperText={errors.ciudad}
                             >
-                                {cities.map((city) => (
+                                {sortedCities.map((city) => (
                                     <MenuItem key={city.id} value={city.name}>
                                         {city.name}
                                     </MenuItem>
