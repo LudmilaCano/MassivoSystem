@@ -18,6 +18,13 @@ namespace Infraestructure.Data
                 .AnyAsync(v => v.LicensePlate == licensePlate);
         }
 
+        public async Task<Vehicle> GetByLicensePlateAsync(string licensePlate)
+        {
+            return await _dbContext.Set<Vehicle>()
+                .Where(v => v.LicensePlate == licensePlate)
+                .FirstOrDefaultAsync(); 
+        }
+
         public async Task<List<Vehicle>> GetVehiclesByUserIdAsync(int userId)
         {
             return await _dbContext.Set<Vehicle>()

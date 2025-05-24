@@ -32,5 +32,15 @@ namespace Infraestructure.Data
             return await _dbContext.Set<User>()
                 .AnyAsync(u => u.Email == email);
         }
+        public async Task<bool> IsAdmin(int userId)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            return user?.Role == "Admin";
+        }
+        public async Task<bool> IsPrestador(int userId)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            return user?.Role == "Prestador";
+        }
     }
 }

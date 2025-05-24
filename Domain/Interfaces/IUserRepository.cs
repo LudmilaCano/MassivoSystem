@@ -12,5 +12,6 @@ namespace Domain.Interfaces
         User? GetUserByEmail(string? email);
         Task<bool> ExistsByIdentificationNumberAsync(string identificationNumber);
         Task<bool> ExistsByEmailAsync(string email);
+        Task<bool>IsAdmin(int userId);
     }
 }
