@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -60,28 +61,17 @@ namespace MassivoProject.Server.Controllers
 
         [HttpPost("add-vehicle")]
         public async Task<IActionResult> AddVehicleToEvent(AddEventVehicleRequest request)
-            {
+        {
             await _eventService.AddVehicleToEventAsync(request);
-                return NoContent();
-            }
-            catch (ArgumentNullException)
-            {
-                return NotFound(new { Message = "Vehículo no encontrado." });
-            }
+            return NoContent();
+
         }
 
         [HttpDelete("remove-vehicle")]
         public async Task<IActionResult> DeleteVehicleFromEvent(DeleteEventVehicleRequest request)
-            {
+        {
             await _eventService.DeleteVehicleFromEventAsync(request);
-                return NoContent();
-            }
-            catch (ArgumentNullException)
-            {
-                return NotFound(new { Message = "Vehículo no encontrado." });
-            }
+            return NoContent();
         }
-    }
-}
-    }
+    }       
 }
