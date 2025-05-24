@@ -67,9 +67,10 @@ namespace MassivoProject.Server.Controllers
 
         }
 
-        [HttpDelete("remove-vehicle")]
-        public async Task<IActionResult> DeleteVehicleFromEvent(DeleteEventVehicleRequest request)
+        [HttpDelete("remove-vehicle/{eventId}/{licensePlate}")]
+        public async Task<IActionResult> DeleteVehicleFromEvent(int eventId, string licensePlate)
         {
+            var request = new DeleteEventVehicleRequest { EventId = eventId, LicensePlate = licensePlate };
             await _eventService.DeleteVehicleFromEventAsync(request);
             return NoContent();
         }

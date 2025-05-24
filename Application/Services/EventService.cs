@@ -48,6 +48,10 @@ namespace Application.Services
 
         public async Task<EventDto> AddEventAsync(CreateEventRequest request)
         {
+            if (request.EventDate.Date <= DateTime.Today)
+            {
+                throw new InvalidOperationException("EventDate must be in the future.");
+            }
             var newEvent = new Event
             {
                 UserId = request.UserId,
