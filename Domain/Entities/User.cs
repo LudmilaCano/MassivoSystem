@@ -23,10 +23,12 @@ namespace Domain.Entities
         public string Province { get; set; }
         public string Role { get; set; }
         public EntityState IsActive { get; set; } = EntityState.Active;
+        public ICollection<Event> Events { get; set; }
 
         public User() {
 
             Role = "User";
+            Events = new List<Event>();
         }
         public User(string firstName, string lastName, DateOnly birthDate, string identificationNumber, string email, string password, string city, string province, string userType)
         {
@@ -39,6 +41,8 @@ namespace Domain.Entities
             City = city;
             Province = province;
             Role = userType ?? "User";
+            Events = new List<Event>();
+
 
         }
     }

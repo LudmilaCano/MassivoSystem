@@ -18,5 +18,6 @@ namespace Domain.Entities
         public int Capacity { get; set; }
         public int Available { get; set; }
         public EntityState IsActive { get; set; } = EntityState.Active;
+        public ICollection<EventVehicle> EventsVehicles { get; set; }
     }
 }

@@ -15,7 +15,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
@@ -70,7 +75,9 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProvinceRepository, ProvinceRepository>();
 builder.Services.AddScoped<ICityRepository, CityRepository>();
-builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>(); 
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+
 #endregion
 
 #region Services
@@ -78,6 +85,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProvinceService, ProvinceService>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<IEventService, EventService>();
+
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 //validador unicidad DNI y Email
