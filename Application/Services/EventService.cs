@@ -126,7 +126,6 @@ namespace Application.Services
                 EventId = request.EventId,
                 LicensePlate = request.LicensePlate,
                 Date = request.Date,
-                Occupation = request.Occupation
             });
 
             await _eventRepository.UpdateAsync(eventEntity);

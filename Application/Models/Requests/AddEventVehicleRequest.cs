@@ -14,11 +14,6 @@ namespace Application.Models.Requests
 
         [Required(ErrorMessage = "Date is required.")]
         public DateTime Date { get; set; }
-
-        [Required(ErrorMessage = "Occupation is required.")]
-        [Range(1, 90, ErrorMessage = "Occupation allowed range is 1-90.")]
-        public int Occupation { get; set; }
     }
-
 }
 
