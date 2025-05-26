@@ -12,6 +12,7 @@ namespace Infraestructure.Data
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<EventVehicle> EventsVehicles { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -47,6 +48,21 @@ namespace Infraestructure.Data
              .WithMany(v => v.EventsVehicles)
              .HasForeignKey(ev => ev.LicensePlate)
              .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.User)
+                .WithMany()
+                .HasForeignKey(b => b.UserId);
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.EventVehicle)
+                .WithMany()
+                .HasForeignKey(b => b.EventVehicleId);
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Payment)
+                .WithMany()
+                .HasForeignKey(b => b.PaymentId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

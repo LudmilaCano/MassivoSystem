@@ -1,5 +1,7 @@
-﻿using Application.Models.Responses;
+﻿using Application.Models.Requests;
+using Application.Models.Responses;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,9 +14,13 @@ namespace Application.Services
     public class BookingService
     {
         private readonly IBookingRepository _bookingRepository;
-        public BookingService(IBookingRepository bookingRepository)
+        private readonly IEventRepository _eventRepository;
+        private readonly IVehicleRepository _vehicleRepository;
+        public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository)
         {
             _bookingRepository = bookingRepository;
+            _eventRepository = eventRepository;
+            _vehicleRepository = vehicleRepository;
         }
 
         public async Task<List<BookingDto>> GetBookings()
@@ -82,18 +88,44 @@ namespace Application.Services
             return bookingDtos;
         }
 
-        public async Task<BookingDto> AddBooking(BookingDto bookingDto)
+        public async Task<BookingDto> AddBooking(AddBookingRequest addBookingRequest)
         {
-            var booking = new Booking
+            var eventEntity = await _eventRepository.GetEventByIdWithVehiclesIncludedAsync(addBookingRequest.EventId)
+               ?? throw new KeyNotFoundException($"Evento con ID {addBookingRequest.EventId} no fue encontrado.");
+            var eventVehicle = eventEntity.EventVehicles.FirstOrDefault(ev => ev.LicensePlate == addBookingRequest.LicensePlate)
+               ?? throw new KeyNotFoundException($"El vehículo con matrícula {addBookingRequest.LicensePlate} no se asignó a este evento.");
+            var vehicle = await _vehicleRepository.GetByIdAsync(addBookingRequest.LicensePlate)
+               ?? throw new KeyNotFoundException($"Vehículo con matrícula {addBookingRequest.LicensePlate} no fue encontrado.");
+            if (addBookingRequest.SeatNumber + vehicle.Available > vehicle.Capacity)
             {
-                Date = bookingDto.Date,
-                UserId = bookingDto.User.Id,
-                EventVehicleId = bookingDto.EventVehicle.Id,
-                PaymentId = bookingDto.Payment.Id,
-                BookingStatus = bookingDto.BookingStatus,
-                SeatNumber = bookingDto.SeatNumber
+                throw new InvalidOperationException("La suma del número de asientos y la disponibilidad no debe exceder la capacidad del vehículo.");
+            }
+            if (addBookingRequest.Payment == null)
+            {
+                throw new ArgumentNullException(nameof(addBookingRequest.Payment), "El pago no puede ser nulo.");
+            }
+            var booking = new Booking()
+            {
+                Date = DateTime.Now,
+                UserId = addBookingRequest.UserId,
+                EventVehicleId = eventVehicle.EventVehicleId,
+                BookingStatus = BookingStatus.Confirmed,
+                SeatNumber = addBookingRequest.SeatNumber ?? 0,
             };
-            await _bookingRepository.AddAsync(booking);
+
+            var payment = new Payment()
+            {
+                Amount = addBookingRequest.Payment.Amount,
+                Date = DateTime.Now,
+                PaymentMethod = addBookingRequest.Payment.PaymentMethod,
+                PaymentStatus = PaymentStatus.Success,
+                Details = $"Pago de {eventEntity.Name} que va con el vehiculo {vehicle.LicensePlate} - {vehicle.Name}"
+            };
+
+            vehicle.Available += booking.SeatNumber;
+            await _vehicleRepository.UpdateAsync(vehicle);
+
+
             return bookingDto;
         }
     }

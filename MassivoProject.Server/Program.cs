@@ -77,7 +77,8 @@ builder.Services.AddScoped<IProvinceRepository, ProvinceRepository>();
 builder.Services.AddScoped<ICityRepository, CityRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>(); 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
-
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 #endregion
 
 #region Services

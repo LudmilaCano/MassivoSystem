@@ -33,7 +33,6 @@ namespace Application.Models.Responses
                 }).ToList() ?? new List<EventVehicleDto>(),
             };
         }
-
     }
 }
 
