@@ -24,5 +24,13 @@ namespace Infraestructure.Data
                 .Where(b => b.UserId == userId)
                 .ToListAsync();
         }
+
+        public Task<List<Booking>> GetBookingWithEventVehicleIdAsync(int id)
+        {
+            return _context.Set<Booking>()
+                .Where(b => b.Id == id)
+                .Include(b => b.EventVehicle)
+                .ToListAsync();
+        }
     }
 }

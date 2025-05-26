@@ -10,5 +10,6 @@ namespace Domain.Interfaces
     public interface IBookingRepository : IRepositoryBase<Booking>
     {
         Task<List<Booking>> GetBookingByUserIdAsync(int userId);
+        Task<Booking?> GetBookingWithEventVehicleIdAsync(int id);
     }
 }
