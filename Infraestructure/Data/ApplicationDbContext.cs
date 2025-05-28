@@ -12,6 +12,7 @@ namespace Infraestructure.Data
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<EventVehicle> EventsVehicles { get; set; }
+       
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {

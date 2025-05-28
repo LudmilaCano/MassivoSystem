@@ -8,7 +8,7 @@
         public string LicensePlate { get; set; }
         public Vehicle Vehicle { get; set; }
         public DateTime Date { get; set; }
-        public int Occupation { get; set; }
+        public int Occupation { get; set; } = 0;
 
 
     }
