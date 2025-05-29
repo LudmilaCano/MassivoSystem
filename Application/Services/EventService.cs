@@ -55,7 +55,7 @@ namespace Application.Services
             var newEvent = new Event
             {
                 UserId = request.UserId,
-                Location = request.Location,
+                LocationId = request.Location,
                 Name = request.Name,
                 EventDate = request.EventDate,
                 Type = request.Type,
@@ -82,7 +82,7 @@ namespace Application.Services
                 throw new UnauthorizedAccessException();
             }
 
-            existingEvent.Location = request.Location;
+            existingEvent.LocationId = request.Location;
             existingEvent.Name = request.Name;
             existingEvent.EventDate = request.EventDate;
             existingEvent.Type = request.Type;

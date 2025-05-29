@@ -7,7 +7,10 @@ namespace Domain.Entities
         public int EventId { get; set; }
         public int UserId { get; set; }
         public User User { get; set; }
-        public string Location { get; set; }
+        //public string Location { get; set; }
+        public int? LocationId { get; set; } 
+        public City Location { get; set; }  
+
         public string Name { get; set; }
         public DateTime EventDate { get; set; }
         public EventType Type { get; set; }
@@ -18,9 +21,9 @@ namespace Domain.Entities
             EventVehicles = new List<EventVehicle>();
         }
 
-        public Event(string location, string name, DateTime eventDate, EventType eventType)
+        public Event(int location, string name, DateTime eventDate, EventType eventType)
         {
-            Location = location;
+            LocationId = location;
             Name = name;
             EventDate = eventDate;
             Type = eventType;

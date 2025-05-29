@@ -19,7 +19,7 @@ namespace Application.Models.Responses
             {
                 EventId = eventEntity.EventId,
                 UserId = eventEntity.UserId,
-                Location = eventEntity.Location,
+                Location = eventEntity.Location?.Name,
                 Name = eventEntity.Name,
                 Type = eventEntity.Type,
                 EventDate = eventEntity.EventDate,
