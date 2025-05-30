@@ -16,6 +16,7 @@ import { initializeAuth } from './redux/AuthSlice';
 import VehicleList from './components/VehicleList.jsx'
 import AddVehicle from './components/AddVehicle.jsx'
 import TripDetail from './components/TripDetail.jsx'
+import Booking from './components/Booking.jsx'
 
 function App() {
 
@@ -76,6 +77,14 @@ function App() {
       path: "/add-vehicle",
       element: (
         <AddVehicle />
+      )
+
+    }
+    ,
+    {
+      path: "/booking",
+      element: (
+        <Booking />
       )
 
     }
