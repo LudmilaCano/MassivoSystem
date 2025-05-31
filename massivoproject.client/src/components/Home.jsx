@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -9,11 +9,15 @@ import {
 } from '@mui/material';
 
 import imagenEjemplo from '../images/logo2.png';
-
+import { getRandomEvents, filterEvents } from '../api/EventEndpoints';
+import { getEventTypeLabel } from '../constants/eventCategories';
 
 const Home = () => {
 
+    const [events, setEvents] = useState([]);
     const [people, setPeople] = useState('');
+    const [searchName, setSearchName] = useState('');
+    const [searchDate, setSearchDate] = useState('');
 
     const handlePeopleChange = (e) => {
         const value = e.target.value;
@@ -22,30 +26,37 @@ const Home = () => {
         }
     };
 
-    const events = [
-        {
-            title: 'Taylor Swift',
-            location: 'Buenos Aires',
-            image: imagenEjemplo,
-            price: '$999',
-            date: '1 Nov - 2 Nov',
-        },
-        {
-            title: 'Lollapalooza Arg',
-            location: 'Buenos Aires',
-            image: imagenEjemplo,
-            price: '$999',
-            date: '21, 22, 23 Mar',
-        },
-        {
-            title: 'Argentina vs Brasil',
-            location: 'Buenos Aires',
-            image: imagenEjemplo,
-            price: '$999',
-            date: '14 Ago',
-        },
-    ];
+    const handleFilter = async () => {
+        try {
+            const data = await filterEvents(searchName, searchDate);
+            setEvents(data);
+        } catch (error) {
+            console.error('Error filtrando eventos:', error);
+        }
+    };
 
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const data = await getRandomEvents(4);
+                setEvents(data);
+            } catch (error) {
+                console.error('Error fetching random events:', error);
+            }
+        };
+        fetchEvents();
+    }, []);
+    console.log(events);
     const features = [
         { icon: '✅🚗', label: 'Viajá seguro', shadowColor: 'rgba(255, 69, 0, 0.5)' },
         { icon: '💸', label: 'Viajá barato', shadowColor: 'rgba(30, 144, 255, 0.5)' },
@@ -76,15 +87,17 @@ const Home = () => {
                     variant="standard"
                     placeholder="¿Qué evento buscas?"
                     fullWidth
+                    onChange={e => setSearchName(e.target.value)}
                     sx={{ flex: 2, minWidth: 120, px: 2 }}
                 />
                 <TextField
                     variant="standard"
                     type="date"
                     fullWidth
+                    onChange={e => setSearchDate(e.target.value)}
                     sx={{ flex: 1, px: 2 }}
                 />
-                <TextField
+                {/* <TextField
                     label="Cantidad de personas"
                     type="text"
                     variant="standard"
@@ -96,10 +109,11 @@ const Home = () => {
                         min: 1,
                     }}
                     sx={{ minWidth: 150 }}
-                />
+                /> */}
                 <Button
                     variant="contained"
                     sx={{ backgroundColor: '#139AA0', minWidth: 100, px: 2 }}
+                    onClick={handleFilter}
                 >
                     Buscar
                 </Button>
@@ -137,17 +151,23 @@ const Home = () => {
                         <Paper elevation={4} sx={{p: 2, m: 2}}>
                             <Box
                                 component="img"
-                                src={event.image}
+                                src={imagenEjemplo} 
                                 alt={event.title}
                                 sx={{ width: '100%', height: 200, objectFit: 'contain', p: 2 }}
                             />
                             <Box sx={{ p: 2 }}>
                                 <Typography variant="h6" fontWeight="bold">
-                                    {event.title}
+                                    {event.name}
                                 </Typography>
-                                <Typography variant="body2">{event.location}</Typography>
+                                <Typography variant="body2">
+                                  Fecha :   {formatDate(event.eventDate)}
+                                </Typography>
+                                <Typography variant="body2">Lugar : {event.location}</Typography>
                                 <Typography sx={{ mt: 1 }}>
-                                    <strong>{event.price}</strong> por persona
+                                    <strong>{event.price}</strong> $999 por persona
+                                </Typography>
+                                <Typography variant="body2">
+                                    Categoría : {getEventTypeLabel(event.type)}
                                 </Typography>
                                 <Typography variant="body2">{event.date}</Typography>
                                 <Button

@@ -27,6 +27,14 @@ namespace MassivoProject.Server.Controllers
             return Ok(events);
         }
 
+        [HttpGet("random-events")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetLastEvents()
+        {
+            var events = await _eventService.GetRandomEventsAsync(4);
+            return Ok(events);
+        }
+
         [HttpGet("{id}")]
         [AllowAnonymous]
 
@@ -73,6 +81,14 @@ namespace MassivoProject.Server.Controllers
             var request = new DeleteEventVehicleRequest { EventId = eventId, LicensePlate = licensePlate };
             await _eventService.DeleteVehicleFromEventAsync(request);
             return NoContent();
+        }
+
+        [HttpGet("filter")]
+        [AllowAnonymous]
+        public async Task<IActionResult> FilterEvents([FromQuery] string? name, [FromQuery] DateTime? date)
+        {
+            var events = await _eventService.FilterEventsAsync(name, date);
+            return Ok(events);
         }
     }       
 }

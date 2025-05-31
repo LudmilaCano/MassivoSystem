@@ -22,6 +22,23 @@ namespace Infraestructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.City)
+                .WithMany()
+                .HasForeignKey(u => u.CityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Province)
+                .WithMany()
+                .HasForeignKey(u => u.ProvinceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Event>()
+                .HasOne(e => e.Location)
+                .WithMany()
+                .HasForeignKey(e => e.LocationId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<City>()
                 .HasOne(c => c.Province)

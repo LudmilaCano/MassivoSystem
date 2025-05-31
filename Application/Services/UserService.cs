@@ -39,8 +39,8 @@ namespace Application.Services
                 IdentificationNumber = userSignUpRequest.DniNumber,
                 Email = userSignUpRequest.Email ?? "",
                 Password = userSignUpRequest.Password,
-                City = userSignUpRequest.City,
-                Province = userSignUpRequest.Province
+                CityId = userSignUpRequest.City,
+                ProvinceId = userSignUpRequest.Province
             };
             _userRepository.AddAsync(user).Wait();
         }
@@ -61,8 +61,8 @@ namespace Application.Services
             {
                 user.Password = userUpdateRequest.Password;
             }
-            user.City = userUpdateRequest.City;
-            user.Province = userUpdateRequest.Province;
+            user.CityId = userUpdateRequest.City;
+            user.ProvinceId = userUpdateRequest.Province;
 
             _userRepository.UpdateAsync(user).Wait();
         }

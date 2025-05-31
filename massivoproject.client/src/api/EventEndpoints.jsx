@@ -34,3 +34,18 @@ export const removeVehicleFromEvent = async (eventId, licensePlate) => {
     const response = await api.delete(`/Event/remove-vehicle/${eventId}/${licensePlate}`);
     return response.data;
 };
+
+export const getRandomEvents = async () => {
+    const response = await api.get(`/Event/random-events`);
+    return response.data;
+};
+
+export const filterEvents = async (name, date) => {
+    const params = new URLSearchParams();
+    if (name) params.append('name', name);
+    if (date) params.append('date', date); // date debe estar en formato 'YYYY-MM-DD'
+
+    const response = await api.get(`/Event/filter?${params.toString()}`);
+    console.log(response)
+    return response.data;
+};

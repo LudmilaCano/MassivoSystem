@@ -19,8 +19,15 @@ namespace Domain.Entities
         public string IdentificationNumber { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public string City { get; set; }
-        public string Province { get; set; }
+        //public string City { get; set; }
+        //public string Province { get; set; }
+        public int? CityId { get; set; }
+        public City City { get; set; }
+
+        public int? ProvinceId { get; set; }
+        public Province Province { get; set; }
+
+
         public string Role { get; set; }
         public EntityState IsActive { get; set; } = EntityState.Active;
         public ICollection<Event> Events { get; set; }
@@ -30,7 +37,7 @@ namespace Domain.Entities
             Role = "User";
             Events = new List<Event>();
         }
-        public User(string firstName, string lastName, DateOnly birthDate, string identificationNumber, string email, string password, string city, string province, string userType)
+        public User(string firstName, string lastName, DateOnly birthDate, string identificationNumber, string email, string password, int city, int province, string userType)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -38,8 +45,8 @@ namespace Domain.Entities
             IdentificationNumber = identificationNumber;
             Email = email;
             Password = password;
-            City = city;
-            Province = province;
+            CityId = city;
+            ProvinceId = province;
             Role = userType ?? "User";
             Events = new List<Event>();
 
