@@ -18,6 +18,7 @@ import AddVehicle from './components/AddVehicle.jsx'
 import TripDetail from './components/TripDetail.jsx'
 import AddEvent from './components/AddEvent.jsx';
 import AddVehicleEvent from './components/AddEventVehicle.jsx';
+import Booking from './components/Booking.jsx'
 
 function App() {
 
@@ -96,7 +97,15 @@ function App() {
         <AddVehicleEvent />
       </MainLayout>
     ),
-  },
+  } 
+    ,
+    {
+      path: "/booking",
+      element: (
+        <Booking />
+      )
+
+    }
   ])
 
   return (
