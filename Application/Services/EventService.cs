@@ -33,6 +33,12 @@ namespace Application.Services
             return events.Select(EventDto.Create).ToList();
         }
 
+        public async Task<List<EventDto>> GetRandomEventsAsync(int count)
+        {
+            var events = await _eventRepository.GetRandomEventsAsync(count);
+            return events.Select(EventDto.Create).ToList();
+        }
+
         public async Task<EventDto> GetEventByIdAsync(int id)
         {
             var eventEntity = await _eventRepository.GetByIdAsync(id);
@@ -55,7 +61,7 @@ namespace Application.Services
             var newEvent = new Event
             {
                 UserId = request.UserId,
-                Location = request.Location,
+                LocationId = request.LocationId,
                 Name = request.Name,
                 EventDate = request.EventDate,
                 Type = request.Type,
@@ -82,7 +88,7 @@ namespace Application.Services
                 throw new UnauthorizedAccessException();
             }
 
-            existingEvent.Location = request.Location;
+            existingEvent.LocationId = request.Location;
             existingEvent.Name = request.Name;
             existingEvent.EventDate = request.EventDate;
             existingEvent.Type = request.Type;
@@ -147,6 +153,12 @@ namespace Application.Services
 
             eventEntity.EventVehicles.Remove(eventVehicle);
             await _eventRepository.UpdateAsync(eventEntity);
+        }
+
+        public async Task<List<EventDto>> FilterEventsAsync(string? name, DateTime? date)
+        {
+            var events = await _eventRepository.FilterEventsAsync(name, date);
+            return events.Select(EventDto.Create).ToList();
         }
     }
 }

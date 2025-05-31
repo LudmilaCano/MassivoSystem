@@ -22,7 +22,7 @@ const vehicles = [
         available: 5,
         from: "Funes",
         licensePlate: 'AA001AA',
-        
+
     },
     {
         name: 'Audi A4',
@@ -179,6 +179,14 @@ const VehicleList = () => {
     const currentItems = filteredVehicles.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
 
+    const event = {
+        name: "Green Day en Argentina",
+
+        description: "¡No te pierdas el show de Green Day en Argentina! Una noche única de música en vivo con una de las bandas más icónicas del rock internacional.",
+        location: "Estadio River Plate, Buenos Aires",
+        image: "https://i.scdn.co/image/ab6761610000e5eb6ff0cd5ef2ecf733804984bb",
+        category: "Música"
+    };
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
@@ -194,9 +202,105 @@ const VehicleList = () => {
 
     return (
         <Box sx={{ width: '100%', minHeight: '90vh', backgroundColor: '#F5F5F5', p: 4, paddingRight: '5vw', paddingLeft: '5vw' }}>
-            <Typography variant="h6" fontWeight="bold">
+            {/* <Typography variant="h6" fontWeight="bold">
                 Vehículos disponibles para evento
-            </Typography>
+            </Typography> */}
+            <Paper
+                elevation={8}
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    alignItems: 'stretch',
+                    mb: 5,
+                    p: 0,
+                    borderRadius: 4,
+                    background: '#fff', // Cambiado: fondo blanco puro
+                    boxShadow: '0 8px 32px 0 rgba(19,154,160,0.18)',
+                    overflow: 'hidden',
+                    minHeight: { xs: 340, md: 340 }
+                }}
+            >
+                <Box
+                    component="img"
+                    src={event.image}
+                    alt={event.name}
+                    sx={{
+                        width: { xs: '100%', md: 420 },
+                        height: { xs: 260, md: 340 },
+                        objectFit: 'cover',
+                        borderRadius: 0,
+                        boxShadow: '0 4px 24px 0 rgba(19,154,160,0.10)'
+                    }}
+                />
+                <Box
+                    sx={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        p: { xs: 3, md: 5 },
+                        background: 'rgba(255,255,255,0.97)',
+                        borderTopRightRadius: { xs: 0, md: 32 },
+                        borderBottomRightRadius: { xs: 0, md: 32 },
+                    }}
+                >
+                    <Box>
+                        <Typography
+                            variant="h3"
+                            fontWeight="bold"
+                            color="#139AA0"
+                            sx={{
+                                textShadow: '0 2px 8px rgba(19,154,160,0.10)',
+                                mb: 1
+                            }}
+                        >
+                            {event.name}
+                        </Typography>
+                        <Chip
+                            label={event.category}
+                            color="success"
+                            sx={{
+                                backgroundColor: '#43A047',
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                fontSize: '1.1rem',
+                                px: 2,
+                                py: 1,
+                                mb: 2,
+                                boxShadow: '0 2px 8px 0 rgba(67,160,71,0.18)'
+                            }}
+                            icon={<span role="img" aria-label="music">🎵</span>}
+                        />
+                        <Typography
+                            variant="h6"
+                            color="text.secondary"
+                            mb={3}
+                            sx={{
+                                fontWeight: 500,
+                                lineHeight: 1.6
+                            }}
+                        >
+                            {event.description}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Chip
+                            label={event.location}
+                            color="primary"
+                            sx={{
+                                backgroundColor: '#139AA0',
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                fontSize: '1.15rem',
+                                px: 2.5,
+                                py: 1.5,
+                                boxShadow: '0 2px 8px 0 rgba(19,154,160,0.18)'
+                            }}
+                            icon={<span role="img" aria-label="location">📍</span>}
+                        />
+                    </Box>
+                </Box>
+            </Paper>
 
             <Box sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
                 <TextField
@@ -237,7 +341,7 @@ const VehicleList = () => {
 
                     currentItems.map((item, index) => (
                         <Paper key={index} elevation={3} sx={{ display: 'flex', p: 2, alignItems: 'center' }}>
-                            <Button onClick={() => console.log("Seleccionado: ", item.licensePlate)} sx={{width: '100%'}} color='black'>
+                            <Button onClick={() => console.log("Seleccionado: ", item.licensePlate)} sx={{ width: '100%' }} color='black'>
                                 <Box component="img" src={item.image} alt={item.type}
                                     sx={{ width: '25vh', height: '10vw', objectFit: 'contain', mr: 2 }}
                                 />

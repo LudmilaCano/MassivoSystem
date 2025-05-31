@@ -31,6 +31,33 @@ namespace Infraestructure.Data
                 .ToListAsync();
         }
 
+        public async Task<List<Event>> GetRandomEventsAsync(int count)
+        {
+            // Incluye la relación antes de traer los datos a memoria
+            var allEvents = await _context.Events
+                .Include(e => e.Location)
+                .ToListAsync();
+
+            // El ordenamiento aleatorio y el Take se hacen en memoria
+            return allEvents
+                .OrderBy(e => Guid.NewGuid())
+                .Take(count)
+                .ToList();
+        }
+
+        public async Task<List<Event>> FilterEventsAsync(string? name, DateTime? date)
+        {
+            var query = _context.Events.AsQueryable();
+
+            if (!string.IsNullOrEmpty(name))
+                query = query.Where(e => e.Name.ToLower().Contains(name.ToLower()));
+
+            if (date.HasValue)
+                query = query.Where(e => e.EventDate.Date == date.Value.Date);
+
+            return await query.ToListAsync();
+        }
+
     }
     
 }

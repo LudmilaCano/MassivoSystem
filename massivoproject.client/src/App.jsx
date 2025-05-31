@@ -16,6 +16,8 @@ import { initializeAuth } from './redux/AuthSlice';
 import VehicleList from './components/VehicleList.jsx'
 import AddVehicle from './components/AddVehicle.jsx'
 import TripDetail from './components/TripDetail.jsx'
+import AddEvent from './components/AddEvent.jsx';
+import AddVehicleEvent from './components/AddEventVehicle.jsx';
 import Booking from './components/Booking.jsx'
 
 function App() {
@@ -79,7 +81,23 @@ function App() {
         <AddVehicle />
       )
 
-    }
+    },
+    {
+    path: "/add-event",
+    element: (
+      <MainLayout>
+        <AddEvent />
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/add-vehicle-event",
+    element: (
+      <MainLayout>
+        <AddVehicleEvent />
+      </MainLayout>
+    ),
+  } 
     ,
     {
       path: "/booking",

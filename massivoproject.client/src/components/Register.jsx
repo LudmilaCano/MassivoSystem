@@ -27,8 +27,8 @@ const Register = () => {
         email: '',
         password: '',
         repeatPassword: '',
-        provincia: '',
-        ciudad: '',
+        provincia: null, 
+        ciudad: null,    
         dob: null,
     });
     const navigate = useNavigate();
@@ -67,22 +67,23 @@ const Register = () => {
 
     useEffect(() => {
         const fetchCities = async () => {
-            if (formData.provincia) {
+            if (formData.provincia) { 
                 try {
-                    const selectedProvince = provinces.find(p => p.name === formData.provincia);
-                    const data = await getCitiesByProvince(selectedProvince.id);
+                    const data = await getCitiesByProvince(formData.provincia);
                     setCities(data);
                 } catch (error) {
                     console.error("Error al obtener ciudades:", error);
                 }
             } else {
-                setCities([]); // Limpia las ciudades si no hay provincia seleccionada
+                setCities([]); 
+                setFormData((prev) => ({
+                    ...prev,
+                    ciudad: null, 
+                }));
             }
         };
         fetchCities();
-    }, [formData.provincia, provinces]);
-
-
+    }, [formData.provincia, provinces]); 
 
 
     const handleChange = (e) => {
@@ -143,12 +144,10 @@ const Register = () => {
             newErrors.repeatPassword = 'Las contraseñas no coinciden';
         }
 
-        // Validación de provincia
         if (!formData.provincia) {
             newErrors.provincia = 'La provincia es obligatoria';
         }
 
-        // Validación de ciudad (solo si hay provincia seleccionada)
         if (formData.provincia && !formData.ciudad) {
             newErrors.ciudad = 'La ciudad es obligatoria';
         }
@@ -167,7 +166,7 @@ const Register = () => {
         }
 
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0; // Devuelve true si no hay errores
+        return Object.keys(newErrors).length === 0; 
     };
 
     const handleSubmit = async () => {
@@ -181,8 +180,8 @@ const Register = () => {
                 dniNumber: formData.dni,
                 email: formData.email,
                 password: formData.password,
-                province: formData.provincia,
-                city: formData.ciudad,
+                province: formData.provincia, 
+                city: formData.ciudad,        
                 birthDate: formData.dob.toISOString().split('T')[0]
             };
 
@@ -191,24 +190,21 @@ const Register = () => {
                 await createUser(formattedData);
 
                 showAlert('¡Registro Exitoso!', 'success')
-                    .then(() => {
-
-                        setFormData({ // limpiar formulario.
+                        setFormData({ 
                             nombre: '',
                             apellido: '',
                             dni: '',
                             email: '',
                             password: '',
                             repeatPassword: '',
-                            provincia: '',
-                            ciudad: '',
+                            provincia: null, 
+                            ciudad: null,    
                             dob: null,
                         });
 
-                        navigate('/');
-                    });
+                navigate('/');
+
             } catch (err) {
-                // esto es temporario hasta que tengamos un middleware de excepciones en el back, y un interceptor en el front
                 let message = 'Ocurrió un error al registrar el usuario.';
 
                 if (err.response?.data?.message) {
@@ -228,6 +224,7 @@ const Register = () => {
                     xs={false}
                     md={5}
                     sx={{
+                        // Corregido: `url(${variable})` para URLs de imagen
                         backgroundImage: `url(${loginIllustration})`,
                         backgroundRepeat: 'no-repeat',
                         backgroundColor: (theme) =>
@@ -326,7 +323,9 @@ const Register = () => {
                                 name="provincia"
                                 select
                                 label="Provincia"
-                                value={formData.provincia}
+                                // --- CAMBIO CLAVE 6: El valor del TextField ahora es el ID ---
+                                value={formData.provincia || ''} // Usamos '' para que el select no muestre "null"
+                                // -------------------------------------------------------------
                                 onChange={handleChange}
                                 size="small"
                                 fullWidth
@@ -334,18 +333,20 @@ const Register = () => {
                                 helperText={errors.provincia}
                                 sx={textFieldStyle}
                             >
+                                {/* --- CAMBIO CLAVE 7: El valor de MenuItem ahora es el ID --- */}
                                 {sortedProvinces.map((provincia) => (
-                                    <MenuItem key={provincia.id} value={provincia.name}>
+                                    <MenuItem key={provincia.id} value={provincia.id}> {/* Usamos provincia.id como valor */}
                                         {provincia.name}
                                     </MenuItem>
                                 ))}
+                                {/* ------------------------------------------------------------ */}
                             </TextField>
 
                             <TextField
                                 name="ciudad"
                                 select
                                 label="Ciudad"
-                                value={formData.ciudad}
+                                value={formData.ciudad || ''} 
                                 onChange={handleChange}
                                 disabled={!formData.provincia}
                                 size="small"
@@ -355,11 +356,11 @@ const Register = () => {
                                 helperText={errors.ciudad}
                             >
                                 {sortedCities.map((city) => (
-                                    <MenuItem key={city.id} value={city.name}>
+                                    <MenuItem key={city.id} value={city.id}>
                                         {city.name}
                                     </MenuItem>
                                 ))}
-                            </TextField>
+                             </TextField>
                         </Box>
 
                         {/* Fecha de nacimiento */}

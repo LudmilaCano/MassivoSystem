@@ -26,11 +26,16 @@ namespace Application.Models.Requests
         [StringLength(20, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres.")]
         public string? Password { get; set; }
 
+        //[Required(ErrorMessage = "La ciudad es obligatoria.")]
+        //public string City { get; set; } = string.Empty;
+
+        //[Required(ErrorMessage = "La provincia es obligatoria.")]
+        //public string Province { get; set; } = string.Empty;
         [Required(ErrorMessage = "La ciudad es obligatoria.")]
-        public string City { get; set; } = string.Empty;
+        public int City { get; set; } 
 
         [Required(ErrorMessage = "La provincia es obligatoria.")]
-        public string Province { get; set; } = string.Empty;
+        public int Province { get; set; }
     }
 }
 

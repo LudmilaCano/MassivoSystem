@@ -13,7 +13,8 @@ namespace Application.Interfaces
         Task DeleteEventAsync(int id);
         Task  AddVehicleToEventAsync(AddEventVehicleRequest request);
         Task DeleteVehicleFromEventAsync(DeleteEventVehicleRequest request);
-
+        Task<List<EventDto>> GetRandomEventsAsync(int count);
+        Task<List<EventDto>> FilterEventsAsync(string? name, DateTime? date);
 
     }
 }

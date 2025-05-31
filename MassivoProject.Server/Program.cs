@@ -77,6 +77,7 @@ builder.Services.AddScoped<IProvinceRepository, ProvinceRepository>();
 builder.Services.AddScoped<ICityRepository, CityRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>(); 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IEventVehicleRepository, EventVehicleRepository>();
 
 #endregion
 
@@ -86,6 +87,7 @@ builder.Services.AddScoped<IProvinceService, ProvinceService>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IEventVehicleService, EventVehicleService>();
 
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
