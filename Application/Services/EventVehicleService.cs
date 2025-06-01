@@ -78,5 +78,21 @@ namespace Application.Services
                 Occupation = ev.Occupation
             });
         }
+
+        public async Task<List<EventVehicleDto>> GetVehiclesByEventAsync(int eventId)
+        {
+            var eventVehicles = await _eventVehicleRepository.GetVehiclesByEventAsync(eventId);
+
+            return eventVehicles.Select(ev => new EventVehicleDto
+            {
+                EventVehicleId = ev.EventVehicleId,
+                EventId = ev.EventId,
+                LicensePlate = ev.LicensePlate,
+                Date = ev.Date,
+                Occupation = ev.Occupation,
+                VehicleType = ev.Vehicle?.Type.ToString(),
+                From = ev.Vehicle?.User?.City?.Name ?? string.Empty  // Ajusta según tu modelo
+            }).ToList();
+        }
     }
 }

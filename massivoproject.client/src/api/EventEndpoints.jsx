@@ -7,6 +7,7 @@ export const getAllEvents = async () => {
 
 export const getEventById = async (eventId) => {
     const response = await api.get(`/Event/${eventId}`);
+    console.log(response)
     return response.data;
 };
 
@@ -46,6 +47,13 @@ export const filterEvents = async (name, date) => {
     if (date) params.append('date', date); // date debe estar en formato 'YYYY-MM-DD'
 
     const response = await api.get(`/Event/filter?${params.toString()}`);
+    console.log(response)
+    return response.data;
+};
+
+
+export const getVehiclesByEvent = async (eventId) => {
+    const response = await api.get(`/EventVehicle/GetVehiclesByEvent/${eventId}`);
     console.log(response)
     return response.data;
 };

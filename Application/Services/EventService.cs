@@ -160,5 +160,17 @@ namespace Application.Services
             var events = await _eventRepository.FilterEventsAsync(name, date);
             return events.Select(EventDto.Create).ToList();
         }
+
+        public async Task<EventDto> GetEventById(int id)
+        {
+            var eventEntity = await _eventRepository.GetById(id);
+
+            if (eventEntity == null)
+            {
+                throw new KeyNotFoundException($"Event with ID {id} not found.");
+            }
+
+            return EventDto.Create(eventEntity);
+        }
     }
 }

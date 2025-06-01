@@ -60,15 +60,15 @@ function App() {
 
     },
     {
-      path: "/vehicle-list",
-      element:(
+      path: "/vehicle-list/:eventId",
+      element: (
         <MainLayout>
           <VehicleList />
         </MainLayout>
       ),
     },
     {
-      path: "/vehicle-list/2",
+      path: "/vehicle-list/999",
       element: (
         <MainLayout>
           <TripDetail />

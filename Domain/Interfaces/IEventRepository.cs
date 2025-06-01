@@ -8,6 +8,7 @@ namespace Domain.Interfaces
         Task<List<Event>> GetAllEventsWithVehiclesIncludedAsync();
         Task<List<Event>> GetRandomEventsAsync(int count);
         Task<List<Event>> FilterEventsAsync(string? name, DateTime? date);
+        Task<Event> GetById(int id);
 
     }
 }
