@@ -26,6 +26,16 @@ namespace MassivoProject.Server.Controllers
             return Ok(list);
         }
 
+        [HttpGet("{eventVehicleId}")]
+        public async Task<IActionResult> GetEventVehicleById(int eventVehicleId)
+        {
+            var eventVehicle = await _eventVehicleService.GetEventVehicleByIdAsync(eventVehicleId);
+            if (eventVehicle == null)
+                return NotFound();
+
+            return Ok(eventVehicle);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] AddEventVehicleRequest entity)

@@ -32,5 +32,15 @@ namespace Infraestructure.Data
                 .Where(ev => ev.EventId == eventId)
                 .ToListAsync();
         }
+
+
+        public async Task<EventVehicle> GetById(int eventVehicleId)
+        {
+            return await _context.EventsVehicles
+                .Include(ev => ev.Vehicle)
+                    .ThenInclude(v => v.User)
+                        .ThenInclude(u => u.City)
+                .FirstOrDefaultAsync(ev => ev.EventVehicleId == eventVehicleId);
+        }
     }
 }
