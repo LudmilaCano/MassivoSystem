@@ -11,8 +11,6 @@ import {
 import imagenEjemplo from '../images/logo2.png';
 import { getRandomEvents, filterEvents } from '../api/EventEndpoints';
 import { getEventTypeLabel } from '../constants/eventCategories';
-import { useBusyDialog } from '../hooks/useBusyDialog';
-import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
 
@@ -20,8 +18,6 @@ const Home = () => {
     const [people, setPeople] = useState('');
     const [searchName, setSearchName] = useState('');
     const [searchDate, setSearchDate] = useState('');
-    const [busy, setBusy, BusyDialog] = useBusyDialog();
-    const navigate = useNavigate();
 
     const handlePeopleChange = (e) => {
         const value = e.target.value;
@@ -31,16 +27,13 @@ const Home = () => {
     };
 
     const handleFilter = async () => {
-        setBusy(true);
         try {
             const data = await filterEvents(searchName, searchDate);
             setEvents(data);
         } catch (error) {
             console.error('Error filtrando eventos:', error);
         }
-        setBusy(false);
     };
-
 
     function formatDate(dateString) {
         const date = new Date(dateString);
@@ -54,18 +47,16 @@ const Home = () => {
     
     useEffect(() => {
         const fetchEvents = async () => {
-            setBusy(true);
             try {
                 const data = await getRandomEvents(4);
                 setEvents(data);
             } catch (error) {
                 console.error('Error fetching random events:', error);
             }
-            setBusy(false);
         };
         fetchEvents();
     }, []);
-
+    console.log(events);
     const features = [
         { icon: '✅🚗', label: 'Viajá seguro', shadowColor: 'rgba(255, 69, 0, 0.5)' },
         { icon: '💸', label: 'Viajá barato', shadowColor: 'rgba(30, 144, 255, 0.5)' },
@@ -73,9 +64,7 @@ const Home = () => {
     ];
 
     return (
-        <>
-        {BusyDialog}
-        {<Box sx={{ px: 8, py: 2, maxHeight: '70vh', }}>
+        <Box sx={{ px: 8, py: 2, maxHeight: '70vh', }}>
             {/* Header */}
             <Typography variant="h5" fontWeight="bold" textAlign="center">
                 Compartí tu viaje, compartí la experiencia
@@ -185,7 +174,6 @@ const Home = () => {
                                     variant="contained"
                                     fullWidth
                                     sx={{ mt: 2, backgroundColor: '#139AA0' }}
-                                    onClick={() => navigate(`/vehicle-list/${event.eventId}`)}
                                 >
                                     Buscar vehículo
                                 </Button>
@@ -194,8 +182,7 @@ const Home = () => {
                     </Grid>
                 ))}
             </Grid>
-        </Box>}
-        </>
+        </Box>
     );
 };
 

@@ -46,21 +46,6 @@ export const filterEvents = async (name, date) => {
     if (date) params.append('date', date); // date debe estar en formato 'YYYY-MM-DD'
 
     const response = await api.get(`/Event/filter?${params.toString()}`);
-    return response.data;
-};
-
-export const getEventVehicleById = async (eventVehicleId) => {
-    const response = await api.get(`/EventVehicle/${eventVehicleId}`);
-    return response.data;
-};
-
-export const getVehiclesByEvent = async (eventId) => {
-    const response = await api.get(`/EventVehicle/GetVehiclesByEvent/${eventId}`);
-    return response.data;
-};
-
-
-export const getCoordinatesByCityName = async (cityName) => {
-    const response = await api.get(`/City/GetCoordinatesByName/${cityName}`);
+    console.log(response)
     return response.data;
 };

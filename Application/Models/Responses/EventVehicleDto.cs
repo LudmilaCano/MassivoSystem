@@ -14,8 +14,6 @@ namespace Application.Models.Responses
         public string LicensePlate { get; set; }
         public DateTime Date { get; set; }
         public int Occupation { get; set; }
-        public string VehicleType { get; set; }
-        public string? From { get; set; }
 
         public static EventVehicleDto Create(EventVehicle eventVehicleEntity)
         {
@@ -25,9 +23,7 @@ namespace Application.Models.Responses
                 EventId = eventVehicleEntity.EventId,
                 LicensePlate = eventVehicleEntity.LicensePlate,
                 Date = eventVehicleEntity.Date,
-                Occupation = eventVehicleEntity.Occupation,
-                VehicleType = eventVehicleEntity.Vehicle?.Type.ToString(), // <-- Incluye el tipo de vehículo
-                From = eventVehicleEntity.Vehicle?.User?.City?.Name ?? string.Empty                // <-- Incluye el lugar de partida
+                Occupation = eventVehicleEntity.Occupation
             };
         }
     }

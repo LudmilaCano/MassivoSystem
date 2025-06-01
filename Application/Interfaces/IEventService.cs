@@ -8,7 +8,6 @@ namespace Application.Interfaces
     {
         Task<List<EventDto>> GetAllEventsAsync();
         Task<EventDto> GetEventByIdAsync(int id);
-        Task<EventDto> GetEventById(int id);
         Task<EventDto> AddEventAsync(CreateEventRequest request);
         Task UpdateEventAsync(int Eventid, UpdateEventRequest request, int userId);
         Task DeleteEventAsync(int id);

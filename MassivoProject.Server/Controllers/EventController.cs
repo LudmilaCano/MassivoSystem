@@ -40,7 +40,7 @@ namespace MassivoProject.Server.Controllers
 
         public async Task<IActionResult> GetEventById(int id)
         {
-            var eventById = await _eventService.GetEventById(id);
+            var eventById = await _eventService.GetEventByIdAsync(id);
             return Ok(eventById);
         }
 

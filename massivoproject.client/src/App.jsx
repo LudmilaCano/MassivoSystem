@@ -20,7 +20,6 @@ import AddEvent from './components/AddEvent.jsx';
 import AddVehicleEvent from './components/AddEventVehicle.jsx';
 import Booking from './components/Booking.jsx'
 
-
 function App() {
 
   const dispatch = useDispatch();
@@ -61,15 +60,15 @@ function App() {
 
     },
     {
-      path: "/vehicle-list/:eventId",
-      element: (
+      path: "/vehicle-list",
+      element:(
         <MainLayout>
           <VehicleList />
         </MainLayout>
       ),
     },
     {
-      path: "/trip-detail/:tripId",
+      path: "/vehicle-list/2",
       element: (
         <MainLayout>
           <TripDetail />

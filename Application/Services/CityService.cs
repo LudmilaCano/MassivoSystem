@@ -22,17 +22,5 @@ namespace Application.Services
         {
             return await _cityRepository.GetCitiesByProvinceAsync(provinceId);
         }
-
-        public async Task<City> GetCityByIdAsync(int cityId)
-        {
-            var city = await _cityRepository.GetByIdAsync(cityId);
-            return city;
-        }
-
-        public async Task<City> GetCityByNameAsync(string cityName)
-        {
-            var city = await _cityRepository.GetByNameAsync(cityName);
-            return city;
-        }
     }
 }

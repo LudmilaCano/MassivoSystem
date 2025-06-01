@@ -14,12 +14,7 @@ namespace Infraestructure.Data
         {
             _context = context;
         }
-        public async Task<Event> GetById(int id)
-        {
-            return await _context.Events
-                .Include(e => e.Location)
-                .FirstOrDefaultAsync(e => e.EventId == id);
-        }
+
         public async Task<Event> GetEventByIdWithVehiclesIncludedAsync(int id)
         {
             return await _context.Events

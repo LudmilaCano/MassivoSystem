@@ -78,38 +78,5 @@ namespace Application.Services
                 Occupation = ev.Occupation
             });
         }
-
-        public async Task<List<EventVehicleDto>> GetVehiclesByEventAsync(int eventId)
-        {
-            var eventVehicles = await _eventVehicleRepository.GetVehiclesByEventAsync(eventId);
-
-            return eventVehicles.Select(ev => new EventVehicleDto
-            {
-                EventVehicleId = ev.EventVehicleId,
-                EventId = ev.EventId,
-                LicensePlate = ev.LicensePlate,
-                Date = ev.Date,
-                Occupation = ev.Occupation,
-                VehicleType = ev.Vehicle?.Type.ToString(),
-                From = ev.Vehicle?.User?.City?.Name ?? string.Empty  // Ajusta según tu modelo
-            }).ToList();
-        }
-
-
-        public async Task<EventVehicleDto> GetEventVehicleByIdAsync(int eventVehicleId)
-        {
-            var entity = await _eventVehicleRepository.GetById(eventVehicleId);
-
-            return new EventVehicleDto
-            {
-                EventVehicleId = entity.EventVehicleId,
-                EventId = entity.EventId,
-                LicensePlate = entity.LicensePlate,
-                Date = entity.Date,
-                Occupation = entity.Occupation,
-                VehicleType = entity.Vehicle?.Type.ToString(),
-                From = entity.Vehicle?.User?.City?.Name ?? string.Empty // <-- Aquí debe mapear la ciudad
-            };
-        }
     }
 }
