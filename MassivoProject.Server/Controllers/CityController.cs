@@ -24,5 +24,27 @@ namespace MassivoProject.Server.Controllers
 
             return Ok(cities);
         }
+
+        // Endpoint por id
+        [HttpGet("GetCoordinatesById/{cityId}")]
+        public async Task<IActionResult> GetCoordinatesById(int cityId)
+        {
+            var city = await _cityService.GetCityByIdAsync(cityId);
+            if (city == null)
+                return NotFound();
+
+            return Ok(new { city.Latitude, city.Longitude });
+        }
+
+        // Endpoint por nombre
+        [HttpGet("GetCoordinatesByName/{cityName}")]
+        public async Task<IActionResult> GetCoordinatesByName(string cityName)
+        {
+            var city = await _cityService.GetCityByNameAsync(cityName);
+            if (city == null)
+                return NotFound();
+
+            return Ok(new { city.Latitude, city.Longitude });
+        }
     }
 }

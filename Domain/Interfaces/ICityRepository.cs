@@ -10,5 +10,8 @@ namespace Domain.Interfaces
     public interface ICityRepository : IRepositoryBase<City>
     {
         Task<List<City>> GetCitiesByProvinceAsync(int provinceId);
+
+        Task<City> GetByIdAsync(int cityId);
+        Task<City> GetByNameAsync(string cityName);
     }
 }

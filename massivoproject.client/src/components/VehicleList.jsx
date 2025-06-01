@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { getEventById,getVehiclesByEvent, } from '../api/EventEndpoints';
 import { getEventTypeLabel,getEventTypeIcon } from '../constants/eventCategories';
 import { getVehicleTypeImage } from '../constants/vehicleType';
+import { useNavigate } from 'react-router-dom';
 
 
 const VehicleList = () => {
@@ -22,6 +23,7 @@ const VehicleList = () => {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredVehicles.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -254,8 +256,15 @@ const VehicleList = () => {
                                 <Typography variant="h6" color="primary">
                                     $999
                                 </Typography>
-                                <Button variant="contained" color="warning" size="small">
-                                    Ver más detalles
+                                <Button
+                                    onClick={() => navigate(`/trip-detail/${item.eventVehicleId}`, {
+                                        state: { destination: event.location }
+                                    })}
+                                    variant="contained"
+                                    color="warning"
+                                    size="small"
+                                >
+                                Ver más detalles
                                 </Button>
                             </Box>
                         </Button>
