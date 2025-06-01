@@ -10,5 +10,8 @@ namespace Domain.Interfaces
     public interface IEventVehicleRepository : IRepositoryBase<EventVehicle>
     {
         Task<EventVehicle> GetByEventIdAndLicensePlateAsync(int eventId, string licensePlate);
+        Task<List<EventVehicle>> GetVehiclesByEventAsync(int eventId);
+        Task<EventVehicle> GetById(int eventVehicleId);
+
     }
 }

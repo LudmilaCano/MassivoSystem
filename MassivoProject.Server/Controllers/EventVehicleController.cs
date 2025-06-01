@@ -26,12 +26,29 @@ namespace MassivoProject.Server.Controllers
             return Ok(list);
         }
 
+        [HttpGet("{eventVehicleId}")]
+        public async Task<IActionResult> GetEventVehicleById(int eventVehicleId)
+        {
+            var eventVehicle = await _eventVehicleService.GetEventVehicleByIdAsync(eventVehicleId);
+            if (eventVehicle == null)
+                return NotFound();
+
+            return Ok(eventVehicle);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] AddEventVehicleRequest entity)
         {
             await _eventVehicleService.AddAsync(entity);
             return Ok("Viaje creado");
+        }
+
+        [HttpGet("GetVehiclesByEvent/{eventId}")]
+        public async Task<IActionResult> GetVehiclesByEvent(int eventId)
+        {
+            var vehicles = await _eventVehicleService.GetVehiclesByEventAsync(eventId);
+            return Ok(vehicles);
         }
     }
 }
