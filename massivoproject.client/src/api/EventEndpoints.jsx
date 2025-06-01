@@ -7,6 +7,7 @@ export const getAllEvents = async () => {
 
 export const getEventById = async (eventId) => {
     const response = await api.get(`/Event/${eventId}`);
+    console.log(response)
     return response.data;
 };
 

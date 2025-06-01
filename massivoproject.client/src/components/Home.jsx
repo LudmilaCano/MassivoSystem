@@ -12,6 +12,7 @@ import imagenEjemplo from '../images/logo2.png';
 import { getRandomEvents, filterEvents } from '../api/EventEndpoints';
 import { getEventTypeLabel } from '../constants/eventCategories';
 import { useBusyDialog } from '../hooks/useBusyDialog';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
 
@@ -20,6 +21,7 @@ const Home = () => {
     const [searchName, setSearchName] = useState('');
     const [searchDate, setSearchDate] = useState('');
     const [busy, setBusy, BusyDialog] = useBusyDialog();
+    const navigate = useNavigate();
 
     const handlePeopleChange = (e) => {
         const value = e.target.value;
@@ -183,6 +185,7 @@ const Home = () => {
                                     variant="contained"
                                     fullWidth
                                     sx={{ mt: 2, backgroundColor: '#139AA0' }}
+                                    onClick={() => navigate(`/vehicle-list/${event.eventId}`)}
                                 >
                                     Buscar vehículo
                                 </Button>

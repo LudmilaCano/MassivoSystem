@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Grid, Typography, Paper, Button, TextField, Chip } from '@mui/material';
 import Pagination from '@mui/material/Pagination';
+import { useParams } from 'react-router-dom';
+import { getEventById } from '../api/EventEndpoints';
+import { getEventTypeLabel,getEventTypeIcon } from '../constants/eventCategories';
 
 const vehicles = [
     {
@@ -172,6 +175,9 @@ const VehicleList = () => {
     const [search, setSearch] = useState('');
     const [filteredVehicles, setFilteredVehicles] = useState(vehicles);
     const [currentPage, setCurrentPage] = useState(1);
+    const { eventId } = useParams();
+    const [event, setEvent] = useState(null);
+    const [loadingEvent, setLoadingEvent] = useState(true);
 
     const itemsPerPage = 10;
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -179,14 +185,29 @@ const VehicleList = () => {
     const currentItems = filteredVehicles.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
 
-    const event = {
+    /* const event = {
         name: "Green Day en Argentina",
 
         description: "¡No te pierdas el show de Green Day en Argentina! Una noche única de música en vivo con una de las bandas más icónicas del rock internacional.",
         location: "Estadio River Plate, Buenos Aires",
         image: "https://i.scdn.co/image/ab6761610000e5eb6ff0cd5ef2ecf733804984bb",
         category: "Música"
-    };
+    }; */
+
+    useEffect(() => {
+        const fetchEvent = async () => {
+            setLoadingEvent(true);
+            try {
+                const data = await getEventById(eventId);
+                setEvent(data);
+                console.log(event)
+            } catch (error) {
+                setEvent(null);
+            }
+            setLoadingEvent(false);
+        };
+        fetchEvent();
+    }, [eventId]);
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
@@ -199,6 +220,22 @@ const VehicleList = () => {
 
         return () => clearTimeout(delayDebounce);
     }, [search]);
+
+    if (loadingEvent) {
+        return (
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6">Cargando evento...</Typography>
+            </Box>
+        );
+    }
+
+    if (!event) {
+        return (
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6" color="error">No se encontró el evento.</Typography>
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ width: '100%', minHeight: '90vh', backgroundColor: '#F5F5F5', p: 4, paddingRight: '5vw', paddingLeft: '5vw' }}>
@@ -222,7 +259,7 @@ const VehicleList = () => {
             >
                 <Box
                     component="img"
-                    src={event.image}
+                    src={"https://i.scdn.co/image/ab6761610000e5eb6ff0cd5ef2ecf733804984bb"}
                     alt={event.name}
                     sx={{
                         width: { xs: '100%', md: 420 },
@@ -257,7 +294,8 @@ const VehicleList = () => {
                             {event.name}
                         </Typography>
                         <Chip
-                            label={event.category}
+                            label={getEventTypeLabel(event.type)}
+                            icon={<span role="img" aria-label={event.type}>{getEventTypeIcon(event.type)}</span>}
                             color="success"
                             sx={{
                                 backgroundColor: '#43A047',
@@ -269,7 +307,7 @@ const VehicleList = () => {
                                 mb: 2,
                                 boxShadow: '0 2px 8px 0 rgba(67,160,71,0.18)'
                             }}
-                            icon={<span role="img" aria-label="music">🎵</span>}
+                            
                         />
                         <Typography
                             variant="h6"
