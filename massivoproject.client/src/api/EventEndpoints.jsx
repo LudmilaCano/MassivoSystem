@@ -50,3 +50,10 @@ export const filterEvents = async (name, date) => {
     console.log(response)
     return response.data;
 };
+
+
+export const getVehiclesByEvent = async (eventId) => {
+    const response = await api.get(`/EventVehicle/GetVehiclesByEvent/${eventId}`);
+    console.log(response)
+    return response.data;
+};
