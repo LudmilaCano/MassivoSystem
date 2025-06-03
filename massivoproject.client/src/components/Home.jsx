@@ -58,6 +58,7 @@ const Home = () => {
             try {
                 const data = await getRandomEvents(4);
                 setEvents(data);
+                console.log(events)
             } catch (error) {
                 console.error('Error fetching random events:', error);
             }
@@ -162,7 +163,7 @@ const Home = () => {
                         <Paper elevation={4} sx={{p: 2, m: 2}}>
                             <Box
                                 component="img"
-                                src={imagenEjemplo} 
+                                src={event.image} 
                                 alt={event.title}
                                 sx={{ width: '100%', height: 200, objectFit: 'contain', p: 2 }}
                             />

@@ -107,6 +107,7 @@ namespace Application.Services
                 LicensePlate = entity.LicensePlate,
                 Date = entity.Date,
                 Occupation = entity.Occupation,
+                Description = entity.Description,
                 VehicleType = entity.Vehicle?.Type.ToString(),
                 From = entity.Vehicle?.User?.City?.Name ?? string.Empty // <-- Aquí debe mapear la ciudad
             };

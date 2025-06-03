@@ -16,5 +16,8 @@ namespace Application.Models.Requests
         public DateTime EventDate { get; set; }
         [Required(ErrorMessage = "Type is required.")]
         public EventType Type { get; set; }
+
+        [Required(ErrorMessage = "Image URL is required.")]
+        public string Image { get; set; }
     }
 }

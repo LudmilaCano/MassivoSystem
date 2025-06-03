@@ -12,8 +12,10 @@ namespace Domain.Entities
         public City Location { get; set; }  
 
         public string Name { get; set; }
+        public string Description { get; set; }
         public DateTime EventDate { get; set; }
         public EventType Type { get; set; }
+        public string Image { get; set; }
         public ICollection<EventVehicle> EventVehicles { get; set; }
 
         public Event()
@@ -21,15 +23,15 @@ namespace Domain.Entities
             EventVehicles = new List<EventVehicle>();
         }
 
-        public Event(int location, string name, DateTime eventDate, EventType eventType)
+        public Event(int location, string name, string description, DateTime eventDate, EventType eventType, string image = null)
         {
             LocationId = location;
             Name = name;
+            Description = description;
             EventDate = eventDate;
             Type = eventType;
+            Image = image;
             EventVehicles = new List<EventVehicle>();
-
         }
-
     }
 }

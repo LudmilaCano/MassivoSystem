@@ -14,6 +14,8 @@ namespace Application.Models.Requests
 
         [Required(ErrorMessage = "Date is required.")]
         public DateTime Date { get; set; }
+
+        public string Description { get; set; }
     }
 }
 

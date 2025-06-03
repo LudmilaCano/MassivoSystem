@@ -25,7 +25,6 @@ const TripDetail = () => {
       try {
         const data = await getEventVehicleById(tripId);
         setEventVehicle(data);
-        console.log(data)
       } catch (error) {
         setEventVehicle(null);
       }
