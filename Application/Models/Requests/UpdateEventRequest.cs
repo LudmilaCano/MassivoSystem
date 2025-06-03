@@ -18,6 +18,6 @@ namespace Application.Models.Requests
         public DateTime EventDate { get; set; }
         [Required(ErrorMessage = "Type is required.")]
         public EventType Type { get; set; }
+        public string Image { get; set; }
     }
 }
-

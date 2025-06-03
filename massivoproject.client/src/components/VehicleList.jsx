@@ -65,7 +65,6 @@ const VehicleList = () => {
         if (eventId) fetchVehicles();
     }, [eventId]);
 
-    console.log(vehicles)
 
     if (loadingEvent) {
         return (
@@ -102,7 +101,7 @@ const VehicleList = () => {
         >
             <Box
                 component="img"
-                src={"https://i.scdn.co/image/ab6761610000e5eb6ff0cd5ef2ecf733804984bb"}
+                src={event.image}
                 alt={event.name}
                 sx={{
                     width: { xs: '100%', md: 420 },
@@ -220,7 +219,7 @@ const VehicleList = () => {
             {currentItems.length !== 0 ? (
                 currentItems.map((item, index) => (
                     <Paper key={index} elevation={3} sx={{ display: 'flex', p: 2, alignItems: 'center' }}>
-                        <Button onClick={() => console.log("Seleccionado: ", item.licensePlate)} sx={{ width: '100%' }} color='black'>
+                        <Button sx={{ width: '100%' }} color='black'>
                             <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
                                 <img
                                     src={getVehicleTypeImage(item.vehicleType)}

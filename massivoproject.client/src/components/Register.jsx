@@ -47,8 +47,7 @@ const Register = () => {
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                const data = await getAllProvince();
-                console.log('Provincias obtenidas:', data);
+                const data = await getAllProvince();               
                 setProvinces(data.result);
             } catch (error) {
                 console.error("Error al obtener provincias:", error);

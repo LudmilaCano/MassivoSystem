@@ -65,6 +65,7 @@ namespace Application.Services
                 Name = request.Name,
                 EventDate = request.EventDate,
                 Type = request.Type,
+                Image = request.Image
             };
 
             await _eventRepository.AddAsync(newEvent);
@@ -92,6 +93,7 @@ namespace Application.Services
             existingEvent.Name = request.Name;
             existingEvent.EventDate = request.EventDate;
             existingEvent.Type = request.Type;
+            existingEvent.Image = request.Image;
 
             await _eventRepository.UpdateAsync(existingEvent);
         }
