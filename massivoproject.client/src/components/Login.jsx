@@ -41,6 +41,11 @@ const Login = () => {
     const navigate = useNavigate();
     const { showAlert } = useSwalAlert();
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleLogin(e);
+        }
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -77,17 +82,17 @@ const Login = () => {
             if (token) {
                 dispatch(setToken(token));
                 navigate('/');
-                
+
                 showAlert('Bienvenido', 'success');
-            } 
+            }
         } catch (err) {
-           
+
             showAlert('Usuario o contraseña incorrectos', 'error');
 
             setDniOrEmail("");
             setPassword("");
-        }finally {
-        setLoading(false); 
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -135,6 +140,7 @@ const Login = () => {
                             }}
                             value={dniOrEmail}
                             onChange={(e) => setDniOrEmail(e.target.value)}
+                            onKeyDown={handleKeyDown}
                         />
                         <TextField
                             margin="normal"
@@ -165,6 +171,7 @@ const Login = () => {
                             }}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            onKeyDown={handleKeyDown}
                         />
 
                         <Box sx={{ width: { xs: '50vw', md: '20vw' }, display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
@@ -183,7 +190,7 @@ const Login = () => {
 
 
                         <Typography variant="body2" sx={{ mt: 2 }}>
-                            No tenés una cuenta? <Link href="#" sx={{ color: '#139AA0' }}>REGISTRARME</Link>
+                            No tenés una cuenta? <Link href="/register" sx={{ color: '#139AA0' }}>REGISTRARME</Link>
                         </Typography>
 
                         <Divider sx={{ width: '100%', my: 2, borderColor: (theme) => theme.palette.grey[500] }}></Divider>
