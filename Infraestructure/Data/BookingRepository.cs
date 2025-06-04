@@ -22,15 +22,35 @@ namespace Infraestructure.Data
         {
             return _context.Set<Booking>()
                 .Where(b => b.UserId == userId)
+                .Include(b => b.EventVehicle)
+                .Include(b => b.Payment)
                 .ToListAsync();
         }
 
-        public Task<List<Booking>> GetBookingWithEventVehicleIdAsync(int id)
+        public Task<List<Booking>> GetBookingWithEventVehicleAsync()
+        {
+            return _context.Set<Booking>()
+                .Include(b => b.EventVehicle)
+                .Include(b => b.Payment)
+                .ToListAsync();
+        }
+
+        public Task<Booking?> GetBookingWithEventVehicleIdAsync(int id)
         {
             return _context.Set<Booking>()
                 .Where(b => b.Id == id)
                 .Include(b => b.EventVehicle)
-                .ToListAsync();
+                .Include(b => b.Payment)
+                .FirstOrDefaultAsync();
+        }
+
+        public Task<Booking?> GetBookingWithEventVehicleByUserIdAsync(int userId)
+        {
+            return _context.Set<Booking>()
+                .Where(b => b.UserId == userId)
+                .Include(b => b.EventVehicle)
+                .Include(b => b.Payment)
+                .FirstOrDefaultAsync();
         }
     }
 }

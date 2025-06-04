@@ -4,6 +4,7 @@ using Application.Models.Responses;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,64 +29,48 @@ namespace Application.Services
 
         public async Task<List<BookingDto>> GetBookingsAsync()
         {
-            var bookings = await _bookingRepository.ListAsync() ?? new List<Booking>();
+            var bookings = await _bookingRepository.GetBookingWithEventVehicleAsync() ?? new List<Booking>();
             var bookingDtos = new List<BookingDto>();
-            foreach (var item in bookings)
+            foreach (var booking in bookings)
             {
-                var bookingDto = new BookingDto
-                {
-                    Id = item.Id,
-                    Date = item.Date,
-                    User = item.User,
-                    EventVehicle = item.EventVehicle,
-                    Payment = item.Payment,
-                    BookingStatus = item.BookingStatus,
-                    SeatNumber = item.SeatNumber
-                };
-                bookingDtos.Add(bookingDto);
+                var eventEntity = await _eventRepository.GetEventByIdWithVehiclesIncludedAsync(booking.EventVehicle.EventId)
+                    ?? throw new KeyNotFoundException($"Evento con ID {booking.EventVehicle.EventId} no fue encontrado.");
+                var vehicle = await _vehicleRepository.GetByIdAsync(booking.EventVehicle.LicensePlate)
+                        ?? throw new KeyNotFoundException($"Vehículo con matrícula {booking.EventVehicle.LicensePlate} no fue encontrado.");
+                bookingDtos.Add(BookingDto.Create(booking, eventEntity, vehicle));
             }
             return bookingDtos;
         }
 
         public async Task<BookingDto?> GetBookingByIdAsync(int id)
         {
-            var booking = await _bookingRepository.GetByIdAsync(id);
+            var booking = await _bookingRepository.GetBookingWithEventVehicleIdAsync(id)
+                    ?? throw new KeyNotFoundException($"Reserva con EventVehicle con ID {id} no fue encontrada.");
+            var vehicle = await _vehicleRepository.GetByIdAsync(booking.EventVehicle.LicensePlate)
+                ?? throw new KeyNotFoundException($"Vehículo con matrícula {booking.EventVehicle.LicensePlate} no fue encontrado.");
+            var eventEntity = await _eventRepository.GetByIdAsync(booking.EventVehicle.EventId)
+                ?? throw new KeyNotFoundException($"Evento con ID {booking.EventVehicle.EventId} no fue encontrado.");
             if (booking != null)
             {
-                var bookingDto = new BookingDto
-                {
-                    Id = booking.Id,
-                    Date = booking.Date,
-                    User = booking.User,
-                    EventVehicle = booking.EventVehicle,
-                    Payment = booking.Payment,
-                    BookingStatus = booking.BookingStatus,
-                    SeatNumber = booking.SeatNumber
-                };
-                return bookingDto;
+                return BookingDto.Create(booking, eventEntity, vehicle);
             }
             return null;
         }
 
         public async Task<List<BookingDto>> GetBookingByUserAsync(int userId)
         {
-            var bookings = await _bookingRepository.GetBookingByUserIdAsync(userId);
+            var bookings = await _bookingRepository.GetBookingByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException($"Reserva con Usuario con ID {userId} no fue encontrada."); ;
             var bookingDtos = new List<BookingDto>();
             if (bookings != null)
             {
                 foreach (var booking in bookings)
                 {
-                    var bookingDto = new BookingDto
-                    {
-                        Id = booking.Id,
-                        Date = booking.Date,
-                        User = booking.User,
-                        EventVehicle = booking.EventVehicle,
-                        Payment = booking.Payment,
-                        BookingStatus = booking.BookingStatus,
-                        SeatNumber = booking.SeatNumber
-                    };
-                    bookingDtos.Add(bookingDto);
+                    var eventEntity = await _eventRepository.GetEventByIdWithVehiclesIncludedAsync(booking.EventVehicle.EventId)
+                        ?? throw new KeyNotFoundException($"Evento con ID {booking.EventVehicle.EventId} no fue encontrado.");
+                    var vehicle = await _vehicleRepository.GetByIdAsync(booking.EventVehicle.LicensePlate)
+                            ?? throw new KeyNotFoundException($"Vehículo con matrícula {booking.EventVehicle.LicensePlate} no fue encontrado.");
+                    bookingDtos.Add(BookingDto.Create(booking, eventEntity, vehicle));
                 }
             }
             return bookingDtos;
@@ -129,29 +114,21 @@ namespace Application.Services
             var bookingSaved = await _bookingRepository.AddAsync(booking);
             vehicle.Available += booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
+            bookingSaved.Payment = paymentSaved;
 
-            var bookingDto = new BookingDto
-            {
-                Id = bookingSaved.Id,
-                Date = bookingSaved.Date,
-                User = bookingSaved.User,
-                EventVehicle = bookingSaved.EventVehicle,
-                Payment = paymentSaved,
-                BookingStatus = bookingSaved.BookingStatus,
-                SeatNumber = bookingSaved.SeatNumber
-            };
-
-            return bookingDto;
+            return BookingDto.Create(bookingSaved, eventEntity, vehicle);
         }
 
         public async Task CancelBookingAsync(int bookingId)
         {
             var booking = await _bookingRepository.GetBookingWithEventVehicleIdAsync(bookingId)
-                ?? throw new KeyNotFoundException($"Reserva con ID {bookingId} no fue encontrada.");
+                ?? throw new KeyNotFoundException($"Reserva con EventVehicle con ID {bookingId} no fue encontrada.");
             var payment = await _paymentRepository.GetByIdAsync(booking.PaymentId)
                 ?? throw new KeyNotFoundException($"Pago con ID {booking.PaymentId} no fue encontrado.");
             var eventEntity = await _eventRepository.GetByIdAsync(booking.EventVehicle.EventId)
                ?? throw new KeyNotFoundException($"Evento con ID {booking.EventVehicle.EventId} no fue encontrado.");
+            var vehicle = await _vehicleRepository.GetByIdAsync(booking.EventVehicle.LicensePlate)
+                ?? throw new KeyNotFoundException($"Vehículo con matrícula {booking.EventVehicle.LicensePlate} no fue encontrado.");
 
             if (DateTime.Now > eventEntity.EventDate.AddDays(-1))
             {
@@ -161,6 +138,10 @@ namespace Application.Services
             // Se cancela la reserva
             booking.BookingStatus = BookingStatus.Cancelled;
             await _bookingRepository.UpdateAsync(booking);
+
+            // Se libera los espacio del vehiculo
+            vehicle.Available -= booking.SeatNumber;
+            await _vehicleRepository.UpdateAsync(vehicle);
 
             // Se realiza el reembolso del pago
             payment.PaymentStatus = PaymentStatus.Refunded;
