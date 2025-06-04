@@ -21,7 +21,7 @@ namespace Application.Models.Responses
             {
                 EventId = eventEntity.EventId,
                 UserId = eventEntity.UserId,
-                Location = eventEntity.Location?.Name,
+                Location = eventEntity.Location?.Name,//revisar ac[a si hay un tema de eager loading
                 Name = eventEntity.Name,
                 Description = eventEntity.Description,
                 Type = eventEntity.Type,

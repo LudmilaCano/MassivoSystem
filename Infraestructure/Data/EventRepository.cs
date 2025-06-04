@@ -52,7 +52,9 @@ namespace Infraestructure.Data
 
         public async Task<List<Event>> FilterEventsAsync(string? name, DateTime? date)
         {
-            var query = _context.Events.AsQueryable();
+            var query = _context.Events
+                .Include(e => e.Location) 
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(name))
                 query = query.Where(e => e.Name.ToLower().Contains(name.ToLower()));

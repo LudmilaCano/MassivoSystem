@@ -31,7 +31,7 @@ namespace Application.Models.Responses
                 Event = new()
                 {
                     EventId = eventEntity.EventId,
-                    Location = eventEntity.Location,
+                    Location = eventEntity.Location?.Name,
                     Name = eventEntity.Name,
                     Type = eventEntity.Type,
                     EventDate = eventEntity.EventDate
