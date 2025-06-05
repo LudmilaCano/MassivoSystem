@@ -29,7 +29,7 @@ namespace Application.Models.Responses
                 Occupation = eventVehicleEntity.Occupation,
                 Description = eventVehicleEntity.Description,
                 VehicleType = eventVehicleEntity.Vehicle?.Type.ToString(), // <-- Incluye el tipo de vehículo
-                From = eventVehicleEntity.Vehicle?.User?.City?.Name ?? string.Empty                // <-- Incluye el lugar de partida
+                From = eventVehicleEntity.Vehicle?.User?.City.Name            // <-- Incluye el lugar de partida
             };
         }
     }
