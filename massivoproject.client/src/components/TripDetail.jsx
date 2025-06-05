@@ -8,7 +8,7 @@ import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import 'leaflet/dist/leaflet.css';
 import { useParams, useLocation } from 'react-router-dom';
 import { getEventVehicleById } from '../api/EventEndpoints';
-import { getCoordinatesByCityName } from '../api/EventEndpoints';
+import { getCoordinatesByCityName, getCoordinatesByCityId } from '../api/EventEndpoints';
 
 const TripDetail = () => {
   const { tripId } = useParams(); // tripId = eventVehicleId
@@ -24,6 +24,7 @@ const TripDetail = () => {
     const fetchEventVehicle = async () => {
       try {
         const data = await getEventVehicleById(tripId);
+        console.log(data)
         setEventVehicle(data);
       } catch (error) {
         setEventVehicle(null);

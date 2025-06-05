@@ -10,7 +10,5 @@
         public DateTime Date { get; set; }
         public int Occupation { get; set; } = 0;
         public string Description { get; set; }
-
-
     }
 }
