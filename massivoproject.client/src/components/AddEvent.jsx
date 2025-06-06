@@ -1,17 +1,32 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, MenuItem, Grid } from '@mui/material';
 import { createEvent } from '../api/EventEndpoints';
-import { EVENT_TYPE_LABELS } from '../constants/eventCategories';
+import { EVENT_TYPE_ENUM, getEventTypeIcon, EVENT_TYPE_LABELS } from '../constants/eventCategories';
+import useProvinceCitySelector from '../hooks/useProvinceCitySelector';
+import { useSelector } from 'react-redux';
+
 
 const AddEvent = () => {
+    const userId = useSelector((state) => state.auth.userId);
+
+    const {
+        provinces,
+        cities,
+        loadingProvinces,
+        loadingCities,
+        handleProvinceChange
+    } = useProvinceCitySelector();
+
     const [form, setForm] = useState({
         name: '',
-        location: '',
         eventDate: '',
         type: '',
-        price: '',
-        description: ''
+        description: '',
+        provinceId: '',
+        locationId: '',
+        image: ''
     });
+
     const [loading, setLoading] = useState(false);
 
     const handleChange = e => {
@@ -19,15 +34,41 @@ const AddEvent = () => {
         setForm(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleProvinceSelect = e => {
+        const provinceId = e.target.value;
+        setForm(prev => ({ ...prev, provinceId, locationId: '' }));
+        handleProvinceChange(provinceId);
+    };
+
     const handleSubmit = async e => {
         e.preventDefault();
         setLoading(true);
         try {
-            await createEvent(form);
-            alert('Evento creado correctamente');
-            setForm({ name: '', location: '', eventDate: '', type: '', price: '', description: '' });
+            const payload = {
+                userId: Number(userId),
+                locationId: Number(form.locationId),
+                name: form.name,
+                description: form.description,
+                eventDate: form.eventDate,
+                type: Number(form.type),
+                image: form.image || "https://picsum.photos/200/300" //esto es un placeholder, revisar dps como se van a manejar las imagenes.
+            };
+            console.log('payload que se manda al back:', payload);
+
+            await createEvent(payload);
+            alert('Evento creado correctamente');// esto hay que reemplazarlo dps por lo del swal.fire
+            setForm({
+                name: '',
+                eventDate: '',
+                type: '',
+                description: '',
+                provinceId: '',
+                locationId: '',
+                image: ''
+            });
         } catch (err) {
-            alert('Error al crear evento');
+            alert('Error al crear evento');// y esto tmb
+            console.error('error: ', err.message);
         }
         setLoading(false);
     };
@@ -51,14 +92,41 @@ const AddEvent = () => {
                         </Grid>
                         <Grid item xs={12}>
                             <TextField
-                                label="Lugar"
-                                name="location"
-                                value={form.location}
+                                select
+                                label="Provincia"
+                                name="provinceId"
+                                value={form.provinceId}
+                                onChange={handleProvinceSelect}
+                                fullWidth
+                                required
+                                variant="outlined"
+                                disabled={loadingProvinces}
+                            >
+                                {provinces.map(province => (
+                                    <MenuItem key={province.id} value={province.id}>
+                                        {province.name}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                select
+                                label="Ciudad"
+                                name="locationId"
+                                value={form.locationId}
                                 onChange={handleChange}
                                 fullWidth
                                 required
                                 variant="outlined"
-                            />
+                                disabled={loadingCities || !form.provinceId}
+                            >
+                                {cities.map(city => (
+                                    <MenuItem key={city.id} value={city.id}>
+                                        {city.name}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Grid>
                         <Grid item xs={12}>
                             <TextField
@@ -84,24 +152,14 @@ const AddEvent = () => {
                                 required
                                 variant="outlined"
                             >
-                                {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => (
-                                    <MenuItem key={key} value={key}>{label}</MenuItem>
+                                {EVENT_TYPE_ENUM.map((typeKey, index) => (
+                                    <MenuItem key={typeKey} value={index}>
+                                        {getEventTypeIcon(typeKey)} {EVENT_TYPE_LABELS[typeKey]}
+                                    </MenuItem>
                                 ))}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Precio"
-                                name="price"
-                                type="number"
-                                value={form.price}
-                                onChange={handleChange}
-                                fullWidth
-                                required
-                                variant="outlined"
-                                inputProps={{ min: 0 }}
-                            />
-                        </Grid>
+                       
                         <Grid item xs={12}>
                             <TextField
                                 label="Descripción"
