@@ -1,15 +1,16 @@
-using Infraestructure.Data;
-using Microsoft.EntityFrameworkCore;
-using Domain.Interfaces;
 using Application.Interfaces;
-using Microsoft.IdentityModel.Tokens;
 using Application.Services;
-using System.Security.Claims;
-using System.Text;
+using Domain.Interfaces;
+using Infraestructure.Data;
 using Infraestructure.Services;
-using Microsoft.OpenApi.Models;
 using MassivoProject.Server.Exceptions;
 using MassivoProject.Server.Middlewares;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +55,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 #endregion
 
 #region JWT
+
+//JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options => 
     {
@@ -130,6 +134,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

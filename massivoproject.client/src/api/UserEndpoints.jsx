@@ -36,3 +36,8 @@ export const hardDeleteUser = async (id) => {
     const response = await api.delete(`Users/${id}/hard`);
     return response.data;
 };
+
+export const cambiarRolAPrestador = async () => {
+    const response = await api.patch('Users/cambiar-prestador');
+    return response.data;
+};

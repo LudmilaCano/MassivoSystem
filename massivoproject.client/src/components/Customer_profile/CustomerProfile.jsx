@@ -13,7 +13,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Colors from "../../layout/Colors";
 import { useSelector } from "react-redux";
-import { getUserById, updateUser } from "../../api/UserEndpoints";
+import { cambiarRolAPrestador, getUserById, updateUser } from "../../api/UserEndpoints";
 
 const modalStyle = {
   position: 'absolute',
@@ -32,6 +32,8 @@ const modalStyle = {
 
 // ...imports (sin cambios)
 
+
+
 const CustomerProfile = () => {
   const { userId } = useSelector((state) => state.auth);
   const [userData, setUserData] = useState(null);
@@ -39,6 +41,21 @@ const CustomerProfile = () => {
   const [profilePic, setProfilePic] = useState(null);
   const [open, setOpen] = useState(false);
   const [guardado, setGuardado] = useState(false);
+
+
+    const handleCambiarRol = async () => {
+        try {
+            await cambiarRolAPrestador();
+            alert("¡Tu rol ha sido actualizado a Prestador!");
+
+            // Refrescamos los datos del usuario
+            const updatedUser = await getUserById(userId);
+            setUserData(updatedUser);
+        } catch (error) {
+            console.error("Error al cambiar el rol:", error);
+            alert("Ocurrió un error al cambiar el rol.");
+        }
+    };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -171,6 +188,26 @@ const CustomerProfile = () => {
         >
           Editar perfil
         </Button>
+
+              {userData.role !== "Prestador" && (
+                  <Button
+                      variant="outlined"
+                      onClick={handleCambiarRol}
+                      sx={{
+                          mt: 2,
+                          borderRadius: 3,
+                          borderColor: Colors.celeste,
+                          color: Colors.celeste,
+                          '&:hover': {
+                              backgroundColor: '#e0f7ff',
+                              borderColor: Colors.celeste,
+                          }
+                      }}
+                  >
+                      Cambiar a Prestador
+                  </Button>
+              )}
+
 
         <Modal open={guardado} onClose={() => setGuardado(false)}>
           <Box sx={{
