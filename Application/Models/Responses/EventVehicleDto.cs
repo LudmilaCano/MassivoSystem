@@ -15,6 +15,7 @@ namespace Application.Models.Responses
         public DateTime Date { get; set; }
         public int Occupation { get; set; }
         public string Description { get; set; }
+        public int Price { get; set; }
         public string VehicleType { get; set; }
         public string? From { get; set; }
 
@@ -28,6 +29,7 @@ namespace Application.Models.Responses
                 Date = eventVehicleEntity.Date,
                 Occupation = eventVehicleEntity.Occupation,
                 Description = eventVehicleEntity.Description,
+                Price = eventVehicleEntity.Price,
                 VehicleType = eventVehicleEntity.Vehicle?.Type.ToString(), // <-- Incluye el tipo de vehículo
                 From = eventVehicleEntity.Vehicle?.User?.City.Name            // <-- Incluye el lugar de partida
             };
