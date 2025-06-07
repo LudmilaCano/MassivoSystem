@@ -3,11 +3,6 @@ using Application.Models.Requests;
 using Application.Models.Responses;
 using Domain.Entities;
 using Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -68,49 +63,44 @@ namespace Application.Services
         public async Task<IEnumerable<EventVehicleDto>> GetAllAsync()
         {
             var entities = await _eventVehicleRepository.ListAsync();
-            // Mapear entidades a DTOs (puedes usar AutoMapper si lo tienes configurado)
-            return entities.Select(ev => new EventVehicleDto
+            var result = new List<EventVehicleDto>();
+            
+            foreach (var ev in entities)
             {
-                EventVehicleId = ev.EventVehicleId,
-                EventId = ev.EventId,
-                LicensePlate = ev.LicensePlate,
-                Date = ev.Date,
-                Occupation = ev.Occupation
-            });
+                result.Add(new EventVehicleDto
+                {
+                    EventVehicleId = ev.EventVehicleId,
+                    EventId = ev.EventId,
+                    LicensePlate = ev.LicensePlate,
+                    Date = ev.Date,
+                    Occupation = ev.Occupation
+                });
+            }
+            
+            return result;
         }
 
         public async Task<List<EventVehicleDto>> GetVehiclesByEventAsync(int eventId)
         {
             var eventVehicles = await _eventVehicleRepository.GetVehiclesByEventAsync(eventId);
-
-            return eventVehicles.Select(ev => new EventVehicleDto
+            var result = new List<EventVehicleDto>();
+            
+            foreach (var ev in eventVehicles)
             {
-                EventVehicleId = ev.EventVehicleId,
-                EventId = ev.EventId,
-                LicensePlate = ev.LicensePlate,
-                Date = ev.Date,
-                Occupation = ev.Occupation,
-                VehicleType = ev.Vehicle?.Type.ToString(),
-                From = ev.Vehicle?.User?.City?.Name ?? string.Empty  // Ajusta según tu modelo
-            }).ToList();
+                var dto = EventVehicleDto.Create(ev);
+                result.Add(dto);
+            }
+            
+            return result;
         }
-
 
         public async Task<EventVehicleDto> GetEventVehicleByIdAsync(int eventVehicleId)
         {
             var entity = await _eventVehicleRepository.GetById(eventVehicleId);
-
-            return new EventVehicleDto
-            {
-                EventVehicleId = entity.EventVehicleId,
-                EventId = entity.EventId,
-                LicensePlate = entity.LicensePlate,
-                Date = entity.Date,
-                Occupation = entity.Occupation,
-                Description = entity.Description,
-                VehicleType = entity.Vehicle?.Type.ToString(),
-                From = entity.Vehicle?.User?.City?.Name ?? string.Empty // <-- Aquí debe mapear la ciudad
-            };
+            if (entity == null)
+                throw new KeyNotFoundException($"EventVehicle with ID {eventVehicleId} not found.");
+                
+            return EventVehicleDto.Create(entity);
         }
     }
 }

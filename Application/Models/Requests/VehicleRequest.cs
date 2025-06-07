@@ -5,6 +5,8 @@ namespace Application.Models.Requests
 {
     public class VehicleRequest : IValidatableObject
     {
+        [Required]
+        public int userId { get; set; }
         [Required(ErrorMessage = "La patente es obligatoria.")]
         [RegularExpression(@"^(?:[A-Z]{2}\d{3}[A-Z]{2}|[A-Z]{3}\s?\d{3})$",
             ErrorMessage = "La patente debe tener el formato AA999AA o AAA 999.")]

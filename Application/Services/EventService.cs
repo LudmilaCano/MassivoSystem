@@ -25,7 +25,7 @@ namespace Application.Services
             var events = await _eventRepository.GetAllEventsWithVehiclesIncludedAsync();
 
             if (events == null || !events.Any())
-           
+
             {
                 throw new KeyNotFoundException("No events found.");
             }
@@ -63,6 +63,7 @@ namespace Application.Services
                 UserId = request.UserId,
                 LocationId = request.LocationId,
                 Name = request.Name,
+                Description = request.Description,
                 EventDate = request.EventDate,
                 Type = request.Type,
                 Image = request.Image
@@ -91,6 +92,7 @@ namespace Application.Services
 
             existingEvent.LocationId = request.Location;
             existingEvent.Name = request.Name;
+            existingEvent.Description = request.Description;
             existingEvent.EventDate = request.EventDate;
             existingEvent.Type = request.Type;
             existingEvent.Image = request.Image;
@@ -134,6 +136,7 @@ namespace Application.Services
                 EventId = request.EventId,
                 LicensePlate = request.LicensePlate,
                 Date = request.Date,
+                Description = request.Description
             });
 
             await _eventRepository.UpdateAsync(eventEntity);

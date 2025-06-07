@@ -22,8 +22,16 @@ namespace MassivoProject.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventVehicle>>> Get()
         {
-            var list = await _eventVehicleService.GetAllAsync();
-            return Ok(list);
+            try
+            {
+                var list = await _eventVehicleService.GetAllAsync();
+                return Ok(list);
+            }catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+           
+            
         }
 
         [HttpGet("{eventVehicleId}")]
