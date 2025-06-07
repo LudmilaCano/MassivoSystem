@@ -92,7 +92,7 @@ function App() {
     ),
   },
   {
-    path: "/add-vehicle-event",
+    path: "/add-vehicle-event/:eventId",
     element: (
       <MainLayout>
         <AddVehicleEvent />
