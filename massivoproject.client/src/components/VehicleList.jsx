@@ -248,9 +248,7 @@ const VehicleList = () => {
                                 <Typography variant="h6" fontWeight="bold">
                                     {item.name}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    {item.description}
-                                </Typography>
+                              
                                 <Typography variant="body2" mt={1}>
                                     👥 {item.capacity} Personas máximo
                                 </Typography>

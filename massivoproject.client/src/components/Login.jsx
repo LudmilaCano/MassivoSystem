@@ -116,6 +116,7 @@ const Login = () => {
                         }}
                     >
                         <Box
+                            onClick={() =>  navigate('/')}
                             component="img"
                             src={Logo2}
                             alt="Logo"

@@ -219,6 +219,7 @@ const Register = () => {
         <div style={{ backgroundColor: Colors.azul, width: '100%', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Grid container sx={{ maxHeight: '90vh', maxWidth: '70vw' }}>
                 <Grid
+                    onClick={() =>  navigate('/')}
                     item
                     xs={false}
                     md={5}

@@ -136,7 +136,8 @@ namespace Application.Services
                 EventId = request.EventId,
                 LicensePlate = request.LicensePlate,
                 Date = request.Date,
-                Description = request.Description
+                Description = request.Description,
+                Price = request.Price
             });
 
             await _eventRepository.UpdateAsync(eventEntity);
