@@ -6,7 +6,7 @@ import { getEventById,getVehiclesByEvent, } from '../api/EventEndpoints';
 import { getEventTypeLabel,getEventTypeIcon } from '../constants/eventCategories';
 import { getVehicleTypeImage } from '../constants/vehicleType';
 import { useNavigate } from 'react-router-dom';
-
+import { useSelector } from 'react-redux';
 
 const VehicleList = () => {
 
@@ -17,13 +17,13 @@ const VehicleList = () => {
     const { eventId } = useParams();
     const [event, setEvent] = useState(null);
     const [loadingEvent, setLoadingEvent] = useState(true);
-
     const itemsPerPage = 10;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredVehicles.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
     const navigate = useNavigate();
+    const auth = useSelector((state) => state.auth);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -37,7 +37,7 @@ const VehicleList = () => {
             setLoadingEvent(false);
         };
         fetchEvent();
-    }, [eventId]);
+    }, [eventId ]);
 
     useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -55,7 +55,7 @@ const VehicleList = () => {
         const fetchVehicles = async () => {
             try {
                 const data = await getVehiclesByEvent(eventId);
-                setVehicles(data);
+                setVehicles(data);                
                 setFilteredVehicles(data); // si quieres filtrar sobre estos datos
             } catch (error) {
                 setVehicles([]);
@@ -178,6 +178,18 @@ const VehicleList = () => {
                         icon={<span role="img" aria-label="location">📍</span>}
                     />
                 </Box>
+                {(auth?.role === "Prestador" || auth?.role === "Admin") && (
+                <Button  
+                    onClick={() => navigate(`/add-vehicle-event/${eventId}`, {
+                    state: { description: event.name }
+                    })}
+                    
+                    color="warning"
+                    size="small"
+                >
+                    Agregar Vehículo
+                </Button>
+                )}
             </Box>
         </Paper>
 
@@ -232,9 +244,7 @@ const VehicleList = () => {
                                 <Typography variant="h6" fontWeight="bold">
                                     {item.name}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    {item.description}
-                                </Typography>
+                              
                                 <Typography variant="body2" mt={1}>
                                     👥 {item.capacity} Personas máximo
                                 </Typography>
@@ -253,7 +263,7 @@ const VehicleList = () => {
                                     14/05/25 - 16:30hs
                                 </Typography>
                                 <Typography variant="h6" color="primary">
-                                    $999
+                                    ${item.price}
                                 </Typography>
                                 <Button
                                     onClick={() => navigate(`/trip-detail/${item.eventVehicleId}`, {

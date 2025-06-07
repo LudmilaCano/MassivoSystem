@@ -10,6 +10,11 @@ export const getVehicleByLicensePlate = async (licensePlate) => {
     return response.data;
 };
 
+export const getVehiclesByUserId = async (userId) => {
+    const response = await api.get(`/Vehicle/user/${userId}`);
+    return response.data;
+};
+
 export const createVehicle = async (vehicleData) => {
     const response = await api.post('/Vehicle', vehicleData);
     return response.data;

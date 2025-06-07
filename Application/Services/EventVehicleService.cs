@@ -42,7 +42,8 @@ namespace Application.Services
                 EventId = request.EventId,
                 LicensePlate = request.LicensePlate,
                 Date = request.Date,
-                Occupation = 0
+                Occupation = 0,
+                Price = request.Price
             };
 
             // Guardar en base de datos
@@ -54,7 +55,8 @@ namespace Application.Services
                 EventId = eventVehicle.EventId,
                 LicensePlate = eventVehicle.LicensePlate,
                 Date = eventVehicle.Date,
-                Occupation = eventVehicle.Occupation                
+                Occupation = eventVehicle.Occupation,
+                Price = eventVehicle.Price
             };
 
             return dto;
@@ -73,7 +75,8 @@ namespace Application.Services
                     EventId = ev.EventId,
                     LicensePlate = ev.LicensePlate,
                     Date = ev.Date,
-                    Occupation = ev.Occupation
+                    Occupation = ev.Occupation,
+                    Price = ev.Price
                 });
             }
             

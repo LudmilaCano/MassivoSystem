@@ -78,7 +78,6 @@ const Login = () => {
 
         try {
             const token = await AuthenticationService(dniOrEmail, password);
-            console.log(token)
             if (token) {
                 dispatch(setToken(token));
                 navigate('/');
@@ -116,6 +115,7 @@ const Login = () => {
                         }}
                     >
                         <Box
+                            onClick={() =>  navigate('/')}
                             component="img"
                             src={Logo2}
                             alt="Logo"

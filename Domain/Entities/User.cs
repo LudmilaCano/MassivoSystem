@@ -29,6 +29,7 @@ namespace Domain.Entities
 
 
         public string Role { get; set; }
+
         public EntityState IsActive { get; set; } = EntityState.Active;
         public ICollection<Event> Events { get; set; }
 

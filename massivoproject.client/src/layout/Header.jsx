@@ -24,28 +24,13 @@ const Header = () => {
     navigate("/");
   };
 
-  const handleProfile = () => {
-    navigate("/profile");
-  };
-
-  const handleHome = () => {
-    navigate("/");
-  };
-
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
-  const handleRegister = () => {
-    navigate("/register");
-  };
-
-  const handleAdminPanel = () => {
-    navigate("/admin");
-  };
-
+  const handleProfile = () => navigate("/profile");
+  const handleHome = () => navigate("/");
+  const handleLogin = () => navigate("/login");
+  const handleRegister = () => navigate("/register");
+  const handleAdminPanel = () => navigate("/admin");
+  const handleAboutUs = () => navigate("/about-us");
   const handleContacto = () => {
-    // Por ejemplo, si querés navegar a "#contacto"
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   };
 
@@ -60,58 +45,55 @@ const Header = () => {
     >
       <div
         style={{
-          justifyContent: "center",
-          alignContent: "center",
           display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        <div
-          style={{
-            flex: 0.2,
-            justifyContent: "center",
-            alignContent: "center",
-          }}
-        >
+        <Button onClick={handleHome} style={{ flex: 0.2 }}>
           <img
             src={logo}
             alt="Logo"
             style={{ width: "auto", height: "7vh", objectFit: "contain" }}
           />
-        </div>
+        </Button>
 
         <div
           style={{
             flex: 0.75,
-            alignContent: "center",
-            justifyContent: "flex-end",
-            width: "100%",
             display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
           }}
         >
-          {/* No logueado */}
-          {!logueado && !enPerfil && (
+          <Button
+            variant="text"
+            onClick={handleAboutUs}
+            sx={{ color: "white", mx: 1 }}
+          >
+            Nosotros
+          </Button>
+          <Button
+            variant="text"
+            onClick={handleContacto}
+            sx={{ color: "white", mx: 1 }}
+          >
+            Contacto
+          </Button>
+
+          {!logueado && (
             <>
-              <Button variant="text" sx={{ color: "white", marginX: 1 }}>
-                Nosotros
-              </Button>
               <Button
-                variant="text"
-                sx={{ color: "white", marginX: 1 }}
-                onClick={handleContacto}
-              >
-                Contacto
-              </Button>
-              <Button
-                variant="contained"
                 onClick={handleLogin}
+                variant="contained"
                 sx={{
                   borderRadius: 15,
                   color: Colors.azul,
                   backgroundColor: Colors.naranjaOscuro,
-                  marginX: 1,
+                  mx: 1,
                 }}
               >
-                Login
+                Iniciar Sesión
               </Button>
               <Button
                 onClick={handleRegister}
@@ -121,7 +103,7 @@ const Header = () => {
                   color: Colors.naranjaOscuro,
                   borderColor: Colors.naranjaOscuro,
                   fontWeight: "600",
-                  marginX: 1,
+                  mx: 1,
                 }}
               >
                 Registro
@@ -129,8 +111,7 @@ const Header = () => {
             </>
           )}
 
-          {/* Logueado pero no en perfil */}
-          {logueado && !enPerfil && (
+          {logueado && (
             <>
               <Button
                 onClick={handleProfile}
@@ -140,11 +121,12 @@ const Header = () => {
                   color: Colors.naranjaOscuro,
                   borderColor: Colors.naranjaOscuro,
                   fontWeight: "600",
-                  marginX: 1,
+                  mx: 1,
                 }}
               >
-                Profile
+                Perfil
               </Button>
+
               {role === "Prestador" && (
                 <Button
                   onClick={() => navigate("/add-vehicle")}
@@ -154,11 +136,38 @@ const Header = () => {
                     backgroundColor: Colors.naranjaOscuro,
                     color: Colors.azul,
                     fontWeight: "600",
-                    marginX: 1,
+                    mx: 1,
                   }}
                 >
                   Agregar Vehículo
                 </Button>
+              )}
+
+              {enPerfil && (
+                <>
+                  <Typography
+                    variant="body1"
+                    sx={{ color: "white", fontWeight: "bold", mr: 2 }}
+                  >
+                    {fullName} - {role}
+                  </Typography>
+
+                  {role === "Admin" && (
+                    <Button
+                      onClick={handleAdminPanel}
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 15,
+                        color: Colors.naranjaOscuro,
+                        borderColor: Colors.naranjaOscuro,
+                        fontWeight: "600",
+                        mx: 1,
+                      }}
+                    >
+                      Panel Admin
+                    </Button>
+                  )}
+                </>
               )}
 
               <Button
@@ -169,85 +178,10 @@ const Header = () => {
                   color: Colors.naranjaOscuro,
                   borderColor: Colors.naranjaOscuro,
                   fontWeight: "600",
-                  marginX: 1,
+                  mx: 1,
                 }}
               >
-                Logout
-              </Button>
-            </>
-          )}
-
-          {/* Logueado y en perfil */}
-          {logueado && enPerfil && (
-            <>
-              <Typography
-                variant="body1"
-                style={{
-                  color: "white",
-                  fontWeight: "bold",
-                  marginRight: 10,
-                  alignSelf: "center",
-                }}
-              >
-                {fullName} - {role}
-              </Typography>
-
-              {role === "Admin" && (
-                <Button
-                  variant="outlined"
-                  onClick={handleAdminPanel}
-                  sx={{
-                    borderRadius: 15,
-                    color: Colors.naranjaOscuro,
-                    borderColor: Colors.naranjaOscuro,
-                    fontWeight: "600",
-                    marginX: 1,
-                  }}
-                >
-                  Panel Admin
-                </Button>
-              )}
-              {role === "Prestador" && (
-                <Button
-                  onClick={() => navigate("/add-vehicle")}
-                  variant="contained"
-                  sx={{
-                    borderRadius: 15,
-                    backgroundColor: Colors.naranjaOscuro,
-                    color: Colors.azul,
-                    fontWeight: "600",
-                    marginX: 1,
-                  }}
-                >
-                  Agregar Vehículo
-                </Button>
-              )}
-
-              <Button
-                onClick={handleLogout}
-                variant="outlined"
-                sx={{
-                  borderRadius: 15,
-                  color: Colors.naranjaOscuro,
-                  borderColor: Colors.naranjaOscuro,
-                  fontWeight: "600",
-                  marginX: 1,
-                }}
-              >
-                Logout
-              </Button>
-              <Button
-                onClick={handleHome}
-                variant="outlined"
-                sx={{
-                  borderRadius: 15,
-                  color: Colors.naranjaOscuro,
-                  borderColor: Colors.naranjaOscuro,
-                  fontWeight: "600",
-                  marginX: 1,
-                }}
-              >
-                Home
+                Cerrar Sesión
               </Button>
             </>
           )}
