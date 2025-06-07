@@ -170,8 +170,7 @@ const Register = () => {
 
     const handleSubmit = async () => {
 
-        console.log("formdata: ", formData)
-
+    
         if (validateForm()) {
             const formattedData = {
                 firstName: formData.nombre,
@@ -184,7 +183,6 @@ const Register = () => {
                 birthDate: formData.dob.toISOString().split('T')[0]
             };
 
-            console.log("formdata modificado: ", formattedData)
             try {
                 await createUser(formattedData);
 

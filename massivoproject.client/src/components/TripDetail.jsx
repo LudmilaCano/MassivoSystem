@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Paper, Chip, Button,   Backdrop, CircularProgress,Rating, Divider } from '@mui/material';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { Box, Typography, Paper, Chip, Button, Backdrop, CircularProgress, Rating, Divider, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { MapContainer, TileLayer, Marker, Popup , Polyline } from 'react-leaflet';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import FlagIcon from '@mui/icons-material/Flag';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -19,12 +19,13 @@ const TripDetail = () => {
   const [coordsFrom, setCoordsFrom] = useState(null);
   const [coordsTo, setCoordsTo] = useState(null);
   const [coordsLoading, setCoordsLoading] = useState(true);
+  const [openDescription, setOpenDescription] = useState(false);
+
 
   useEffect(() => {
     const fetchEventVehicle = async () => {
       try {
         const data = await getEventVehicleById(tripId);
-        console.log(data)
         setEventVehicle(data);
       } catch (error) {
         setEventVehicle(null);
@@ -71,7 +72,7 @@ const TripDetail = () => {
   if (loading) return <Typography>Cargando...</Typography>;
   if (!eventVehicle) return <Typography>No se encontró el viaje.</Typography>;
 
-  
+
   const bounds = [coordsFrom, coordsTo];
 
   return (
@@ -142,8 +143,15 @@ const TripDetail = () => {
               gap: { xs: 1, sm: 0 }
             }}>
               <Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{eventVehicle.description}</Typography>
-                <Chip label={eventVehicle.vehicleType} color="primary" sx={{ mb: 1 }} />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setOpenDescription(true)}
+                  sx={{ mb: 1,ml:1 }}
+                >
+                  Ver Descripción
+                </Button>
+                <Chip label={eventVehicle.vehicleType} color="primary" sx={{ml: 2, mb: 1 }} />
                 <Chip label={`Capacidad: ${eventVehicle.capacity}`} color="info" sx={{ ml: 1, mb: 1 }} />
               </Box>
               <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, width: { xs: '100%', sm: 'auto' } }}>
@@ -197,9 +205,30 @@ const TripDetail = () => {
                 Llegada: {destination || 'Destino'}
               </Popup>
             </Marker>
+            <Polyline positions={[coordsFrom, coordsTo]} color="blue" />
           </MapContainer>
+          
         </Box>
       </Paper>
+
+      <Dialog
+        open={openDescription}
+        onClose={() => setOpenDescription(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Descripción del Viaje</DialogTitle>
+        <DialogContent>
+          <Typography variant="body" sx={{ whiteSpace: 'pre-line' }} color="text.secondary">
+            {eventVehicle.description}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDescription(false)} color="primary">
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

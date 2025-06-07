@@ -4,7 +4,7 @@ import MainLayout from './layout/MainLayout.jsx'
 import Login from './components/Login.jsx'
 
 import CustomerProfile from './components/Customer_profile/CustomerProfile.jsx'
-
+import ProtectedRoute from './ProtectedRoute.jsx'
 import Register from './components/Register.jsx'
 import Home from './components/Home.jsx'
 import { ThemeProvider } from '@mui/material/styles';
@@ -18,21 +18,30 @@ import AddVehicle from './components/AddVehicle.jsx'
 import TripDetail from './components/TripDetail.jsx'
 import AddEvent from './components/AddEvent.jsx';
 import AddVehicleEvent from './components/AddEventVehicle.jsx';
-import Booking from './components/Booking.jsx'
+import Booking from './components/Booking.jsx';
+import { useSelector } from 'react-redux';
+import AboutUs from './components/AboutUs.jsx'
 
 
 function App() {
 
   const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
+  const auth = useSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(initializeAuth());
   }, []);
 
+  if (auth.loading) {
+    return <div>Cargando...</div>;
+  }
+
   const router = createBrowserRouter([
     {
       path: "/",
       element: (
+
         <MainLayout>
           <Home />
         </MainLayout>
@@ -41,21 +50,27 @@ function App() {
     {
       path: "/login",
       element: (
-        <Login />
+        <MainLayout>
+          <Login />
+        </MainLayout>
       ),
     },
     {
       path: "/register",
       element: (
-        <Register />
+        <MainLayout>
+          <Register />
+        </MainLayout>
       ),
     },
     {
       path: "/profile",
       element: (
-        <MainLayout>
-          <CustomerProfile />
-        </MainLayout>
+        <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
+          <MainLayout>
+            <CustomerProfile />
+          </MainLayout>
+        </ProtectedRoute>
 
       ),
 
@@ -84,28 +99,44 @@ function App() {
 
     },
     {
-    path: "/add-event",
-    element: (
-      <MainLayout>
-        <AddEvent />
-      </MainLayout>
-    ),
-  },
-  {
-    path: "/add-vehicle-event/:eventId",
-    element: (
-      <MainLayout>
-        <AddVehicleEvent />
-      </MainLayout>
-    ),
-  } 
+      path: "/add-event",
+      element: (
+        <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
+          <MainLayout>
+            <AddEvent />
+          </MainLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/add-vehicle-event/:eventId",
+      element: (
+        <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
+          <MainLayout>
+            <AddVehicleEvent />
+          </MainLayout>
+        </ProtectedRoute>
+      ),
+    }
     ,
     {
       path: "/booking",
       element: (
-        <Booking />
+        <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
+          <MainLayout>
+            <Booking />
+          </MainLayout>
+        </ProtectedRoute>
       )
 
+    },
+    {
+      path: "/about-us",
+      element: (
+        <MainLayout>
+          <AboutUs />
+        </MainLayout>
+      )
     }
   ])
 

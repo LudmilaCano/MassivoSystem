@@ -33,7 +33,9 @@ const Header = () => {
     }
 
 
-
+    const aboutUs = () => {
+        navigate("/about-us");
+    }
 
 
 
@@ -69,7 +71,7 @@ const Header = () => {
 
                 <div style={{ flex: 0.75, alignContent: 'center', justifyContent: 'flex-end', width: '100%', display: 'flex' }}>
                     <div style={{ alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
-                        <Button variant='text' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', height: 'auto', color: 'white' }} >
+                        <Button variant='text' onClick={()=> aboutUs()} sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', height: 'auto', color: 'white' }} >
                             Nosotros
                         </Button>
                     </div>
