@@ -7,6 +7,5 @@ export const VEHICLE_TYPE_IMAGES = {
 
 export function getVehicleTypeImage(type) {    
     const key = type.trim();
-    console.log(key)
     return VEHICLE_TYPE_IMAGES[key];
 }

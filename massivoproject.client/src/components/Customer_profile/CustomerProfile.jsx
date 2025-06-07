@@ -44,7 +44,6 @@ const CustomerProfile = () => {
     const fetchUser = async () => {
       try {
         const data = await getUserById(userId);
-        console.log("Usuario traído del backend:", data);
         setUserData({
           ...data,
           dniNumber: data.identificationNumber || "", // 👈 TAMBIÉN ACÁ
@@ -89,7 +88,6 @@ const CustomerProfile = () => {
         Province: editData.province || ""
       };
 
-      console.log("Payload a enviar:", payload);
       await updateUser(userId, payload);
 
       setUserData({

@@ -4,11 +4,12 @@ import { createEvent } from '../api/EventEndpoints';
 import { EVENT_TYPE_ENUM, getEventTypeIcon, EVENT_TYPE_LABELS } from '../constants/eventCategories';
 import useProvinceCitySelector from '../hooks/useProvinceCitySelector';
 import { useSelector } from 'react-redux';
+import useSwalAlert from '../hooks/useSwalAlert';
 
 
 const AddEvent = () => {
     const userId = useSelector((state) => state.auth.userId);
-
+    const { showAlert } = useSwalAlert();
     const {
         provinces,
         cities,
@@ -53,10 +54,9 @@ const AddEvent = () => {
                 type: Number(form.type),
                 image: form.image || "https://picsum.photos/200/300" //esto es un placeholder, revisar dps como se van a manejar las imagenes.
             };
-            console.log('payload que se manda al back:', payload);
 
             await createEvent(payload);
-            alert('Evento creado correctamente');// esto hay que reemplazarlo dps por lo del swal.fire
+            showAlert('Evento creado correctamente', 'success');
             setForm({
                 name: '',
                 eventDate: '',
@@ -66,9 +66,8 @@ const AddEvent = () => {
                 locationId: '',
                 image: ''
             });
-        } catch (err) {
-            alert('Error al crear evento');// y esto tmb
-            console.error('error: ', err.message);
+        } catch (err) {            
+            showAlert('Error al crear evento', 'error');
         }
         setLoading(false);
     };

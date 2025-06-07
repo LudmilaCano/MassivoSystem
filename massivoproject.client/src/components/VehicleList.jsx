@@ -17,7 +17,6 @@ const VehicleList = () => {
     const { eventId } = useParams();
     const [event, setEvent] = useState(null);
     const [loadingEvent, setLoadingEvent] = useState(true);
-    console.log(eventId)
     const itemsPerPage = 10;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -25,7 +24,6 @@ const VehicleList = () => {
     const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
     const navigate = useNavigate();
     const auth = useSelector((state) => state.auth);
-    console.log(auth.role)
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -57,9 +55,7 @@ const VehicleList = () => {
         const fetchVehicles = async () => {
             try {
                 const data = await getVehiclesByEvent(eventId);
-                setVehicles(data);
-                console.log(data)
-                
+                setVehicles(data);                
                 setFilteredVehicles(data); // si quieres filtrar sobre estos datos
             } catch (error) {
                 setVehicles([]);

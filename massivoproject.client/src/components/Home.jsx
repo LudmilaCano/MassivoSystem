@@ -13,6 +13,8 @@ import { getRandomEvents, filterEvents } from '../api/EventEndpoints';
 import { getEventTypeLabel } from '../constants/eventCategories';
 import { useBusyDialog } from '../hooks/useBusyDialog';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
 
 const Home = () => {
 
@@ -22,13 +24,8 @@ const Home = () => {
     const [searchDate, setSearchDate] = useState('');
     const [busy, setBusy, BusyDialog] = useBusyDialog();
     const navigate = useNavigate();
-
-    const handlePeopleChange = (e) => {
-        const value = e.target.value;
-        if (/^\d*$/.test(value)) {
-            setPeople(value);
-        }
-    };
+    const auth = useSelector((state) => state.auth);
+   
 
     const handleFilter = async () => {
         setBusy(true);
@@ -58,7 +55,6 @@ const Home = () => {
             try {
                 const data = await getRandomEvents(4);
                 setEvents(data);
-                console.log(events)
             } catch (error) {
                 console.error('Error fetching random events:', error);
             }
@@ -129,6 +125,16 @@ const Home = () => {
                 >
                     Buscar
                 </Button>
+
+                {auth.role === 'Admin' || auth.role === 'Prestador' && (
+                    <Button
+                        variant="contained"
+                        sx={{ backgroundColor: '#139AA0', minWidth: 100, px: 2 }}
+                        onClick={() => navigate('/add-event')}
+                    >
+                        Agregar Evento
+                    </Button>
+                )}
             </Paper>
 
             <Grid container spacing={3} justifyContent="center" sx={{ my: 5, px: 8 }}>

@@ -134,7 +134,7 @@ const AddVehicleEvent = () => {
             price: parseInt(form.precioPorPasajero),
             description: form.description,
         };
-        console.log("Payload a enviar:", payload);
+        
         try {
             await addVehicleToEvent(payload);
             

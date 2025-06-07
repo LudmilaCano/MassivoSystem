@@ -78,7 +78,6 @@ const Login = () => {
 
         try {
             const token = await AuthenticationService(dniOrEmail, password);
-            console.log(token)
             if (token) {
                 dispatch(setToken(token));
                 navigate('/');
