@@ -11,9 +11,13 @@ namespace Application.Models.Requests
         [RegularExpression(@"^(?:[A-Z]{2}\d{3}[A-Z]{2}|[A-Z]{3}\s?\d{3})$",
             ErrorMessage = "La patente debe tener el formato AA999AA o AAA 999.")]
         public string LicensePlate { get; set; }
+        [Required(ErrorMessage = "el nombre es obligatorio")]
         public string Name { get; set; }
+        //[Required(ErrorMessage = "la ruta de la imagen es obligatoria")]
         public string ImagePath { get; set; }
+        [Required(ErrorMessage = "la descripción es obligatoria")]
         public string Description { get; set; }
+        [Required(ErrorMessage = "el nombres del conductor es obligatorio")]
         public string DriverName { get; set; }
 
         [Required(ErrorMessage = "El tipo de vehículo es obligatorio.")]
