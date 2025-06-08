@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Threading.Tasks;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Application.Models.Requests;
 using Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MassivoApp.Server.Controllers
 {
@@ -143,5 +144,42 @@ namespace MassivoApp.Server.Controllers
 
             return Ok(user);
         }
+
+        [Authorize]
+        [HttpPatch("cambiar-prestador")]
+        public IActionResult CambiarRolAPrestador()
+        {
+            var idClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (idClaim == null)
+                return Unauthorized(new { Message = "ID de usuario no encontrado en el token." });
+
+            var userId = int.Parse(idClaim.Value);
+
+            var request = new RoleChangeRequest
+            {
+                UserId = userId,
+                NewRole = "Prestador"
+            };
+
+            try
+            {
+                _userService.ChangeUserRole(request);
+                return Ok(new { Message = "El rol fue actualizado a Prestador." });
+            }
+            catch (ArgumentNullException)
+            {
+                return NotFound(new { Message = "Usuario no encontrado." });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("claims")]
+        public IActionResult GetClaims()
+        {
+            var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+            return Ok(claims);
+        }
+
+
     }
 }

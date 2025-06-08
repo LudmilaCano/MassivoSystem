@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import './CustomerProfile.css';
+import "./CustomerProfile.css";
 import {
   Button,
   Typography,
@@ -7,26 +7,35 @@ import {
   Avatar,
   Modal,
   Box,
-  Alert
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+  Alert,
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import Colors from "../../layout/Colors";
 import { useSelector } from "react-redux";
-import { getUserById, updateUser } from "../../api/UserEndpoints";
+import {
+  cambiarRolAPrestador,
+  getUserById,
+  updateUser,
+} from "../../api/UserEndpoints";
+import { createVehicle } from "../../api/VehicleEndpoints";
+import axios from "axios";
+import { useNavigate } from "react-router";
+import useSwalAlert from "../../hooks/useSwalAlert";
+import { getVehiclesByUserId } from "../../api/VehicleEndpoints";
 
 const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 400,
-  bgcolor: 'background.paper',
-  borderRadius: '10px',
+  bgcolor: "background.paper",
+  borderRadius: "10px",
   boxShadow: 24,
   p: 4,
-  display: 'flex',
-  flexDirection: 'column',
+  display: "flex",
+  flexDirection: "column",
   gap: 2,
 };
 
@@ -39,6 +48,25 @@ const CustomerProfile = () => {
   const [profilePic, setProfilePic] = useState(null);
   const [open, setOpen] = useState(false);
   const [guardado, setGuardado] = useState(false);
+  const navigate = useNavigate();
+  const { showAlert } = useSwalAlert();
+  const userIdFromState = useSelector((state) => state.auth.userId);
+
+  const handleCambiarRol = async () => {
+    try {
+      showAlert("¡Tu rol ha sido actualizado a Prestador!", "success");
+      await cambiarRolAPrestador();
+      // refrescamos los datos del usuario
+      const updatedUser = await getUserById(userId);
+      setUserData(updatedUser);
+      //navegamos al formulario de alta de vehiculos
+      navigate("/add-vehicle");
+      return;
+    } catch (error) {
+      console.error("Error al cambiar el rol:", error);
+      alert("Ocurrió un error al cambiar el rol.");
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -63,7 +91,6 @@ const CustomerProfile = () => {
           role: data.role || "User",
           isActive: data.isActive ?? 1,
         });
-        
 
         if (data.profilePic) {
           setProfilePic(data.profilePic);
@@ -85,7 +112,7 @@ const CustomerProfile = () => {
         Email: editData.email,
         Password: editData.password || null,
         City: editData.city || "",
-        Province: editData.province || ""
+        Province: editData.province || "",
       };
 
       await updateUser(userId, payload);
@@ -98,7 +125,7 @@ const CustomerProfile = () => {
         email: editData.email,
         city: editData.city,
         province: editData.province,
-        profilePic: editData.profilePic || userData.profilePic
+        profilePic: editData.profilePic || userData.profilePic,
       });
 
       setOpen(false);
@@ -159,35 +186,59 @@ const CustomerProfile = () => {
           onClick={() => setOpen(true)}
           sx={{
             backgroundColor: Colors.celeste,
-            color: 'white',
+            color: "white",
             borderRadius: 3,
             mt: 1,
-            '&:hover': {
-              backgroundColor: '#0ea5e9'
-            }
+            "&:hover": {
+              backgroundColor: "#0ea5e9",
+            },
           }}
         >
           Editar perfil
         </Button>
 
+        {userData.role !== "Prestador" && (
+          <Button
+            variant="outlined"
+            onClick={handleCambiarRol}
+            sx={{
+              mt: 2,
+              borderRadius: 3,
+              borderColor: Colors.celeste,
+              color: Colors.celeste,
+              "&:hover": {
+                backgroundColor: "#e0f7ff",
+                borderColor: Colors.celeste,
+              },
+            }}
+          >
+            Cambiar a Prestador
+          </Button>
+        )}
+
         <Modal open={guardado} onClose={() => setGuardado(false)}>
-          <Box sx={{
-            position: 'absolute',
-            top: '30%',
-            left: '50%',
-            transform: 'translate(-50%, -30%)',
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 3,
-            borderRadius: 2,
-            minWidth: 300,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-          }}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "30%",
+              left: "50%",
+              transform: "translate(-50%, -30%)",
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 3,
+              borderRadius: 2,
+              minWidth: 300,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
             <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
-            <Alert severity="success" sx={{ width: '100%', textAlign: 'center' }}>
+            <Alert
+              severity="success"
+              sx={{ width: "100%", textAlign: "center" }}
+            >
               ¡Datos guardados correctamente!
             </Alert>
           </Box>
@@ -197,33 +248,46 @@ const CustomerProfile = () => {
       {/* MODAL EDICIÓN */}
       <Modal open={open} onClose={() => setOpen(false)}>
         <Box sx={modalStyle}>
-          <Typography variant="h6" mb={1}>Editar perfil</Typography>
+          <Typography variant="h6" mb={1}>
+            Editar perfil
+          </Typography>
 
-          <Avatar src={profilePic} sx={{ width: 80, height: 80, alignSelf: 'center' }} />
+          <Avatar
+            src={profilePic}
+            sx={{ width: 80, height: 80, alignSelf: "center" }}
+          />
           <input type="file" accept="image/*" onChange={handleImageChange} />
 
           <TextField
             label="Nombre"
             value={editData.firstName}
-            onChange={(e) => setEditData({ ...editData, firstName: e.target.value })}
+            onChange={(e) =>
+              setEditData({ ...editData, firstName: e.target.value })
+            }
             fullWidth
           />
           <TextField
             label="Apellido"
             value={editData.lastName}
-            onChange={(e) => setEditData({ ...editData, lastName: e.target.value })}
+            onChange={(e) =>
+              setEditData({ ...editData, lastName: e.target.value })
+            }
             fullWidth
           />
           <TextField
             label="DNI"
             value={editData.dniNumber} // ✅ corregido aquí
-            onChange={(e) => setEditData({ ...editData, dniNumber: e.target.value })}
+            onChange={(e) =>
+              setEditData({ ...editData, dniNumber: e.target.value })
+            }
             fullWidth
           />
           <TextField
             label="Email"
             value={editData.email}
-            onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+            onChange={(e) =>
+              setEditData({ ...editData, email: e.target.value })
+            }
             fullWidth
           />
 
@@ -232,12 +296,12 @@ const CustomerProfile = () => {
             onClick={handleSave}
             sx={{
               backgroundColor: Colors.celeste,
-              color: 'white',
+              color: "white",
               borderRadius: 3,
               mt: 1,
-              '&:hover': {
-                backgroundColor: '#0ea5e9'
-              }
+              "&:hover": {
+                backgroundColor: "#0ea5e9",
+              },
             }}
           >
             Guardar cambios
