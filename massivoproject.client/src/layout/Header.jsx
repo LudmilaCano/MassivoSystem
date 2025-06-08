@@ -44,6 +44,10 @@ const Header = () => {
     navigate("/admin");
   };
 
+  const handleAboutUs = () => {
+    navigate("/about-us");
+  };
+
   const handleContacto = () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   };
@@ -89,7 +93,7 @@ const Header = () => {
         >
           {!logueado && !enPerfil && (
             <>
-              <Button variant="text" sx={{ color: "white", marginX: 1 }}>
+              <Button  onClick={handleAboutUs} variant="text" sx={{ color: "white", marginX: 1 }}>
                 Nosotros
               </Button>
               <Button

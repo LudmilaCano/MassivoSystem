@@ -21,6 +21,7 @@ import AddVehicleEvent from "./components/AddEventVehicle.jsx";
 import Booking from "./components/Booking.jsx";
 import { useSelector } from "react-redux";
 import AboutUs from "./components/AboutUs.jsx";
+import AdminDashboard from "./components/AdminDashboard.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -133,6 +134,16 @@ function App() {
         <MainLayout>
           <AboutUs />
         </MainLayout>
+      ),
+    },
+    {
+      path: "/admin-dashboard",
+      element: (
+        <ProtectedRoute allowedRoles={["Admin"]}>
+          <MainLayout>
+            <AdminDashboard />
+          </MainLayout>
+        </ProtectedRoute>
       ),
     },
   ]);
