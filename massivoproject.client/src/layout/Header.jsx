@@ -24,12 +24,26 @@ const Header = () => {
     navigate("/");
   };
 
-  const handleProfile = () => navigate("/profile");
-  const handleHome = () => navigate("/");
-  const handleLogin = () => navigate("/login");
-  const handleRegister = () => navigate("/register");
-  const handleAdminPanel = () => navigate("/admin");
-  const handleAboutUs = () => navigate("/about-us");
+  const handleProfile = () => {
+    navigate("/profile");
+  };
+
+  const handleHome = () => {
+    navigate("/");
+  };
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleRegister = () => {
+    navigate("/register");
+  };
+
+  const handleAdminPanel = () => {
+    navigate("/admin");
+  };
+
   const handleContacto = () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   };
@@ -45,55 +59,57 @@ const Header = () => {
     >
       <div
         style={{
-          display: "flex",
           justifyContent: "center",
-          alignItems: "center",
+          alignContent: "center",
+          display: "flex",
         }}
       >
-        <Button onClick={handleHome} style={{ flex: 0.2 }}>
+        <div
+          style={{
+            flex: 0.2,
+            justifyContent: "center",
+            alignContent: "center",
+          }}
+        >
           <img
             src={logo}
             alt="Logo"
             style={{ width: "auto", height: "7vh", objectFit: "contain" }}
           />
-        </Button>
+        </div>
 
         <div
           style={{
             flex: 0.75,
-            display: "flex",
+            alignContent: "center",
             justifyContent: "flex-end",
-            alignItems: "center",
+            width: "100%",
+            display: "flex",
           }}
         >
-          <Button
-            variant="text"
-            onClick={handleAboutUs}
-            sx={{ color: "white", mx: 1 }}
-          >
-            Nosotros
-          </Button>
-          <Button
-            variant="text"
-            onClick={handleContacto}
-            sx={{ color: "white", mx: 1 }}
-          >
-            Contacto
-          </Button>
-
-          {!logueado && (
+          {!logueado && !enPerfil && (
             <>
+              <Button variant="text" sx={{ color: "white", marginX: 1 }}>
+                Nosotros
+              </Button>
               <Button
-                onClick={handleLogin}
+                variant="text"
+                sx={{ color: "white", marginX: 1 }}
+                onClick={handleContacto}
+              >
+                Contacto
+              </Button>
+              <Button
                 variant="contained"
+                onClick={handleLogin}
                 sx={{
                   borderRadius: 15,
                   color: Colors.azul,
                   backgroundColor: Colors.naranjaOscuro,
-                  mx: 1,
+                  marginX: 1,
                 }}
               >
-                Iniciar Sesión
+                Login
               </Button>
               <Button
                 onClick={handleRegister}
@@ -103,7 +119,7 @@ const Header = () => {
                   color: Colors.naranjaOscuro,
                   borderColor: Colors.naranjaOscuro,
                   fontWeight: "600",
-                  mx: 1,
+                  marginX: 1,
                 }}
               >
                 Registro
@@ -111,7 +127,7 @@ const Header = () => {
             </>
           )}
 
-          {logueado && (
+          {logueado && !enPerfil && (
             <>
               <Button
                 onClick={handleProfile}
@@ -121,12 +137,11 @@ const Header = () => {
                   color: Colors.naranjaOscuro,
                   borderColor: Colors.naranjaOscuro,
                   fontWeight: "600",
-                  mx: 1,
+                  marginX: 1,
                 }}
               >
-                Perfil
+                Profile
               </Button>
-
               {role === "Prestador" && (
                 <Button
                   onClick={() => navigate("/add-vehicle")}
@@ -136,38 +151,11 @@ const Header = () => {
                     backgroundColor: Colors.naranjaOscuro,
                     color: Colors.azul,
                     fontWeight: "600",
-                    mx: 1,
+                    marginX: 1,
                   }}
                 >
                   Agregar Vehículo
                 </Button>
-              )}
-
-              {enPerfil && (
-                <>
-                  <Typography
-                    variant="body1"
-                    sx={{ color: "white", fontWeight: "bold", mr: 2 }}
-                  >
-                    {fullName} - {role}
-                  </Typography>
-
-                  {role === "Admin" && (
-                    <Button
-                      onClick={handleAdminPanel}
-                      variant="outlined"
-                      sx={{
-                        borderRadius: 15,
-                        color: Colors.naranjaOscuro,
-                        borderColor: Colors.naranjaOscuro,
-                        fontWeight: "600",
-                        mx: 1,
-                      }}
-                    >
-                      Panel Admin
-                    </Button>
-                  )}
-                </>
               )}
 
               <Button
@@ -178,10 +166,84 @@ const Header = () => {
                   color: Colors.naranjaOscuro,
                   borderColor: Colors.naranjaOscuro,
                   fontWeight: "600",
-                  mx: 1,
+                  marginX: 1,
                 }}
               >
-                Cerrar Sesión
+                Logout
+              </Button>
+            </>
+          )}
+
+          {logueado && enPerfil && (
+            <>
+              <Typography
+                variant="body1"
+                style={{
+                  color: "white",
+                  fontWeight: "bold",
+                  marginRight: 10,
+                  alignSelf: "center",
+                }}
+              >
+                {fullName} - {role}
+              </Typography>
+
+              {role === "Admin" && (
+                <Button
+                  variant="outlined"
+                  onClick={handleAdminPanel}
+                  sx={{
+                    borderRadius: 15,
+                    color: Colors.naranjaOscuro,
+                    borderColor: Colors.naranjaOscuro,
+                    fontWeight: "600",
+                    marginX: 1,
+                  }}
+                >
+                  Panel Admin
+                </Button>
+              )}
+              {role === "Prestador" && (
+                <Button
+                  onClick={() => navigate("/add-vehicle")}
+                  variant="contained"
+                  sx={{
+                    borderRadius: 15,
+                    backgroundColor: Colors.naranjaOscuro,
+                    color: Colors.azul,
+                    fontWeight: "600",
+                    marginX: 1,
+                  }}
+                >
+                  Agregar Vehículo
+                </Button>
+              )}
+
+              <Button
+                onClick={handleLogout}
+                variant="outlined"
+                sx={{
+                  borderRadius: 15,
+                  color: Colors.naranjaOscuro,
+                  borderColor: Colors.naranjaOscuro,
+                  fontWeight: "600",
+                  marginX: 1,
+                }}
+              >
+                Logout
+              </Button>
+              <Button
+                onClick={handleHome}
+                variant="outlined"
+                sx={{
+                  borderRadius: 15,
+                  color: Colors.naranjaOscuro,
+                  borderColor: Colors.naranjaOscuro,
+                  fontWeight: "600",
+                  marginX: 1,
+                }}
+              >
+                Home
               </Button>
             </>
           )}

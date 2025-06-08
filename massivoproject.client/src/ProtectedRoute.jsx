@@ -1,9 +1,9 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { Navigate } from 'react-router-dom';
+import React from "react";
+import { useSelector } from "react-redux";
+import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const auth = useSelector(state => state.auth);
+  const auth = useSelector((state) => state.auth);
 
   if (auth.loading) {
     return <div>Cargando...</div>;
