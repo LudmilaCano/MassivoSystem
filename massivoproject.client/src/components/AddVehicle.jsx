@@ -7,18 +7,22 @@ import loginIllustration from '../images/add-vehicle.svg';
 import Logo2 from '../images/logo2.png';
 import { useNavigate } from 'react-router';
 import useSwalAlert from '../hooks/useSwalAlert';
-
-const typeOfVehicles = ['Combi', 'Mini-Bus', 'Auto', 'Colectivo'];
-
+import { createVehicle } from '../api/VehicleEndpoints';
+import { VEHICLE_TYPE_ENUM, VEHICLE_TYPE_LABELS } from '../constants/vehicleType';
+import { useSelector } from 'react-redux';
 
 const AddVehicle = () => {
-    // Estados
+    const userId = useSelector((state) => state.auth.userId);
     const [formData, setFormData] = useState({
-        patente: '',
-        capacidad: '',
-        modelo: '',        
-        tipoVehiculo: '',
-        
+        userId: null,
+        licensePlate: '',
+        name: '',
+        description: '',
+        imagePath: '',
+        driverName: '',
+        capacity: '',
+        yearModel: '',
+        type: '',
     });
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
@@ -26,85 +30,89 @@ const AddVehicle = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+
+        if (name === 'vehicleType') {
+            setFormData(prev => ({
+                ...prev,
+                type: VEHICLE_TYPE_ENUM[value]
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
     };
 
     const validateForm = () => {
         const newErrors = {};
         const currentYear = new Date().getFullYear();
-    
-        // Validación de patente
-        const patenteRegex = /^(?:[A-Z]{2}\d{3}[A-Z]{2}|[A-Z]{3}\s?\d{3})$/; // Permite opcionalmente un espacio en AAA 999
-        const patente = formData.patente.trim(); // Limpia espacios en blanco
-        if (!patente) {
-            newErrors.patente = 'La patente es obligatoria.';
-        } else if (!patenteRegex.test(patente)) {
-            newErrors.patente = 'La patente debe tener el formato AA999AA o AAA 999.';
+
+        const plateRegex = /^(?:[A-Z]{2}\d{3}[A-Z]{2}|[A-Z]{3}\s?\d{3})$/;
+        const plate = formData.licensePlate?.trim();
+        if (!plate) {
+            newErrors.licensePlate = 'License plate is required.';
+        } else if (!plateRegex.test(plate)) {
+            newErrors.licensePlate = 'License plate must be in format AA999AA or AAA 999.';
         }
-    
-        // Validación de modelo (año)
-        if (!formData.modelo) {
-            newErrors.modelo = 'El modelo (año) es obligatorio.';
-        } else if (isNaN(formData.modelo) || formData.modelo < 1998 || formData.modelo > currentYear) {
-            newErrors.modelo = `El modelo debe ser un año entre 1998 y ${currentYear}.`;
+
+        if (!formData.yearModel) {
+            newErrors.yearModel = 'Year model is required.';
+        } else if (isNaN(formData.yearModel) || formData.yearModel < 1998 || formData.yearModel > currentYear) {
+            newErrors.yearModel = `Year must be between 1998 and ${currentYear}.`;
         }
-    
-        // Validación de capacidad
-        if (!formData.capacidad) {
-            newErrors.capacidad = 'La capacidad es obligatoria.';
-        } else if (isNaN(formData.capacidad) || formData.capacidad <= 3 || formData.capacidad >= 90) {
-            newErrors.capacidad = 'La capacidad debe ser un número mayor a 3 y menor a 90.';
+
+        if (!formData.capacity) {
+            newErrors.capacity = 'Capacity is required.';
+        } else if (isNaN(formData.capacity) || formData.capacity <= 3 || formData.capacity >= 90) {
+            newErrors.capacity = 'Capacity must be a number greater than 3 and less than 90.';
         }
-    
-        // Validación de tipo de vehículo
-        if (!formData.tipoVehiculo) {
-            newErrors.tipoVehiculo = 'El tipo de vehículo es obligatorio.';
+
+        if (formData.type === '' || formData.type === null || isNaN(formData.type)) {
+            newErrors.vehicleType = 'Vehicle type is required.';
         }
 
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0; // Devuelve true si no hay errores
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async () => {
-        
+
+        console.log("formdata: ", formData)
 
         if (validateForm()) {
-            const formattedData = {
-                patente: formData.patente,
-                capacidad: formData.capacidad,
-                modelo: formData.modelo,
-                tipoVehiculo: formData.tipoVehiculo,
-            };
-     
-            console.log("formdata modificado: ", formattedData)
             try {
-                // Llamar a la API para registrar el vehículo
-                
-                showAlert('El Vehículo se ha registrado correctamente. Ahora te redirigiremos al inicio.', 'success');
-
-                setFormData({ // limpiar formulario.
-                    patente: '',
-                    capacidad: '',
-                    modelo: '',        
-                    tipoVehiculo: ''
+                const payload = {
+                    userId: Number(userId),
+                    licensePlate: formData.licensePlate,
+                    name: formData.name,
+                    description: formData.description,
+                    imagePath: formData.imagePath || "https://picsum.photos/200/300",
+                    driverName: formData.driverName,
+                    capacity: Number(formData.capacity),
+                    yearModel: Number(formData.yearModel),
+                    type: Number(formData.type),
+                };
+                console.log('payload content: ', payload);
+                await createVehicle(payload);
+                showAlert('Vehicle registered successfully. You will be redirected to the homepage.', 'success');
+                setFormData({
+                    userId: null,
+                    licensePlate: '',
+                    name: '',
+                    description: '',
+                    imagePath: '',
+                    driverName: '',
+                    capacity: '',
+                    yearModel: '',
+                    type: '',
                 });
-
                 navigate('/');
             } catch (err) {
-
-                // esto es temporario hasta que tengamos un middleware de excepciones en el back, y un interceptor en el front
-                let message = 'Ocurrió un error al registrar el vehículo.';
-
-                if (err.response?.data?.message) {
-                    message = err.response.data.message;
-                }
-                showAlert(message, 'error');
+                console.error('Error: ', err.message);
+                showAlert('Something went wrong!', 'error');
             }
         }
-
     };
 
     return (
@@ -117,62 +125,125 @@ const AddVehicle = () => {
                     sx={{
                         backgroundImage: `url(${loginIllustration})`,
                         backgroundRepeat: 'no-repeat',
-                        backgroundColor: (theme) =>
-                            theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[900],
                         backgroundSize: 'contain',
                         backgroundPosition: 'center',
+                        backgroundColor: (theme) =>
+                            theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[900],
                     }}
                 />
                 <Grid item xs={12} md={7} component={Paper} elevation={6} square>
                     <Box sx={{ mt: 4, mb: 4, mx: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <Box component="img" src={Logo2} alt="Logo" sx={{ width: { xs: '30vw', md: '10vw' }, mb: '3vh' }} />
-                        <Typography variant="h4" gutterBottom>Registrar Vehículo</Typography>
+                        <Typography variant="h4" gutterBottom>Register Vehicle</Typography>
 
-                        {/* Patente y Capacidad */}
                         <Box sx={{ display: 'flex', gap: 2, width: '95%' }}>
-                            <TextField name="patente" label="patente" size="small" fullWidth sx={textFieldStyle} value={formData.patente} onChange={handleChange} error={!!errors.patente} helperText={errors.patente} onInput={(e) => {
-                                    e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); // Permite solo letras y números, y convierte a mayúsculas
-                                }}/>
-                            <TextField name="capacidad" label="capacidad" size="small" fullWidth sx={textFieldStyle} value={formData.capacidad} onChange={handleChange} error={!!errors.capacidad} helperText={errors.capacidad} />
+                            <TextField
+                                name="licensePlate"
+                                label="License Plate"
+                                size="small"
+                                fullWidth
+                                sx={textFieldStyle}
+                                value={formData.licensePlate}
+                                onChange={handleChange}
+                                error={!!errors.licensePlate}
+                                helperText={errors.licensePlate}
+                                onInput={(e) => {
+                                    e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                                }}
+                            />
+                            <TextField
+                                name="capacity"
+                                label="Capacity"
+                                size="small"
+                                fullWidth
+                                sx={textFieldStyle}
+                                value={formData.capacity}
+                                onChange={handleChange}
+                                error={!!errors.capacity}
+                                helperText={errors.capacity}
+                            />
                         </Box>
 
-                        {/* Modelo y capacidad */}
                         <Box sx={{ display: 'flex', gap: 2, width: '95%', mt: 2 }}>
                             <TextField
-                                name="modelo"
-                                label="modelo"
+                                name="yearModel"
+                                label="Year Model"
                                 type="number"
                                 size="small"
                                 fullWidth
                                 sx={textFieldStyle}
-                                value={formData.modelo}
+                                value={formData.yearModel}
                                 onChange={handleChange}
-                                error={!!errors.modelo}
-                                helperText={errors.modelo}
+                                error={!!errors.yearModel}
+                                helperText={errors.yearModel}
                             />
                             <TextField
-                                name="tipoVehiculo"
+                                name="vehicleType"
                                 select
-                                label="tipoVehiculo"
-                                value={formData.tipoVehiculo}
+                                label="Vehicle Type"
+                                value={Object.keys(VEHICLE_TYPE_ENUM).find(key => VEHICLE_TYPE_ENUM[key] === formData.type) || ''}
                                 onChange={handleChange}
                                 size="small"
                                 fullWidth
-                                error={!!errors.tipoVehiculo}
-                                helperText={errors.tipoVehiculo}
+                                error={!!errors.vehicleType}
+                                helperText={errors.vehicleType}
                                 sx={textFieldStyle}
                             >
-                                {typeOfVehicles.map((state) => (
-                                    <MenuItem key={state} value={state}>
-                                        {state}
+                                {Object.keys(VEHICLE_TYPE_LABELS).map((type) => (
+                                    <MenuItem key={type} value={type}>
+                                        {VEHICLE_TYPE_LABELS[type]}
                                     </MenuItem>
                                 ))}
                             </TextField>
                         </Box>
 
-                       
+                        <Box sx={{ display: 'flex', gap: 2, width: '95%', mt: 2 }}>
+                            <TextField
+                                name="name"
+                                label="Vehicle Name"
+                                size="small"
+                                fullWidth
+                                sx={textFieldStyle}
+                                value={formData.name}
+                                onChange={handleChange}
+                            />
+                            <TextField
+                                name="driverName"
+                                label="Driver Name"
+                                size="small"
+                                fullWidth
+                                sx={textFieldStyle}
+                                value={formData.driverName}
+                                onChange={handleChange}
+                            />
+                        </Box>
 
-                        {/* Botón */}
+                        <Box sx={{ display: 'flex', width: '95%', mt: 2 }}>
+                            <TextField
+                                name="description"
+                                label="Description"
+                                size="small"
+                                fullWidth
+                                multiline
+                                minRows={2}
+                                sx={textFieldStyle}
+                                value={formData.description}
+                                onChange={handleChange}
+                            />
+                        </Box>
+
+                        <Box sx={{ display: 'flex', width: '95%', mt: 2 }}>
+                            <TextField
+                                name="imagePath"
+                                label="Image URL"
+                                size="small"
+                                fullWidth
+                                sx={textFieldStyle}
+                                value={formData.imagePath}
+                                onChange={handleChange}
+                            />
+                        </Box>
+
                         <Button
                             variant="contained"
                             onClick={handleSubmit}
@@ -183,9 +254,8 @@ const AddVehicle = () => {
                                 backgroundColor: '#139AA0',
                             }}
                         >
-                            CONTINUAR
+                            CONTINUE
                         </Button>
-                        
                     </Box>
                 </Grid>
             </Grid>
