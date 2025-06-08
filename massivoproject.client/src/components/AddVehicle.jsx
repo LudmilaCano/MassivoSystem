@@ -78,6 +78,8 @@ const AddVehicle = () => {
 
     const handleSubmit = async () => {
 
+        console.log("formdata: ", formData)
+
         if (validateForm()) {
             try {
                 const payload = {
