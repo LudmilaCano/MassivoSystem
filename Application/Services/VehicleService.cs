@@ -86,6 +86,7 @@ namespace Application.Services
 
             var vehicle = new Vehicle
             {
+                UserId = request.userId,
                 LicensePlate = request.LicensePlate.ToUpper(),
                 Name = request.Name,
                 ImagePath = request.ImagePath,
