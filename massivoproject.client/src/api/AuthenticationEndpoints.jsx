@@ -10,11 +10,9 @@ export const AuthenticationService = async (dniOrEmail, password) => {
         },
     );
     if (response.status === 200) {
-        const token = response.data;
-        console.log('Login success!', token)
+        const token = response.data;        
         return token;
     } else {
-        console.log('login failed :(')
         return null;
     }
 

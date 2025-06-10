@@ -9,8 +9,10 @@ namespace Application.Models.Responses
         public int UserId { get; set; }
         public string Location { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
         public DateTime EventDate { get; set; }
         public EventType Type { get; set; }
+        public string Image { get; set; }
         public ICollection<EventVehicleDto> EventVehicles { get; set; }
 
         public static EventDto Create(Event eventEntity)
@@ -19,10 +21,12 @@ namespace Application.Models.Responses
             {
                 EventId = eventEntity.EventId,
                 UserId = eventEntity.UserId,
-                Location = eventEntity.Location?.Name,
+                Location = eventEntity.Location?.Name,//revisar ac[a si hay un tema de eager loading
                 Name = eventEntity.Name,
+                Description = eventEntity.Description,
                 Type = eventEntity.Type,
                 EventDate = eventEntity.EventDate,
+                Image = eventEntity.Image,
                 EventVehicles = eventEntity.EventVehicles.Select(ev => new EventVehicleDto
                 {
                     EventVehicleId = ev.EventVehicleId,
@@ -33,9 +37,5 @@ namespace Application.Models.Responses
                 }).ToList() ?? new List<EventVehicleDto>(),
             };
         }
-
     }
 }
-
-
-

@@ -9,7 +9,7 @@
         public Vehicle Vehicle { get; set; }
         public DateTime Date { get; set; }
         public int Occupation { get; set; } = 0;
-
-
+        public string Description { get; set; }
+        public int Price { get; set; }
     }
 }

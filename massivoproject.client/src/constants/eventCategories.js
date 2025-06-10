@@ -42,14 +42,11 @@ export const EVENT_TYPE_ICONS = {
     Cultural: "🏺",
     Technology: "💻"
 };
-
 export function getEventTypeLabel(type) {
-    // Si es número, lo convertimos a string usando el array
     if (typeof type === "number") {
         const key = EVENT_TYPE_ENUM[type];
         return EVENT_TYPE_LABELS[key] || key || type;
     }
-    // Si es string, lo buscamos directo
     return EVENT_TYPE_LABELS[type] || type;
 }
 
@@ -60,3 +57,4 @@ export function getEventTypeIcon(type) {
     }
     return EVENT_TYPE_ICONS[type] || "❓";
 }
+

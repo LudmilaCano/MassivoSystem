@@ -1,15 +1,16 @@
-using Infraestructure.Data;
-using Microsoft.EntityFrameworkCore;
-using Domain.Interfaces;
 using Application.Interfaces;
-using Microsoft.IdentityModel.Tokens;
 using Application.Services;
-using System.Security.Claims;
-using System.Text;
+using Domain.Interfaces;
+using Infraestructure.Data;
 using Infraestructure.Services;
-using Microsoft.OpenApi.Models;
 using MassivoProject.Server.Exceptions;
 using MassivoProject.Server.Middlewares;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +32,7 @@ builder.Services.AddSwaggerGen(setupAction =>
     {
         Type = SecuritySchemeType.Http,
         Scheme = "Bearer",
-        Description = "Acá pegar el token generado al loguearse."
+        Description = "Acï¿½ pegar el token generado al loguearse."
     });
 
     setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -42,7 +43,7 @@ builder.Services.AddSwaggerGen(setupAction =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "MassivoApp" } //Tiene que coincidir con el id seteado arriba en la definición
+                    Id = "MassivoApp" } //Tiene que coincidir con el id seteado arriba en la definiciï¿½n
                 }, new List<string>() }
     });
 });
@@ -54,6 +55,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 #endregion
 
 #region JWT
+
+//JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options => 
     {
@@ -77,6 +81,8 @@ builder.Services.AddScoped<IProvinceRepository, ProvinceRepository>();
 builder.Services.AddScoped<ICityRepository, CityRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>(); 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IEventVehicleRepository, EventVehicleRepository>();
 
 #endregion
@@ -87,6 +93,7 @@ builder.Services.AddScoped<IProvinceService, ProvinceService>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IEventVehicleService, EventVehicleService>();
 
 // Authentification
@@ -127,6 +134,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

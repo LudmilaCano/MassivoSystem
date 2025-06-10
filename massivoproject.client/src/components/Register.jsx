@@ -47,8 +47,7 @@ const Register = () => {
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                const data = await getAllProvince();
-                console.log('Provincias obtenidas:', data);
+                const data = await getAllProvince();               
                 setProvinces(data.result);
             } catch (error) {
                 console.error("Error al obtener provincias:", error);
@@ -171,8 +170,7 @@ const Register = () => {
 
     const handleSubmit = async () => {
 
-        console.log("formdata: ", formData)
-
+    
         if (validateForm()) {
             const formattedData = {
                 firstName: formData.nombre,
@@ -185,7 +183,6 @@ const Register = () => {
                 birthDate: formData.dob.toISOString().split('T')[0]
             };
 
-            console.log("formdata modificado: ", formattedData)
             try {
                 await createUser(formattedData);
 
@@ -220,6 +217,7 @@ const Register = () => {
         <div style={{ backgroundColor: Colors.azul, width: '100%', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Grid container sx={{ maxHeight: '90vh', maxWidth: '70vw' }}>
                 <Grid
+                    onClick={() =>  navigate('/')}
                     item
                     xs={false}
                     md={5}

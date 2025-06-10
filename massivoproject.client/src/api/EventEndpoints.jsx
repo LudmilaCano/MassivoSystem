@@ -64,3 +64,8 @@ export const getCoordinatesByCityName = async (cityName) => {
     const response = await api.get(`/City/GetCoordinatesByName/${cityName}`);
     return response.data;
 };
+
+export const getCoordinatesByCityId = async (cityId) => {
+    const response = await api.get(`/City/GetCoordinatesById/${cityId}`);
+    return response.data;
+};

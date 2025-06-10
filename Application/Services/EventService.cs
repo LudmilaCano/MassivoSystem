@@ -63,8 +63,10 @@ namespace Application.Services
                 UserId = request.UserId,
                 LocationId = request.LocationId,
                 Name = request.Name,
+                Description = request.Description,
                 EventDate = request.EventDate,
                 Type = request.Type,
+                Image = request.Image
             };
 
             await _eventRepository.AddAsync(newEvent);
@@ -90,8 +92,10 @@ namespace Application.Services
 
             existingEvent.LocationId = request.Location;
             existingEvent.Name = request.Name;
+            existingEvent.Description = request.Description;    
             existingEvent.EventDate = request.EventDate;
             existingEvent.Type = request.Type;
+            existingEvent.Image = request.Image;
 
             await _eventRepository.UpdateAsync(existingEvent);
         }
@@ -132,6 +136,9 @@ namespace Application.Services
                 EventId = request.EventId,
                 LicensePlate = request.LicensePlate,
                 Date = request.Date,
+                Description = request.Description,
+                Price = request.Price
+
             });
 
             await _eventRepository.UpdateAsync(eventEntity);

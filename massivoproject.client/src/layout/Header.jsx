@@ -1,112 +1,256 @@
-import { Button, Typography } from '@mui/material'
-//import React, { useState } from 'react'
-import MenuIcon from '@mui/icons-material/Menu';
-import Colors from './Colors.jsx';
-import logo from '../Images/logo2.png';
-import { useNavigate } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../redux/AuthSlice';
+import React from "react";
+import { Button, Typography } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/AuthSlice";
+import Colors from "./Colors.jsx";
+import logo from "../Images/logo2.png";
 
 const Header = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    //const [logueado, setLogueado] = useState(false);
-    const token = useSelector(state => state.auth.token);
-    const logueado = !!token;
-    //Esto es necesario hacerlo asi porque todo lo referido a login/logout y token esta almacenado en la slice de redux, no se puede hacer con state o context
+  const token = useSelector((state) => state.auth.token);
+  const fullName = useSelector((state) => state.auth.fullName);
+  const role = useSelector((state) => state.auth.role);
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+  const logueado = !!token;
+  const enPerfil = location.pathname === "/profile";
 
-    const abrirMenu = () => {
-        console.log('abrir menu');
-    }
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  };
 
-    const inicioSesion = () => {
-        navigate("/login");
-    }
+  const handleProfile = () => {
+    navigate("/profile");
+  };
 
+  const handleHome = () => {
+    navigate("/");
+  };
 
+  const handleLogin = () => {
+    navigate("/login");
+  };
 
-    const profile = () => {
-        navigate("/profile");
-    }
+  const handleRegister = () => {
+    navigate("/register");
+  };
 
+  const handleAdminPanel = () => {
+    navigate("/admin");
+  };
 
+  const handleContacto = () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
 
-
-
-    
-
-
-    const cerrarSesion = () => {
-        dispatch(logout());
-        navigate("/");
-    }
-
-    const registro = () => {
-
-        navigate("/register");
-    }
-
-
-
-    return (
-        <div style={{ backgroundColor: Colors.azul, width: '100%', padding: '10px 20px', boxSizing: 'border-box' }}>
-
-            {logueado ?
-                <div style={{ flex: 1, justifyContent: 'center', alignContent: 'center', display: 'flex' }}>
-                    <div style={{ flex: 0.2, justifyContent: 'center', alignContent: 'center' }}>
-                        {/*Acá lo que vaya en el header logueado*/}
-                        <Button onClick={() => cerrarSesion()} variant='contained' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', height: 'auto', color: Colors.azul, backgroundColor: Colors.naranjaOscuro }}>Cerrar Sesión</Button>
-
-                    </div>
-                </div>
-                :
-                <div style={{ justifyContent: 'center', alignContent: 'center', display: 'flex' }}>
-
-                    <div style={{ flex: 0.05, justifyContent: 'center', alignContent: 'center' }}>
-                        <Button style={{ width: '100%', borderRadius: 20 }} onClick={() => abrirMenu()}>
-                            <MenuIcon sx={{ fontSize: 30, color: Colors.naranjaOscuro }} />
-                        </Button>
-                    </div>
-                    <Button onClick={() => navigate("/")} style={{ flex: 0.2 }} >
-                        <div style={{ justifyContent: 'center', alignContent: 'center' }}>
-                            <img  src={logo} alt="Logo" style={{ width: 'auto', height: '7vh', objectFit: 'contain', }} />
-                        </div>
-                    </Button>
-
-                    <div style={{ flex: 0.75, alignContent: 'center', justifyContent: 'flex-end', width: '100%', display: 'flex' }}>
-                        <div style={{ alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
-                            <Button variant='text' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', height: 'auto', color: 'white' }} >
-                                Nosotros
-                            </Button>
-                        </div>
-                        <div style={{ alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
-                            <Button variant='text' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', color: 'white' }}>
-                                Contacto
-                            </Button>
-                        </div>
-                        <div style={{ alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
-                            <Button onClick={() => inicioSesion()} variant='contained' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', height: 'auto', color: Colors.azul, backgroundColor: Colors.naranjaOscuro }}>
-                                <Typography variant='body1'>Iniciar Sesión</Typography>
-                            </Button>
-                        </div>
-                        <div style={{ alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
-                            <Button onClick={() => registro()} variant='outlined' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', color: Colors.naranjaOscuro, borderColor: Colors.naranjaOscuro, borderWidth: 3, fontWeight: '600' }}>
-                                Registro
-                            </Button>
-                        </div>
-                        <div style={{  alignContent: 'center', marginLeft: 10, marginRight: 10 }}>
-                            <Button onClick={() => profile()} variant='outlined' sx={{ borderRadius: 15, justifyContent: 'center', alignContent: 'center', color: Colors.naranjaOscuro, borderColor: Colors.naranjaOscuro, borderWidth: 3, fontWeight: '600' }}>
-                                Profile
-                            </Button>
-                        </div>
-
-                    </div>
-                </div>
-            }
+  return (
+    <div
+      style={{
+        backgroundColor: Colors.azul,
+        width: "100%",
+        padding: "10px 20px",
+        boxSizing: "border-box",
+      }}
+    >
+      <div
+        style={{
+          justifyContent: "center",
+          alignContent: "center",
+          display: "flex",
+        }}
+      >
+        <div
+          style={{
+            flex: 0.2,
+            justifyContent: "center",
+            alignContent: "center",
+          }}
+        >
+          <img
+            src={logo}
+            alt="Logo"
+            style={{ width: "auto", height: "7vh", objectFit: "contain" }}
+          />
         </div>
-    )
-}
 
-export default Header
+        <div
+          style={{
+            flex: 0.75,
+            alignContent: "center",
+            justifyContent: "flex-end",
+            width: "100%",
+            display: "flex",
+          }}
+        >
+          {!logueado && !enPerfil && (
+            <>
+              <Button variant="text" sx={{ color: "white", marginX: 1 }}>
+                Nosotros
+              </Button>
+              <Button
+                variant="text"
+                sx={{ color: "white", marginX: 1 }}
+                onClick={handleContacto}
+              >
+                Contacto
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleLogin}
+                sx={{
+                  borderRadius: 15,
+                  color: Colors.azul,
+                  backgroundColor: Colors.naranjaOscuro,
+                  marginX: 1,
+                }}
+              >
+                Login
+              </Button>
+              <Button
+                onClick={handleRegister}
+                variant="outlined"
+                sx={{
+                  borderRadius: 15,
+                  color: Colors.naranjaOscuro,
+                  borderColor: Colors.naranjaOscuro,
+                  fontWeight: "600",
+                  marginX: 1,
+                }}
+              >
+                Registro
+              </Button>
+            </>
+          )}
+
+          {logueado && !enPerfil && (
+            <>
+              <Button
+                onClick={handleProfile}
+                variant="outlined"
+                sx={{
+                  borderRadius: 15,
+                  color: Colors.naranjaOscuro,
+                  borderColor: Colors.naranjaOscuro,
+                  fontWeight: "600",
+                  marginX: 1,
+                }}
+              >
+                Profile
+              </Button>
+              {role === "Prestador" && (
+                <Button
+                  onClick={() => navigate("/add-vehicle")}
+                  variant="contained"
+                  sx={{
+                    borderRadius: 15,
+                    backgroundColor: Colors.naranjaOscuro,
+                    color: Colors.azul,
+                    fontWeight: "600",
+                    marginX: 1,
+                  }}
+                >
+                  Agregar Vehículo
+                </Button>
+              )}
+
+              <Button
+                onClick={handleLogout}
+                variant="outlined"
+                sx={{
+                  borderRadius: 15,
+                  color: Colors.naranjaOscuro,
+                  borderColor: Colors.naranjaOscuro,
+                  fontWeight: "600",
+                  marginX: 1,
+                }}
+              >
+                Logout
+              </Button>
+            </>
+          )}
+
+          {logueado && enPerfil && (
+            <>
+              <Typography
+                variant="body1"
+                style={{
+                  color: "white",
+                  fontWeight: "bold",
+                  marginRight: 10,
+                  alignSelf: "center",
+                }}
+              >
+                {fullName} - {role}
+              </Typography>
+
+              {role === "Admin" && (
+                <Button
+                  variant="outlined"
+                  onClick={handleAdminPanel}
+                  sx={{
+                    borderRadius: 15,
+                    color: Colors.naranjaOscuro,
+                    borderColor: Colors.naranjaOscuro,
+                    fontWeight: "600",
+                    marginX: 1,
+                  }}
+                >
+                  Panel Admin
+                </Button>
+              )}
+              {role === "Prestador" && (
+                <Button
+                  onClick={() => navigate("/add-vehicle")}
+                  variant="contained"
+                  sx={{
+                    borderRadius: 15,
+                    backgroundColor: Colors.naranjaOscuro,
+                    color: Colors.azul,
+                    fontWeight: "600",
+                    marginX: 1,
+                  }}
+                >
+                  Agregar Vehículo
+                </Button>
+              )}
+
+              <Button
+                onClick={handleLogout}
+                variant="outlined"
+                sx={{
+                  borderRadius: 15,
+                  color: Colors.naranjaOscuro,
+                  borderColor: Colors.naranjaOscuro,
+                  fontWeight: "600",
+                  marginX: 1,
+                }}
+              >
+                Logout
+              </Button>
+              <Button
+                onClick={handleHome}
+                variant="outlined"
+                sx={{
+                  borderRadius: 15,
+                  color: Colors.naranjaOscuro,
+                  borderColor: Colors.naranjaOscuro,
+                  fontWeight: "600",
+                  marginX: 1,
+                }}
+              >
+                Home
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Header;
