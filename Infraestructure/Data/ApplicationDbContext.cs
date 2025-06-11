@@ -1,6 +1,5 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 
 namespace Infraestructure.Data
 {
@@ -13,10 +12,11 @@ namespace Infraestructure.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<EventVehicle> EventsVehicles { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -61,15 +61,15 @@ namespace Infraestructure.Data
                 .HasForeignKey(ev => ev.EventId);
 
             modelBuilder.Entity<EventVehicle>()
-             .HasOne(ev => ev.Vehicle)
-             .WithMany(v => v.EventsVehicles)
-             .HasForeignKey(ev => ev.LicensePlate)
-             .OnDelete(DeleteBehavior.Cascade);
-
+                .HasOne(ev => ev.Vehicle)
+                .WithMany(v => v.EventsVehicles)
+                .HasForeignKey(ev => ev.LicensePlate)
+                .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.User)
                 .WithMany()
                 .HasForeignKey(b => b.UserId);
+
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.EventVehicle)
                 .WithMany()
@@ -80,7 +80,28 @@ namespace Infraestructure.Data
                 .WithMany()
                 .HasForeignKey(b => b.PaymentId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Review>()
+                .HasKey(r => r.ReviewId);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.EventVehicle)
+                .WithMany()
+                .HasForeignKey(r => r.EventVehicleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => new { r.UserId, r.EventVehicleId })
+                .IsUnique();
+
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => r.EventVehicleId);
         }
     }
 }
-

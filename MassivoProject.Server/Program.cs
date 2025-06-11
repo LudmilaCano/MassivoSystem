@@ -84,6 +84,7 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IEventVehicleRepository, EventVehicleRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
 #endregion
 
@@ -95,6 +96,7 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IEventVehicleService, EventVehicleService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
