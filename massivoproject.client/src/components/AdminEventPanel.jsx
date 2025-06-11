@@ -1,37 +1,94 @@
 // src/components/AdminEventPanel.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, FormControl, InputLabel, Select, MenuItem, Box
+  TextField, FormControl, InputLabel, Select, MenuItem, Box,
+  Autocomplete
 } from '@mui/material';
 import { adminUpdateEvent } from '../api/EventEndpoints';
+import { getAllCities } from '../api/CityEndpoints';
 import Swal from 'sweetalert2';
 
 const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [cities, setCities] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        setLoading(true);
+        const citiesData = await getAllCities();
+        setCities(citiesData);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        showErrorAlert("Error al cargar las ciudades");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCities();
+  }, []);
 
   const handleEditEvent = (event) => {
     setSelectedEvent({...event});
+    setErrors({});
     setOpenDialog(true);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSelectedEvent(prev => ({ ...prev, [name]: value }));
+    // Limpiar error cuando el usuario modifica el campo
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const handleCityChange = (event, newValue) => {
+    setSelectedEvent(prev => ({
+      ...prev,
+      locationId: newValue ? newValue.id : null,
+      location: newValue ? newValue.name : null
+    }));
+    // Limpiar error cuando el usuario selecciona una ciudad
+    if (errors.locationId) {
+      setErrors(prev => ({ ...prev, locationId: null }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!selectedEvent.name) newErrors.name = "El nombre es obligatorio";
+    if (!selectedEvent.description) newErrors.description = "La descripción es obligatoria";
+    if (!selectedEvent.eventDate) newErrors.eventDate = "La fecha es obligatoria";
+    if (selectedEvent.type === undefined || selectedEvent.type === null) newErrors.type = "El tipo es obligatorio";
+    if (!selectedEvent.locationId) newErrors.locationId = "La ciudad es obligatoria";
+    if (!selectedEvent.image) newErrors.image = "La imagen es obligatoria";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSaveEvent = async () => {
+    if (!validateForm()) {
+      showErrorAlert("Por favor complete todos los campos obligatorios");
+      return;
+    }
+
     try {
-      // Crear objeto con la estructura esperada por el backend
       const eventData = {
         eventId: selectedEvent.eventId,
         name: selectedEvent.name,
         description: selectedEvent.description,
         eventDate: selectedEvent.eventDate,
         type: parseInt(selectedEvent.type),
-        image: selectedEvent.image || "",
+        image: selectedEvent.image,
         locationId: selectedEvent.locationId,
         userId: selectedEvent.userId
       };
@@ -81,6 +138,7 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedEvent(null);
+    setErrors({});
   };
 
   return (
@@ -136,37 +194,46 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
           {selectedEvent && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
               <TextField
-                label="Nombre"
+                label="Nombre *"
                 name="name"
                 value={selectedEvent.name || ''}
                 onChange={handleInputChange}
                 fullWidth
+                required
+                error={!!errors.name}
+                helperText={errors.name}
               />
               <TextField
-                label="Descripción"
+                label="Descripción *"
                 name="description"
                 value={selectedEvent.description || ''}
                 onChange={handleInputChange}
                 fullWidth
                 multiline
                 rows={3}
+                required
+                error={!!errors.description}
+                helperText={errors.description}
               />
               <TextField
-                label="Fecha"
+                label="Fecha *"
                 name="eventDate"
                 type="datetime-local"
                 value={selectedEvent.eventDate ? selectedEvent.eventDate.split('.')[0] : ''}
                 onChange={handleInputChange}
                 fullWidth
                 InputLabelProps={{ shrink: true }}
+                required
+                error={!!errors.eventDate}
+                helperText={errors.eventDate}
               />
-              <FormControl fullWidth>
-                <InputLabel>Tipo</InputLabel>
+              <FormControl fullWidth required error={!!errors.type}>
+                <InputLabel>Tipo *</InputLabel>
                 <Select
                   name="type"
-                  value={selectedEvent.type || 0}
+                  value={selectedEvent.type || ''}
                   onChange={handleInputChange}
-                  label="Tipo"
+                  label="Tipo *"
                 >
                   <MenuItem value={0}>Concierto</MenuItem>
                   <MenuItem value={1}>Deportivo</MenuItem>
@@ -174,21 +241,43 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
                   <MenuItem value={3}>Conferencia</MenuItem>
                   <MenuItem value={4}>Otro</MenuItem>
                 </Select>
+                {errors.type && <FormHelperText>{errors.type}</FormHelperText>}
               </FormControl>
               <TextField
-                label="URL de imagen"
+                label="URL de imagen *"
                 name="image"
                 value={selectedEvent.image || ''}
                 onChange={handleInputChange}
                 fullWidth
+                required
+                error={!!errors.image}
+                helperText={errors.image}
               />
-              <TextField
-                label="ID de ubicación"
-                name="locationId"
-                type="number"
-                value={selectedEvent.locationId || ''}
-                onChange={handleInputChange}
-                fullWidth
+              <Autocomplete
+                options={cities}
+                getOptionLabel={(option) => option.name || ''}
+                value={cities.find(city => city.id === selectedEvent.locationId) || null}
+                onChange={handleCityChange}
+                loading={loading}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Ciudad *"
+                    fullWidth
+                    required
+                    error={!!errors.locationId}
+                    helperText={errors.locationId}
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
               />
             </Box>
           )}

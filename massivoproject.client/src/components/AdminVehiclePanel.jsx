@@ -11,18 +11,45 @@ import Swal from 'sweetalert2';
 const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAlert }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [errors, setErrors] = useState({});
   
   const handleEditVehicle = (vehicle) => {
     setSelectedVehicle({...vehicle});
+    setErrors({});
     setOpenDialog(true);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSelectedVehicle(prev => ({ ...prev, [name]: value }));
+    // Limpiar error cuando el usuario modifica el campo
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!selectedVehicle.name) newErrors.name = "El nombre es obligatorio";
+    if (!selectedVehicle.description) newErrors.description = "La descripción es obligatoria";
+    if (!selectedVehicle.capacity) newErrors.capacity = "La capacidad es obligatoria";
+    if (selectedVehicle.type === undefined || selectedVehicle.type === null) newErrors.type = "El tipo es obligatorio";
+    if (!selectedVehicle.driverName) newErrors.driverName = "El nombre del conductor es obligatorio";
+    if (!selectedVehicle.yearModel) newErrors.yearModel = "El año del modelo es obligatorio";
+    if (!selectedVehicle.imagePath) newErrors.imagePath = "La URL de imagen es obligatoria";
+    if (selectedVehicle.available === undefined || selectedVehicle.available === null) newErrors.available = "La disponibilidad es obligatoria";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSaveVehicle = async () => {
+    if (!validateForm()) {
+      showErrorAlert("Por favor complete todos los campos obligatorios");
+      return;
+    }
+
     try {
       // Crear objeto con la estructura esperada por el backend
       const vehicleData = {
@@ -33,8 +60,7 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
         type: parseInt(selectedVehicle.type),
         driverName: selectedVehicle.driverName,
         yearModel: parseInt(selectedVehicle.yearModel),
-        imagePath: selectedVehicle.imagePath,
-        available: parseInt(selectedVehicle.available || 0)
+        imagePath: selectedVehicle.imagePath
       };
 
       await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
@@ -56,8 +82,7 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
         <p><strong>Tipo:</strong> ${getVehicleTypeName(vehicle.type)}</p>
         <p><strong>Capacidad:</strong> ${vehicle.capacity}</p>
         <p><strong>Conductor:</strong> ${vehicle.driverName || ''}</p>
-        <p><strong>Año:</strong> ${vehicle.yearModel || ''}</p>
-        <p><strong>Disponible:</strong> ${vehicle.available ? 'Sí' : 'No'}</p>
+        <p><strong>Año:</strong> ${vehicle.yearModel || ''}</p>        
       </div>
     `;
     
@@ -81,6 +106,7 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedVehicle(null);
+    setErrors({});
   };
 
   return (
@@ -136,77 +162,97 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
           {selectedVehicle && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
               <TextField
-                label="Nombre"
+                label="Nombre *"
                 name="name"
                 value={selectedVehicle.name || ''}
                 onChange={handleInputChange}
                 fullWidth
+                required
+                error={!!errors.name}
+                helperText={errors.name}
               />
               <TextField
-                label="Descripción"
+                label="Descripción *"
                 name="description"
                 value={selectedVehicle.description || ''}
                 onChange={handleInputChange}
                 fullWidth
                 multiline
                 rows={2}
+                required
+                error={!!errors.description}
+                helperText={errors.description}
               />
-              <FormControl fullWidth>
-                <InputLabel>Tipo</InputLabel>
+              <FormControl fullWidth required error={!!errors.type}>
+                <InputLabel>Tipo *</InputLabel>
                 <Select
                   name="type"
-                  value={selectedVehicle.type || 0}
+                  value={selectedVehicle.type || ''}
                   onChange={handleInputChange}
-                  label="Tipo"
+                  label="Tipo *"
                 >
                   <MenuItem value={0}>Combi</MenuItem>
                   <MenuItem value={1}>MiniBus</MenuItem>
                   <MenuItem value={2}>Auto</MenuItem>
                   <MenuItem value={3}>Colectivo</MenuItem>
                 </Select>
+                {errors.type && <FormHelperText>{errors.type}</FormHelperText>}
               </FormControl>
               <TextField
-                label="Capacidad"
+                label="Capacidad *"
                 name="capacity"
                 type="number"
                 value={selectedVehicle.capacity || ''}
                 onChange={handleInputChange}
                 fullWidth
+                required
+                error={!!errors.capacity}
+                helperText={errors.capacity}
               />
               <TextField
-                label="Conductor"
+                label="Conductor *"
                 name="driverName"
                 value={selectedVehicle.driverName || ''}
                 onChange={handleInputChange}
                 fullWidth
+                required
+                error={!!errors.driverName}
+                helperText={errors.driverName}
               />
               <TextField
-                label="Año del modelo"
+                label="Año del modelo *"
                 name="yearModel"
                 type="number"
                 value={selectedVehicle.yearModel || ''}
                 onChange={handleInputChange}
                 fullWidth
+                required
+                error={!!errors.yearModel}
+                helperText={errors.yearModel}
               />
               <TextField
-                label="URL de imagen"
+                label="URL de imagen *"
                 name="imagePath"
                 value={selectedVehicle.imagePath || ''}
                 onChange={handleInputChange}
                 fullWidth
+                required
+                error={!!errors.imagePath}
+                helperText={errors.imagePath}
               />
-              <FormControl fullWidth>
-                <InputLabel>Disponible</InputLabel>
+              {/* <FormControl fullWidth required error={!!errors.available}>
+                <InputLabel>Disponible *</InputLabel>
                 <Select
                   name="available"
-                  value={selectedVehicle.available || 0}
+                  value={selectedVehicle.available || ''}
                   onChange={handleInputChange}
-                  label="Disponible"
+                  label="Disponible *"
                 >
                   <MenuItem value={1}>Sí</MenuItem>
                   <MenuItem value={0}>No</MenuItem>
                 </Select>
-              </FormControl>
+                {errors.available && <FormHelperText>{errors.available}</FormHelperText>}
+              </FormControl> */}
             </Box>
           )}
         </DialogContent>

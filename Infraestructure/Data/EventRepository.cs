@@ -23,6 +23,7 @@ namespace Infraestructure.Data
         public async Task<Event> GetEventByIdWithVehiclesIncludedAsync(int id)
         {
             return await _context.Events
+                .Include(e => e.Location)
                 .Include(e => e.EventVehicles)
                     .ThenInclude(ev => ev.Vehicle)
                 .FirstOrDefaultAsync(e => e.EventId == id);
@@ -31,7 +32,9 @@ namespace Infraestructure.Data
         public async Task<List<Event>> GetAllEventsWithVehiclesIncludedAsync()
         {
             return await _context.Events
+                .Include(e => e.Location)
                 .Include(e => e.EventVehicles)
+                
                     .ThenInclude(ev => ev.Vehicle)
                 .ToListAsync();
         }
