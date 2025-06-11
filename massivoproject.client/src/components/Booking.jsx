@@ -95,13 +95,11 @@ const Booking = () => {
               <Typography variant="subtitle1"><strong>Lugar:</strong> {event.location}</Typography>
             </Box>
 
-            {/* Info del vehículo */}
             <Box sx={{ width: '95%', mb: 2 }}>
               <Typography variant="subtitle1"><strong>Vehículo:</strong> {vehicle.type}</Typography>
               <Typography variant="subtitle1"><strong>Capacidad máxima:</strong> {vehicle.seats} personas</Typography>
             </Box>
 
-            {/* Formulario */}
             <Box sx={{ display: 'flex', gap: 2, width: '95%' }}>
               <TextField
                 name="travelers"

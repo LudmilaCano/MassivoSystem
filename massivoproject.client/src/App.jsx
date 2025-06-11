@@ -19,6 +19,7 @@ import TripDetail from './components/TripDetail.jsx'
 import AddEvent from './components/AddEvent.jsx';
 import AddVehicleEvent from './components/AddEventVehicle.jsx';
 import Booking from './components/Booking.jsx'
+import BookingList from './components/BookingList.jsx'
 
 
 function App() {
@@ -58,7 +59,6 @@ function App() {
         </MainLayout>
 
       ),
-
     },
     {
       path: "/vehicle-list/:eventId",
@@ -84,26 +84,35 @@ function App() {
 
     },
     {
-    path: "/add-event",
-    element: (
-      <MainLayout>
-        <AddEvent />
-      </MainLayout>
-    ),
-  },
-  {
-    path: "/add-vehicle-event",
-    element: (
-      <MainLayout>
-        <AddVehicleEvent />
-      </MainLayout>
-    ),
-  } 
-    ,
+      path: "/add-event",
+      element: (
+        <MainLayout>
+          <AddEvent />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/add-vehicle-event",
+      element: (
+        <MainLayout>
+          <AddVehicleEvent />
+        </MainLayout>
+      ),
+    },
     {
       path: "/booking",
       element: (
         <Booking />
+      )
+
+    }
+    ,
+    {
+      path: "/booking-list",
+      element: (
+        <MainLayout>
+          <BookingList />
+        </MainLayout>
       )
 
     }
