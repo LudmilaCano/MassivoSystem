@@ -89,5 +89,29 @@ namespace Application.Services
             user.IsActive = Domain.Enums.EntityState.Inactive;
             _userRepository.UpdateAsync(user).Wait();
         }
+
+        public async Task<bool> AdminUpdateUserAsync(int userId, AdminUserUpdateRequest request)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.BirthDate = request.BirthDate;
+            user.IdentificationNumber = request.IdentificationNumber;
+            user.Email = request.Email;
+            user.CityId = request.CityId;
+            user.ProvinceId = request.ProvinceId;
+            user.Role = request.Role;
+
+            /*if (!string.IsNullOrEmpty(request.Password))
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            }*/
+
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
     }
 }

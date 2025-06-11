@@ -144,6 +144,24 @@ namespace Application.Services
             await _eventRepository.UpdateAsync(eventEntity);
         }
 
+        public async Task<bool> AdminUpdateEventAsync(int eventId, AdminEventUpdateRequest request)
+        {
+            var eventEntity = await _eventRepository.GetByIdAsync(eventId);
+            if (eventEntity == null)
+                return false;
+
+            eventEntity.Name = request.Name;
+            eventEntity.Description = request.Description;
+            eventEntity.EventDate = request.EventDate;
+            eventEntity.Type = request.Type;
+            eventEntity.Image = request.Image;
+            eventEntity.LocationId = request.LocationId;
+            eventEntity.UserId = request.UserId;
+
+            await _eventRepository.UpdateAsync(eventEntity);
+            return true;
+        }
+
         public async Task DeleteVehicleFromEventAsync(DeleteEventVehicleRequest request)
         {
             var eventEntity = await _eventRepository.GetEventByIdWithVehiclesIncludedAsync(request.EventId);

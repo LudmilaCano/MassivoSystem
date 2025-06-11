@@ -67,6 +67,27 @@ namespace MassivoProject.Server.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPut("admin/{id}")]
+        public async Task<IActionResult> AdminUpdateEvent(int id, [FromBody] AdminEventUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var result = await _eventService.AdminUpdateEventAsync(id, request);
+                if (!result)
+                    return NotFound(new { Message = "Evento no encontrado." });
+
+                return Ok(new { Message = "Evento actualizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"Error al actualizar el evento: {ex.Message}" });
+            }
+        }
+
         [HttpPost("add-vehicle")]
         public async Task<IActionResult> AddVehicleToEvent(AddEventVehicleRequest request)
         {

@@ -16,5 +16,8 @@ namespace Application.Interfaces
         List<User> GetUsers();
         void SignUpUser(UserSignUpRequest userSignUpRequest);
         void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser);
+        Task<bool> AdminUpdateUserAsync(int userId, AdminUserUpdateRequest request);
+
+
     }
 }

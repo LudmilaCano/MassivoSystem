@@ -58,5 +58,8 @@ namespace MassivoProject.Server.Controllers
             var vehicles = await _eventVehicleService.GetVehiclesByEventAsync(eventId);
             return Ok(vehicles);
         }
+
+
+
     }
 }

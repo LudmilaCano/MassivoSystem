@@ -180,6 +180,25 @@ namespace MassivoApp.Server.Controllers
             return Ok(claims);
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPut("admin/{id}")]
+        public async Task<IActionResult> AdminUpdateUser(int id, [FromBody] AdminUserUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            try
+            {
+                var result = await _userService.AdminUpdateUserAsync(id, request);
+                if (!result)
+                    return NotFound(new { Message = "Usuario no encontrado." });
+
+                return Ok(new { Message = "Usuario actualizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"Error al actualizar el usuario: {ex.Message}" });
+            }
+        }
     }
 }

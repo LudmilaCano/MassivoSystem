@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Domain.Interfaces
 {
     public interface IUserRepository : IRepositoryBase<User>
@@ -13,5 +14,6 @@ namespace Domain.Interfaces
         Task<bool> ExistsByIdentificationNumberAsync(string identificationNumber);
         Task<bool> ExistsByEmailAsync(string email);
         Task<bool>IsAdmin(int userId);
+        
     }
 }

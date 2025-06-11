@@ -91,6 +91,29 @@ namespace MassivoProject.Server.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPut("admin/{licensePlate}")]
+        public async Task<IActionResult> AdminUpdateVehicle(string licensePlate, [FromBody] AdminVehicleUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var result = await _vehicleService.AdminUpdateVehicleAsync(licensePlate, request);
+                if (!result)
+                    return NotFound(new { Message = "Vehículo no encontrado." });
+
+                return Ok(new { Message = "Vehículo actualizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"Error al actualizar el vehículo: {ex.Message}" });
+            }
+        }
+
+
+
         [HttpPut("{licensePlate}/deactivate")]
         public async Task<IActionResult> DeactivateVehicle(string licensePlate)
         {

@@ -133,6 +133,28 @@ namespace Application.Services
             await _vehicleRepository.UpdateAsync(vehicle);
         }
 
+        // Application/Services/VehicleService.cs
+        // Añade este método a la clase existente
+        public async Task<bool> AdminUpdateVehicleAsync(string licensePlate, AdminVehicleUpdateRequest request)
+        {
+            var vehicle = await _vehicleRepository.GetByLicensePlateAsync(licensePlate);
+            if (vehicle == null)
+                return false;
+
+            vehicle.Name = request.Name;
+            vehicle.Description = request.Description;
+            vehicle.Capacity = request.Capacity;
+            vehicle.Type = request.Type;
+            vehicle.DriverName = request.DriverName;
+            vehicle.YearModel = request.YearModel;
+            vehicle.ImagePath = request.ImagePath;
+            vehicle.Available = request.Available;
+            // No actualizamos LicensePlate ya que es la clave primaria
+
+            await _vehicleRepository.UpdateAsync(vehicle);
+            return true;
+        }
+
         public async Task DeactivateVehicleAsync(string licensePlate)
         {
             var vehicle = await _vehicleRepository.GetByIdAsync(licensePlate);
