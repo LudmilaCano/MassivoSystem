@@ -33,6 +33,14 @@ namespace Infraestructure.Data
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<EventVehicle>> GetEventVehiclesByUserIdAsync(int userId)
+        {
+            return await _context.EventsVehicles
+                .Include(ev => ev.Event)
+                .Include(ev => ev.Vehicle)
+                .Where(ev => ev.Event.UserId == userId)
+                .ToListAsync();
+        }
 
         public async Task<EventVehicle> GetById(int eventVehicleId)
         {

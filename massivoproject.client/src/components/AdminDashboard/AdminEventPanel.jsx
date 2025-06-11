@@ -6,8 +6,8 @@ import {
   TextField, FormControl, InputLabel, Select, MenuItem, Box,
   Autocomplete
 } from '@mui/material';
-import { adminUpdateEvent } from '../api/EventEndpoints';
-import { getAllCities } from '../api/CityEndpoints';
+import { adminUpdateEvent } from '../../api/EventEndpoints';
+import { getAllCities } from '../../api/CityEndpoints';
 import Swal from 'sweetalert2';
 
 const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }) => {

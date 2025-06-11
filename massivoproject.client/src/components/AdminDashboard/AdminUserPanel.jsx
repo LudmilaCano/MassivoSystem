@@ -6,9 +6,9 @@ import {
   TextField, FormControl, InputLabel, Select, MenuItem, Box,
   FormHelperText
 } from '@mui/material';
-import { adminUpdateUser } from '../api/UserEndpoints';
-import { getAllProvince } from '../api/ProvinceEndpoints';
-import { getCitiesByProvince } from '../api/CityEndpoints';
+import { adminUpdateUser } from '../../api/UserEndpoints';
+import { getAllProvince } from '../../api/ProvinceEndpoints';
+import { getCitiesByProvince } from '../../api/CityEndpoints';
 import Swal from 'sweetalert2';
 import { useSelector } from 'react-redux';
 

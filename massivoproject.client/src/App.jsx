@@ -7,6 +7,7 @@ import CustomerProfile from "./components/Customer_profile/CustomerProfile.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import Register from "./components/Register.jsx";
 import Home from "./components/Home.jsx";
+import ProviderDashboard from "./components/ServiceProviderDashboard/ProviderDashboard.jsx";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "./layout/Theme.jsx";
@@ -21,7 +22,7 @@ import AddVehicleEvent from "./components/AddEventVehicle.jsx";
 import Booking from "./components/Booking.jsx";
 import { useSelector } from "react-redux";
 import AboutUs from "./components/AboutUs.jsx";
-import AdminDashboard from "./components/AdminDashboard.jsx";
+import AdminDashboard from "./components/AdminDashboard/AdminDashboard.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -142,6 +143,16 @@ function App() {
         <ProtectedRoute allowedRoles={["Admin"]}>
           <MainLayout>
             <AdminDashboard />
+          </MainLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/provider-dashboard",
+      element: (
+        <ProtectedRoute allowedRoles={["Prestador"]}>
+          <MainLayout>
+            <ProviderDashboard />
           </MainLayout>
         </ProtectedRoute>
       ),

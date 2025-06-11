@@ -5,7 +5,7 @@ import {
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, FormControl, InputLabel, Select, MenuItem, Box
 } from '@mui/material';
-import { adminUpdateVehicle } from '../api/VehicleEndpoints';
+import { adminUpdateVehicle } from '../../api/VehicleEndpoints';
 import Swal from 'sweetalert2';
 
 const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAlert }) => {

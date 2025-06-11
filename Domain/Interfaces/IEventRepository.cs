@@ -9,6 +9,7 @@ namespace Domain.Interfaces
         Task<List<Event>> GetRandomEventsAsync(int count);
         Task<List<Event>> FilterEventsAsync(string? name, DateTime? date);
         Task<Event> GetById(int id);
+        Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId);
 
     }
 }

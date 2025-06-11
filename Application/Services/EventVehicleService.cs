@@ -18,6 +18,10 @@ namespace Application.Services
             _vehicleRepository = vehicleRepository;
             _eventRepository = eventRepository;
         }
+        public async Task<IEnumerable<EventVehicle>> GetEventVehiclesByUserIdAsync(int userId)
+        {
+            return await _eventVehicleRepository.GetEventVehiclesByUserIdAsync(userId);
+        }
 
         public async Task<EventVehicleDto> AddAsync(AddEventVehicleRequest request)
         {

@@ -18,6 +18,12 @@ namespace MassivoProject.Server.Controllers
         }
 
         
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<EventVehicle>>> GetEventVehiclesByUserId(int userId)
+        {
+            var eventVehicles = await _eventVehicleService.GetEventVehiclesByUserIdAsync(userId);
+            return Ok(eventVehicles);
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventVehicle>>> Get()

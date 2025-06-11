@@ -6,9 +6,9 @@ import {
 import PeopleIcon from '@mui/icons-material/People';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import EventIcon from '@mui/icons-material/Event';
-import { getAllUsers } from '../api/UserEndpoints';
-import { getAllVehicles } from '../api/VehicleEndpoints';
-import { getAllEvents } from '../api/EventEndpoints';
+import { getAllUsers } from '../../api/UserEndpoints';
+import { getAllVehicles } from '../../api/VehicleEndpoints';
+import { getAllEvents } from '../../api/EventEndpoints';
 import AdminUserPanel from './AdminUserPanel';
 import AdminVehiclePanel from './AdminVehiclePanel';
 import AdminEventPanel from './AdminEventPanel';

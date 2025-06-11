@@ -74,3 +74,13 @@ export const getCoordinatesByCityId = async (cityId) => {
     const response = await api.get(`/City/GetCoordinatesById/${cityId}`);
     return response.data;
 };
+
+export const getEventVehiclesByUserId = async (userId) => {
+    const response = await api.get(`/EventVehicle/user/${userId}`);
+    return response.data;
+};
+
+export const getEventsByUserId = async (userId) => {
+    const response = await api.get(`/Event/user/${userId}`);
+    return response.data;
+};

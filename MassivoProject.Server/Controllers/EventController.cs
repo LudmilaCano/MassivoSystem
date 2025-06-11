@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -17,6 +18,14 @@ namespace MassivoProject.Server.Controllers
         public EventController(IEventService eventService)
         {
             _eventService = eventService;
+        }
+
+
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<Event>>> GetEventsByUserId(int userId)
+        {
+            var events = await _eventService.GetEventsByUserIdAsync(userId);
+            return Ok(events);
         }
 
         [HttpGet]

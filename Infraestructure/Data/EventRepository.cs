@@ -14,6 +14,12 @@ namespace Infraestructure.Data
         {
             _context = context;
         }
+        public async Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId)
+        {
+            return await _context.Events
+                .Where(e => e.UserId == userId)
+                .ToListAsync();
+        }
         public async Task<Event> GetById(int id)
         {
             return await _context.Events
