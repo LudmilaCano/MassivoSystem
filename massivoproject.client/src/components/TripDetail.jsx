@@ -6,7 +6,7 @@ import FlagIcon from '@mui/icons-material/Flag';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import 'leaflet/dist/leaflet.css';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { getEventVehicleById } from '../api/EventEndpoints';
 import { getCoordinatesByCityName, getCoordinatesByCityId } from '../api/EventEndpoints';
 
@@ -21,6 +21,7 @@ const TripDetail = () => {
   const [coordsLoading, setCoordsLoading] = useState(true);
   const [openDescription, setOpenDescription] = useState(false);
 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEventVehicle = async () => {
@@ -71,6 +72,10 @@ const TripDetail = () => {
 
   if (loading) return <Typography>Cargando...</Typography>;
   if (!eventVehicle) return <Typography>No se encontró el viaje.</Typography>;
+
+  const handleReservar = () => {
+    navigate('/booking', {state: {eventVehicle}});
+  }
 
 
   const bounds = [coordsFrom, coordsTo];
@@ -175,6 +180,7 @@ const TripDetail = () => {
               </Typography>
             </Box>
             <Button
+              onClick={() => handleReservar()}
               variant="contained"
               color="warning"
               sx={{

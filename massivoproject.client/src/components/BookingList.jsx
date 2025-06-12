@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import {
   Box, Typography, Paper, Chip, Grid, Button, TextField, Pagination
 } from '@mui/material';
-// import { getUserBookings } from '../api/BookingEndpoints';
+import { getBookingByUser } from '../api/BookingEndpoints';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from "react-redux";
 
 const BookingList = () => {
   const [bookings, setBookings] = useState([]);
@@ -17,10 +18,14 @@ const BookingList = () => {
   const currentItems = filteredBookings.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
   const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth);
 
-  useEffect(() => {
 
-  }, []);
+  useEffect( async () => {
+        const userId = auth.userId; 
+        const data = await getBookingByUser(userId);
+        setBookings(data);
+  }, [auth.userId]);
 
   useEffect(() => {
     const delay = setTimeout(() => {

@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box, TextField, Button, Typography, Paper, MenuItem, Grid
 } from '@mui/material';
 import Logo2 from '../images/logo2.png';
 import bookingIllustration from '../images/booking.svg';
 import Colors from '../layout/Colors';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import useSwalAlert from '../hooks/useSwalAlert';
+import { createBooking } from '../api/BookingEndpoints';
 
 const paymentMethods = ['Tarjeta de Crédito', 'Mercado Pago', 'Efectivo'];
 
 const Booking = () => {
+  const location = useLocation();
+  const { eventVehicle } = location.state; 
+
+  // eventVehicle me trae: 
+  // date:"2025-06-14T23:23:53.446"
+  // description: "una descripcion"
+  // eventId:2
+  // eventVehicleId:3
+  // from:"San Lorenzo"
+  // licensePlate:"DDD444"
+  // occupation:0
+  // price:2500
+  // vehicleType:"Combi"
+
   const event = {
     name: 'Recital Los Piojos',
     eventDate: '2025-08-15',
@@ -61,6 +76,8 @@ const Booking = () => {
         event,
         vehicle,
       };
+
+
 
       console.log("Datos de la reserva:", bookingData);
       showAlert('¡Reserva realizada con éxito!', 'success');
