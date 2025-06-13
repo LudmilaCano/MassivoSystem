@@ -14,9 +14,12 @@ namespace Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IEmailService _emailService;
+        public UserService(IUserRepository userRepository, IEmailService emailService)
         {
             _userRepository = userRepository;
+            _emailService = emailService;
+
         }
 
         public List<User> GetUsers()
@@ -89,5 +92,38 @@ namespace Application.Services
             user.IsActive = Domain.Enums.EntityState.Inactive;
             _userRepository.UpdateAsync(user).Wait();
         }
+        public async Task UpdateUser(User user)
+        {
+            await _userRepository.UpdateAsync(user);
+        }
+
+        public async Task<bool> GenerateRecoveryCodeAndSendEmailAsync(string email)
+        {
+            var user = (await _userRepository.ListAsync()).FirstOrDefault(u => u.Email == email);
+            if (user == null) return false;
+
+            var recoveryCode = GenerateRecoveryCode();
+            user.RecoveryCode = recoveryCode;
+            user.MustChangePassword = true;
+
+            await _userRepository.UpdateAsync(user);
+
+            await _emailService.SendEmailAsync(
+                user.Email,
+                "Recuperación de contraseña",
+                $"Tu clave provisoria es: <b>{recoveryCode}</b>. Usala para cambiar tu contraseña."
+            );
+
+            return true;
+        }
+
+        private string GenerateRecoveryCode()
+        {
+            var random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, 6)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
     }
 }

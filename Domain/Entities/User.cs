@@ -27,13 +27,17 @@ namespace Domain.Entities
         public int? ProvinceId { get; set; }
         public Province Province { get; set; }
 
-
         public string Role { get; set; }
 
         public EntityState IsActive { get; set; } = EntityState.Active;
         public ICollection<Event> Events { get; set; }
+        public string? RecoveryCode { get; set; }
+        public bool MustChangePassword { get; set; } = false;
 
-        public User() {
+
+
+        public User()
+        {
 
             Role = "User";
             Events = new List<Event>();

@@ -2,7 +2,7 @@ import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import MainLayout from "./layout/MainLayout.jsx";
 import Login from "./components/Login.jsx";
-
+import ForgotPassword from "./components/ForgotPassword.jsx";
 import CustomerProfile from "./components/Customer_profile/CustomerProfile.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import Register from "./components/Register.jsx";
@@ -125,6 +125,14 @@ function App() {
             <Booking />
           </MainLayout>
         </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/forgot-password",
+      element: (
+        <MainLayout>
+          <ForgotPassword />
+        </MainLayout>
       ),
     },
     {

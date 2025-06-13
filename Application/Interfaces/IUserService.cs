@@ -16,5 +16,9 @@ namespace Application.Interfaces
         List<User> GetUsers();
         void SignUpUser(UserSignUpRequest userSignUpRequest);
         void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser);
+        Task UpdateUser(User user);
+        Task<bool> GenerateRecoveryCodeAndSendEmailAsync(string email);
+
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Application.Models.Responses;
 using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -18,42 +19,62 @@ namespace Infraestructure.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
+
         public AuthenticationService(IUserRepository userRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _configuration = configuration;
         }
 
-        public string Authenticate(UserLoginRequest userLoginRequest)
+        public AuthenticationResult Authenticate(UserLoginRequest userLoginRequest)
         {
             var user = ValidateUser(userLoginRequest);
 
             if (user == null)
             {
-                throw new Exception("User authentication failed");
+                return new AuthenticationResult
+                {
+                    Token = string.Empty,
+                    RecoveryMode = false,
+                    Message = "Credenciales inválidas."
+                };
             }
 
-            var securityPassword = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["AutenticacionService:SecretForKey"] ?? ""));
+            // Verificamos si el usuario debe cambiar la contraseña (modo recuperación)
+            bool recoveryMode = user.MustChangePassword;
+
+            // Generación del token JWT
+            var securityPassword = new SymmetricSecurityKey(
+                Encoding.ASCII.GetBytes(_configuration["AutenticacionService:SecretForKey"] ?? "")
+            );
             var credentials = new SigningCredentials(securityPassword, SecurityAlgorithms.HmacSha256);
 
-            //Los claims son datos en clave->valor que nos permite guardar data del usuario.
-            var claimsForToken = new List<Claim>();
-            claimsForToken.Add(new Claim("sub", user.UserId.ToString())); //"sub" es una key estándar que significa unique user identifier, es decir, si mandamos el id del usuario por convención lo hacemos con la key "sub".
-            claimsForToken.Add(new Claim("name", user.FirstName + " " + user.LastName)); 
-            claimsForToken.Add(new Claim("role", user.Role.ToString()));
+            var claimsForToken = new List<Claim>
+            {
+                new Claim("sub", user.UserId.ToString()),
+                new Claim("name", user.FirstName + " " + user.LastName),
+                new Claim("role", user.Role.ToString())
+            };
 
-            var jwtSecurityToken = new JwtSecurityToken( 
-              _configuration["AutenticacionService:Issuer"],
-              _configuration["AutenticacionService:Audience"],
-              claimsForToken,
-              DateTime.UtcNow,
-              DateTime.UtcNow.AddHours(1),
-              credentials);
+            var jwtSecurityToken = new JwtSecurityToken(
+                _configuration["AutenticacionService:Issuer"],
+                _configuration["AutenticacionService:Audience"],
+                claimsForToken,
+                DateTime.UtcNow,
+                DateTime.UtcNow.AddHours(1),
+                credentials
+            );
 
-            var tokenToReturn = new JwtSecurityTokenHandler() //Pasamos el token a string
-                .WriteToken(jwtSecurityToken);
+            var tokenToReturn = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
 
-            return tokenToReturn.ToString();
+            return new AuthenticationResult
+            {
+                Token = tokenToReturn,
+                RecoveryMode = recoveryMode,
+                Message = recoveryMode
+                    ? "Acceso otorgado con clave provisoria. Debe cambiar su contraseña."
+                    : "Autenticación exitosa."
+            };
         }
 
         private User? ValidateUser(UserLoginRequest userLoginRequest)
@@ -62,8 +83,19 @@ namespace Infraestructure.Services
                 return null;
 
             var user = _userRepository.GetUserByEmail(userLoginRequest.DniOrEmail);
-            if (user == null) return null;
-            if (user.Email == userLoginRequest.DniOrEmail && user.Password == userLoginRequest.Password) return user;
+            if (user == null)
+                return null;
+
+            // Si el usuario está en modo recuperación, validamos contra la clave provisoria
+            if (user.MustChangePassword)
+            {
+                return user.Password == userLoginRequest.Password ? user : null;
+            }
+
+            // Validación normal
+            if (user.Email == userLoginRequest.DniOrEmail && user.Password == userLoginRequest.Password)
+                return user;
+
             return null;
         }
     }
