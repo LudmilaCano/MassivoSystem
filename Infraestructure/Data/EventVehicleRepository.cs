@@ -50,5 +50,21 @@ namespace Infraestructure.Data
                         .ThenInclude(u => u.City)
                 .FirstOrDefaultAsync(ev => ev.EventVehicleId == eventVehicleId);
         }
+
+        public async Task<EventVehicle> UpdateEventVehicle(EventVehicle eventVehicle)
+        {
+            _context.Entry(eventVehicle).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return eventVehicle;
+        }
+
+        public async Task<bool> BelongsToUserAsync(int eventVehicleId, int userId)
+        {
+            var eventVehicle = await _context.EventsVehicles
+                .Include(ev => ev.Event)
+                .FirstOrDefaultAsync(ev => ev.EventVehicleId == eventVehicleId);
+
+            return eventVehicle != null && eventVehicle.Event.UserId == userId;
+        }
     }
 }

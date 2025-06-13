@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 import ProviderEventPanel from './ProviderEventPanel';
 import ProviderVehicle from './ProviderVehicle';
 import ProviderEventVehicle from './ProviderEventVehicle';
-import Colors from '../layout/Colors';
+import Colors from '../../layout/Colors';
 
 const ProviderDashboard = () => {
   const [tabValue, setTabValue] = useState(0);
-  const userId = useSelector((state) => state.auth.userId);
+  const { userId } = useSelector((state) => state.auth);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -28,6 +28,7 @@ const ProviderDashboard = () => {
                 onChange={handleTabChange} 
                 indicatorColor="primary"
                 textColor="primary"
+                variant="fullWidth"
               >
                 <Tab label="Mis Vehículos" />
                 <Tab label="Mis Eventos" />

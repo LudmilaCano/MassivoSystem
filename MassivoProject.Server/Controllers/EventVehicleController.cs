@@ -1,8 +1,10 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Application.Models.Responses;
 using Application.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace MassivoProject.Server.Controllers
 {
@@ -65,7 +67,38 @@ namespace MassivoProject.Server.Controllers
             return Ok(vehicles);
         }
 
+        [HttpPut("{id}")]
+        public async Task<ActionResult<EventVehicleDto>> UpdateEventVehicle(int id, [FromBody] UpdateEventVehicleRequest request)
+        {
+            if (id != request.EventVehicleId)
+            {
+                return BadRequest("El ID del viaje no coincide con el ID en la ruta");
+            }
 
+            try
+            {
+                // Obtener el ID del usuario del token
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null)
+                {
+                    return Unauthorized("Usuario no autenticado");
+                }
+
+                int userId = int.Parse(userIdClaim.Value);
+
+                
+                 await _eventVehicleService.UpdateEventVehicleAsync(request, userId);
+
+                // Convertir a DTO para la respuesta
+                
+
+                return Ok("Evento vehículo modificado!");
+            }           
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno: {ex.Message}");
+            }
+        }
 
     }
 }

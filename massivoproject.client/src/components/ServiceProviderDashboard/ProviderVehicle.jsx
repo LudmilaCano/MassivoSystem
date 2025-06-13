@@ -1,48 +1,23 @@
+// ProviderVehicle.jsx
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  MenuItem,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
+import { 
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+  Button, Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, FormControl, InputLabel, Select, MenuItem, Box
 } from '@mui/material';
-import { Edit } from '@mui/icons-material';
-import { getVehiclesByUserId, updateVehicle } from '../api/VehicleEndpoints';
-import useSwalAlert from '../hooks/useSwalAlert';
-import Colors from '../layout/Colors';
-import { VEHICLE_TYPE_ENUM, VEHICLE_TYPE_LABELS } from '../constants/vehicleType';
+import { getVehiclesByUserId } from '../../api/VehicleEndpoints';
+import { adminUpdateVehicle } from '../../api/VehicleEndpoints';
+import Swal from 'sweetalert2';
+import useSwalAlert from '../../hooks/useSwalAlert';
 
 const ProviderVehicle = ({ userId }) => {
-  const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const { showAlert } = useSwalAlert();
-  const [formData, setFormData] = useState({
-    id: null,
-    userId: null,
-    licensePlate: '',
-    name: '',
-    description: '',
-    imagePath: '',
-    driverName: '',
-    capacity: '',
-    yearModel: '',
-    type: '',
-  });
   const [errors, setErrors] = useState({});
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { showAlert } = useSwalAlert();
+  
 
   useEffect(() => {
     fetchVehicles();
@@ -54,276 +29,265 @@ const ProviderVehicle = ({ userId }) => {
       const data = await getVehiclesByUserId(userId);
       setVehicles(data);
     } catch (error) {
-      console.error('Error fetching vehicles:', error);
-      showAlert('Error al cargar los vehículos', 'error');
+      console.error('Error fetching  vehicles:', error);
+      showAlert('Error al cargar los vehiculos', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEditClick = (vehicle) => {
-    setSelectedVehicle(vehicle);
-    setFormData({
-      id: vehicle.id,
-      userId: vehicle.userId,
-      licensePlate: vehicle.licensePlate,
-      name: vehicle.name || '',
-      description: vehicle.description || '',
-      imagePath: vehicle.imagePath || '',
-      driverName: vehicle.driverName || '',
-      capacity: vehicle.capacity,
-      yearModel: vehicle.yearModel,
-      type: vehicle.type,
-    });
+  const handleEditVehicle = (vehicle) => {
+    setSelectedVehicle({...vehicle});
+    setErrors({});
     setOpenDialog(true);
   };
 
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === 'vehicleType') {
-      setFormData((prev) => ({
-        ...prev,
-        type: VEHICLE_TYPE_ENUM[value],
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+    setSelectedVehicle(prev => ({ ...prev, [name]: value }));
+    // Limpiar error cuando el usuario modifica el campo
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    const currentYear = new Date().getFullYear();
-
-    const plateRegex = /^(?:[A-Z]{2}\d{3}[A-Z]{2}|[A-Z]{3}\s?\d{3})$/;
-    const plate = formData.licensePlate?.trim();
-
-    if (!plate) {
-      newErrors.licensePlate = 'La patente es requerida';
-    } else if (!plateRegex.test(plate)) {
-      newErrors.licensePlate = 'La patente debe tener formato AA999AA o AAA 999';
-    }
-
-    if (!formData.yearModel) {
-      newErrors.yearModel = 'El año del modelo es requerido';
-    } else if (
-      isNaN(formData.yearModel) ||
-      formData.yearModel < 1998 ||
-      formData.yearModel > currentYear
-    ) {
-      newErrors.yearModel = `El año debe estar entre 1998 y ${currentYear}`;
-    }
-
-    if (!formData.capacity) {
-      newErrors.capacity = 'La capacidad es requerida';
-    } else if (
-      isNaN(formData.capacity) ||
-      formData.capacity <= 3 ||
-      formData.capacity >= 90
-    ) {
-      newErrors.capacity = 'La capacidad debe ser mayor a 3 y menor a 90';
-    }
-
+    
+    if (!selectedVehicle.name) newErrors.name = "El nombre es obligatorio";
+    if (!selectedVehicle.description) newErrors.description = "La descripción es obligatoria";
+    if (!selectedVehicle.capacity) newErrors.capacity = "La capacidad es obligatoria";
+    if (selectedVehicle.type === undefined || selectedVehicle.type === null) newErrors.type = "El tipo es obligatorio";
+    if (!selectedVehicle.driverName) newErrors.driverName = "El nombre del conductor es obligatorio";
+    if (!selectedVehicle.yearModel) newErrors.yearModel = "El año del modelo es obligatorio";
+    if (!selectedVehicle.imagePath) newErrors.imagePath = "La URL de imagen es obligatoria";
+    if (selectedVehicle.available === undefined || selectedVehicle.available === null) newErrors.available = "La disponibilidad es obligatoria";
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
-    if (validateForm()) {
-      try {
-        const payload = {
-          id: formData.id,
-          userId: Number(userId),
-          licensePlate: formData.licensePlate,
-          name: formData.name,
-          description: formData.description,
-          imagePath: formData.imagePath || 'https://picsum.photos/200/300',
-          driverName: formData.driverName,
-          capacity: Number(formData.capacity),
-          yearModel: Number(formData.yearModel),
-          type: Number(formData.type),
-        };
+  const handleSaveVehicle = async () => {
+    if (!validateForm()) {
+      showAlert("Por favor complete todos los campos obligatorios", "error");
+      return;
+    }
 
-        await updateVehicle(payload.id, payload);
-        showAlert('Vehículo actualizado correctamente', 'success');
-        setOpenDialog(false);
-        fetchVehicles();
-      } catch (error) {
-        console.error('Error updating vehicle:', error);
-        showAlert('Error al actualizar el vehículo', 'error');
-      }
+    try {
+      // Crear objeto con la estructura esperada por el backend
+      const vehicleData = {
+        licensePlate: selectedVehicle.licensePlate,
+        name: selectedVehicle.name,
+        description: selectedVehicle.description,
+        capacity: parseInt(selectedVehicle.capacity),
+        type: parseInt(selectedVehicle.type),
+        driverName: selectedVehicle.driverName,
+        yearModel: parseInt(selectedVehicle.yearModel),
+        imagePath: selectedVehicle.imagePath
+      };
+
+      await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
+      //showSuccessAlert("Vehículo actualizado correctamente");
+      showAlert("Vehículo actualizado correctamente", "success");
+      fetchVehicles(); // Refrescar la lista de vehículos
+      handleCloseDialog();
+    } catch (error) {
+      console.error("Error updating vehicle:", error);
+      showAlert(`Error al actualizar vehículo: ${error.message}`, "error");
+    }
+  };
+
+  const handleViewVehicleDetails = (vehicle) => {
+    const content = `
+      <div>
+        <p><strong>Matrícula:</strong> ${vehicle.licensePlate}</p>
+        <p><strong>Nombre:</strong> ${vehicle.name || ''}</p>
+        <p><strong>Descripción:</strong> ${vehicle.description || ''}</p>
+        <p><strong>Tipo:</strong> ${getVehicleTypeName(vehicle.type)}</p>
+        <p><strong>Capacidad:</strong> ${vehicle.capacity}</p>
+        <p><strong>Conductor:</strong> ${vehicle.driverName || ''}</p>
+        <p><strong>Año:</strong> ${vehicle.yearModel || ''}</p>        
+      </div>
+    `;
+    
+    Swal.fire({
+      title: 'Detalles de Vehículo',
+      html: content,
+      confirmButtonText: 'Cerrar'
+    });
+  };
+
+  const getVehicleTypeName = (type) => {
+    switch (parseInt(type)) {
+      case 0: return 'Combi';
+      case 1: return 'MiniBus';
+      case 2: return 'Auto';
+      case 3: return 'Colectivo';
+      default: return 'Desconocido';
     }
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedVehicle(null);
+    setErrors({});
   };
 
-  if (loading) {
-    return <Typography>Cargando vehículos...</Typography>;
-  }
-
   return (
-    <Box>
-      <Typography variant="h6" gutterBottom>
-        Mis Vehículos
-      </Typography>
-
-      {vehicles.length === 0 ? (
-        <Typography>No tienes vehículos registrados.</Typography>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: Colors.grisClaro }}>
-                <TableCell>Patente</TableCell>
-                <TableCell>Nombre</TableCell>
-                <TableCell>Conductor</TableCell>
-                <TableCell>Capacidad</TableCell>
-                <TableCell>Año</TableCell>
-                <TableCell>Tipo</TableCell>
-                <TableCell>Acciones</TableCell>
+    <>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Matrícula</TableCell>
+              <TableCell>Nombre</TableCell>
+              <TableCell>Tipo</TableCell>
+              <TableCell>Capacidad</TableCell>
+              <TableCell>Conductor</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {vehicles.map((vehicle) => (
+              <TableRow key={vehicle.licensePlate}>
+                <TableCell>{vehicle.licensePlate}</TableCell>
+                <TableCell>{vehicle.name}</TableCell>
+                <TableCell>{getVehicleTypeName(vehicle.type)}</TableCell>
+                <TableCell>{vehicle.capacity}</TableCell>
+                <TableCell>{vehicle.driverName}</TableCell>
+                <TableCell>
+                  <Button 
+                    size="small" 
+                    variant="outlined"
+                    onClick={() => handleEditVehicle(vehicle)}
+                    sx={{ mr: 1 }}
+                  >
+                    Editar
+                  </Button>
+                  <Button 
+                    size="small" 
+                    variant="outlined" 
+                    color="info"
+                    onClick={() => handleViewVehicleDetails(vehicle)}
+                  >
+                    Detalles
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {vehicles.map((vehicle) => (
-                <TableRow key={vehicle.id}>
-                  <TableCell>{vehicle.licensePlate}</TableCell>
-                  <TableCell>{vehicle.name}</TableCell>
-                  <TableCell>{vehicle.driverName}</TableCell>
-                  <TableCell>{vehicle.capacity}</TableCell>
-                  <TableCell>{vehicle.yearModel}</TableCell>
-                  <TableCell>
-                    {VEHICLE_TYPE_LABELS[
-                      Object.keys(VEHICLE_TYPE_ENUM).find(
-                        (key) => VEHICLE_TYPE_ENUM[key] === vehicle.type
-                      )
-                    ] || 'Desconocido'}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      startIcon={<Edit />}
-                      size="small"
-                      onClick={() => handleEditClick(vehicle)}
-                      sx={{ color: Colors.azul }}
-                    >
-                      Editar
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+      {/* Edit Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>Editar Vehículo</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
+          {selectedVehicle && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
               <TextField
-                name="licensePlate"
-                label="Patente"
-                fullWidth
-                value={formData.licensePlate}
-                onChange={handleChange}
-                error={!!errors.licensePlate}
-                helperText={errors.licensePlate}
-                disabled
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
+                label="Nombre *"
                 name="name"
-                label="Nombre del Vehículo"
+                value={selectedVehicle.name || ''}
+                onChange={handleInputChange}
                 fullWidth
-                value={formData.name}
-                onChange={handleChange}
+                required
+                error={!!errors.name}
+                helperText={errors.name}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
               <TextField
-                name="capacity"
-                label="Capacidad"
-                type="number"
+                label="Descripción *"
+                name="description"
+                value={selectedVehicle.description || ''}
+                onChange={handleInputChange}
                 fullWidth
-                value={formData.capacity}
-                onChange={handleChange}
+                multiline
+                rows={2}
+                required
+                error={!!errors.description}
+                helperText={errors.description}
+              />
+              <FormControl fullWidth required error={!!errors.type}>
+                <InputLabel>Tipo *</InputLabel>
+                <Select
+                  name="type"
+                  value={selectedVehicle.type || ''}
+                  onChange={handleInputChange}
+                  label="Tipo *"
+                >
+                  <MenuItem value={0}>Combi</MenuItem>
+                  <MenuItem value={1}>MiniBus</MenuItem>
+                  <MenuItem value={2}>Auto</MenuItem>
+                  <MenuItem value={3}>Colectivo</MenuItem>
+                </Select>
+                {errors.type && <FormHelperText>{errors.type}</FormHelperText>}
+              </FormControl>
+              <TextField
+                label="Capacidad *"
+                name="capacity"
+                type="number"
+                value={selectedVehicle.capacity || ''}
+                onChange={handleInputChange}
+                fullWidth
+                required
                 error={!!errors.capacity}
                 helperText={errors.capacity}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
               <TextField
-                name="yearModel"
-                label="Año del Modelo"
-                type="number"
+                label="Conductor *"
+                name="driverName"
+                value={selectedVehicle.driverName || ''}
+                onChange={handleInputChange}
                 fullWidth
-                value={formData.yearModel}
-                onChange={handleChange}
+                required
+                error={!!errors.driverName}
+                helperText={errors.driverName}
+              />
+              <TextField
+                label="Año del modelo *"
+                name="yearModel"
+                type="number"
+                value={selectedVehicle.yearModel || ''}
+                onChange={handleInputChange}
+                fullWidth
+                required
                 error={!!errors.yearModel}
                 helperText={errors.yearModel}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
               <TextField
-                name="vehicleType"
-                select
-                label="Tipo de Vehículo"
-                value={
-                  Object.keys(VEHICLE_TYPE_ENUM).find(
-                    (key) => VEHICLE_TYPE_ENUM[key] === formData.type
-                  ) || ''
-                }
-                onChange={handleChange}
+                label="URL de imagen *"
+                name="imagePath"
+                value={selectedVehicle.imagePath || ''}
+                onChange={handleInputChange}
                 fullWidth
-              >
-                {Object.keys(VEHICLE_TYPE_LABELS).map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {VEHICLE_TYPE_LABELS[type]}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="driverName"
-                label="Nombre del Conductor"
-                fullWidth
-                value={formData.driverName}
-                onChange={handleChange}
+                required
+                error={!!errors.imagePath}
+                helperText={errors.imagePath}
               />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                name="description"
-                label="Descripción"
-                fullWidth
-                multiline
-                rows={3}
-                value={formData.description}
-                onChange={handleChange}
-              />
-            </Grid>
-          </Grid>
+              {/* <FormControl fullWidth required error={!!errors.available}>
+                <InputLabel>Disponible *</InputLabel>
+                <Select
+                  name="available"
+                  value={selectedVehicle.available || ''}
+                  onChange={handleInputChange}
+                  label="Disponible *"
+                >
+                  <MenuItem value={1}>Sí</MenuItem>
+                  <MenuItem value={0}>No</MenuItem>
+                </Select>
+                {errors.available && <FormHelperText>{errors.available}</FormHelperText>}
+              </FormControl> */}
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancelar</Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            sx={{ bgcolor: Colors.azul, '&:hover': { bgcolor: Colors.azulOscuro } }}
-          >
-            Guardar Cambios
+          <Button onClick={handleSaveVehicle} variant="contained" color="primary">
+            Guardar
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 };
 

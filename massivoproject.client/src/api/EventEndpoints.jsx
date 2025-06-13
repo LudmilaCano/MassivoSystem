@@ -54,10 +54,7 @@ export const filterEvents = async (name, date) => {
     return response.data;
 };
 
-export const getEventVehicleById = async (eventVehicleId) => {
-    const response = await api.get(`/EventVehicle/${eventVehicleId}`);
-    return response.data;
-};
+
 
 export const getVehiclesByEvent = async (eventId) => {
     const response = await api.get(`/EventVehicle/GetVehiclesByEvent/${eventId}`);
@@ -75,12 +72,26 @@ export const getCoordinatesByCityId = async (cityId) => {
     return response.data;
 };
 
-export const getEventVehiclesByUserId = async (userId) => {
-    const response = await api.get(`/EventVehicle/user/${userId}`);
-    return response.data;
-};
+
 
 export const getEventsByUserId = async (userId) => {
     const response = await api.get(`/Event/user/${userId}`);
     return response.data;
+};
+
+
+
+export const getEventVehiclesByUserId = async (userId) => {
+  const response = await api.get(`/api/EventVehicle/user/${userId}`);
+  return response.data;
+};
+
+export const getEventVehicleById = async (id) => {
+  const response = await api.get(`/api/EventVehicle/${id}`);
+  return response.data;
+};
+
+export const updateEventVehicle = async (id, eventVehicleData) => {
+  const response = await api.put(`/api/EventVehicle/${id}`, eventVehicleData);
+  return response.data;
 };

@@ -1,42 +1,22 @@
+// src/components/ServiceProviderDashboard/ProviderEventVehiclePanel.jsx
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
+import { 
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+  Button, Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Box, Grid, CircularProgress, Typography
 } from '@mui/material';
-import { Edit } from '@mui/icons-material';
-import { getEventVehiclesByUserId } from '../api/EventEndpoints';
-import useSwalAlert from '../hooks/useSwalAlert';
-import Colors from '../layout/Colors';
+import { getEventVehiclesByUserId, getEventVehicleById, updateEventVehicle } from '../../api/EventEndpoints';
+import Swal from 'sweetalert2';
+import useSwalAlert from '../../hooks/useSwalAlert';
 
 const ProviderEventVehicle = ({ userId }) => {
-  const [eventVehicles, setEventVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedEventVehicle, setSelectedEventVehicle] = useState(null);
-  const { showAlert } = useSwalAlert();
-  const [formData, setFormData] = useState({
-    id: null,
-    price: '',
-    departureTime: '',
-    departureLocation: '',
-    arrivalLocation: '',
-    availableSeats: '',
-  });
+  const [loading, setLoading] = useState(false);
+  const [dialogLoading, setDialogLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [eventVehicles, setEventVehicles] = useState([]);
+  const { showAlert } = useSwalAlert();
 
   useEffect(() => {
     fetchEventVehicles();
@@ -46,108 +26,119 @@ const ProviderEventVehicle = ({ userId }) => {
     try {
       setLoading(true);
       const data = await getEventVehiclesByUserId(userId);
-      setEventVehicles(data);
+      setEventVehicles(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching event vehicles:', error);
       showAlert('Error al cargar los viajes', 'error');
+      setEventVehicles([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEditClick = (eventVehicle) => {
-    setSelectedEventVehicle(eventVehicle);
-    setFormData({
-      id: eventVehicle.id,
-      price: eventVehicle.price,
-      departureTime: formatDateTimeForInput(eventVehicle.departureTime) || '',
-      departureLocation: eventVehicle.departureLocation || '',
-      arrivalLocation: eventVehicle.arrivalLocation || '',
-      availableSeats: eventVehicle.availableSeats,
-    });
-    setOpenDialog(true);
+  const handleEditEventVehicle = async (eventVehicleId) => {
+    setDialogLoading(true);
+    setErrors({});
+    
+    try {
+      setOpenDialog(true);
+      const eventVehicleData = await getEventVehicleById(eventVehicleId);
+      setSelectedEventVehicle(eventVehicleData);
+    } catch (error) {
+      console.error("Error al preparar el formulario:", error);
+      showAlert("Error al cargar los datos del viaje", "error");
+      handleCloseDialog();
+    } finally {
+      setDialogLoading(false);
+    }
   };
 
-  const formatDateTimeForInput = (dateTimeString) => {
-    if (!dateTimeString) return '';
-    const date = new Date(dateTimeString);
-    return date.toISOString().slice(0, 16);
-  };
-
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setSelectedEventVehicle(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.price) {
-      newErrors.price = 'El precio es requerido';
-    } else if (isNaN(formData.price) || Number(formData.price) <= 0) {
-      newErrors.price = 'El precio debe ser un número mayor a 0';
+    
+    if (!selectedEventVehicle.price || selectedEventVehicle.price <= 0) {
+      newErrors.price = "El precio debe ser mayor a 0";
     }
-
-    if (!formData.departureTime) {
-      newErrors.departureTime = 'La fecha y hora de salida son requeridas';
+    
+    if (!selectedEventVehicle.date) {
+      newErrors.date = "La fecha es requerida";
     }
-
-    if (!formData.departureLocation?.trim()) {
-      newErrors.departureLocation = 'La ubicación de salida es requerida';
+    
+    if (!selectedEventVehicle.description) {
+      newErrors.description = "La descripción es requerida";
     }
-
-    if (!formData.arrivalLocation?.trim()) {
-      newErrors.arrivalLocation = 'La ubicación de llegada es requerida';
-    }
-
-    if (!formData.availableSeats) {
-      newErrors.availableSeats = 'Los asientos disponibles son requeridos';
-    } else if (isNaN(formData.availableSeats) || Number(formData.availableSeats) < 0) {
-      newErrors.availableSeats = 'Los asientos disponibles deben ser un número mayor o igual a 0';
-    }
-
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
-    if (validateForm()) {
-      try {
-        const payload = {
-          id: formData.id,
-          price: Number(formData.price),
-          departureTime: formData.departureTime,
-          departureLocation: formData.departureLocation,
-          arrivalLocation: formData.arrivalLocation,
-          availableSeats: Number(formData.availableSeats),
-        };
-
-        // Aquí deberías tener un endpoint para actualizar el EventVehicle
-        // await updateEventVehicle(payload.id, payload);
-        showAlert('Viaje actualizado correctamente', 'success');
-        setOpenDialog(false);
-        fetchEventVehicles();
-      } catch (error) {
-        console.error('Error updating event vehicle:', error);
-        showAlert('Error al actualizar el viaje', 'error');
-      }
+  const handleSaveEventVehicle = async () => {
+    if (!validateForm()) {
+      showAlert("Por favor complete todos los campos obligatorios", "error");
+      return;
     }
+
+    try {
+      const eventVehicleData = {
+        eventVehicleId: selectedEventVehicle.eventVehicleId,
+        price: parseInt(selectedEventVehicle.price),
+        date: selectedEventVehicle.date,
+        description: selectedEventVehicle.description
+      };
+
+      await updateEventVehicle(selectedEventVehicle.eventVehicleId, eventVehicleData);
+      showAlert("Viaje actualizado correctamente", "success");
+      fetchEventVehicles();
+      handleCloseDialog();
+    } catch (error) {
+      console.error("Error updating event vehicle:", error);
+      showAlert("Error al actualizar el viaje", "error");
+    }
+  };
+
+  const handleViewEventVehicleDetails = (eventVehicle) => {
+    const content = `
+      <div>
+        <p><strong>ID:</strong> ${eventVehicle.eventVehicleId}</p>
+        <p><strong>Evento:</strong> ${eventVehicle.eventId}</p>
+        <p><strong>Vehículo:</strong> ${eventVehicle.licensePlate}</p>
+        <p><strong>Precio:</strong> $${eventVehicle.price}</p>
+        <p><strong>Fecha:</strong> ${new Date(eventVehicle.date).toLocaleDateString()}</p>
+        <p><strong>Descripción:</strong> ${eventVehicle.description || 'Sin descripción'}</p>
+      </div>
+    `;
+    
+    Swal.fire({
+      title: 'Detalles del Viaje',
+      html: content,
+      confirmButtonText: 'Cerrar'
+    });
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedEventVehicle(null);
+    setErrors({});
   };
 
   if (loading) {
-    return <Typography>Cargando viajes...</Typography>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <Box>
+    <>
       <Typography variant="h6" gutterBottom>
         Mis Viajes
       </Typography>
@@ -155,38 +146,42 @@ const ProviderEventVehicle = ({ userId }) => {
       {eventVehicles.length === 0 ? (
         <Typography>No tienes viajes registrados.</Typography>
       ) : (
-        <TableContainer component={Paper}>
+        <TableContainer>
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: Colors.grisClaro }}>
+              <TableRow>
                 <TableCell>Evento</TableCell>
                 <TableCell>Vehículo</TableCell>
                 <TableCell>Precio</TableCell>
-                <TableCell>Fecha y Hora de Salida</TableCell>
-                <TableCell>Origen</TableCell>
-                <TableCell>Destino</TableCell>
-                <TableCell>Asientos Disponibles</TableCell>
+                <TableCell>Fecha</TableCell>
+                <TableCell>Descripción</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {eventVehicles.map((ev) => (
-                <TableRow key={ev.id}>
-                  <TableCell>{ev.event?.name}</TableCell>
-                  <TableCell>{ev.vehicle?.licensePlate}</TableCell>
-                  <TableCell>${ev.price}</TableCell>
-                  <TableCell>{new Date(ev.departureTime).toLocaleString()}</TableCell>
-                  <TableCell>{ev.departureLocation}</TableCell>
-                  <TableCell>{ev.arrivalLocation}</TableCell>
-                  <TableCell>{ev.availableSeats}</TableCell>
+              {eventVehicles.map((eventVehicle) => (
+                <TableRow key={eventVehicle.eventVehicleId}>
+                  <TableCell>{eventVehicle.eventId}</TableCell>
+                  <TableCell>{eventVehicle.licensePlate}</TableCell>
+                  <TableCell>${eventVehicle.price}</TableCell>
+                  <TableCell>{new Date(eventVehicle.date).toLocaleDateString()}</TableCell>
+                  <TableCell>{eventVehicle.description}</TableCell>
                   <TableCell>
                     <Button
-                      startIcon={<Edit />}
                       size="small"
-                      onClick={() => handleEditClick(ev)}
-                      sx={{ color: Colors.azul }}
+                      variant="outlined"
+                      onClick={() => handleEditEventVehicle(eventVehicle.eventVehicleId)}
+                      sx={{ mr: 1 }}
                     >
                       Editar
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="info"
+                      onClick={() => handleViewEventVehicleDetails(eventVehicle)}
+                    >
+                      Detalles
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -196,86 +191,94 @@ const ProviderEventVehicle = ({ userId }) => {
         </TableContainer>
       )}
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+      {/* Edit Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>Editar Viaje</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="price"
-                label="Precio"
-                type="number"
-                fullWidth
-                value={formData.price}
-                onChange={handleChange}
-                error={!!errors.price}
-                helperText={errors.price}
-                InputProps={{
-                  startAdornment: <span>$</span>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="availableSeats"
-                label="Asientos Disponibles"
-                type="number"
-                fullWidth
-                value={formData.availableSeats}
-                onChange={handleChange}
-                error={!!errors.availableSeats}
-                helperText={errors.availableSeats}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="departureTime"
-                label="Fecha y Hora de Salida"
-                type="datetime-local"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                value={formData.departureTime}
-                onChange={handleChange}
-                error={!!errors.departureTime}
-                helperText={errors.departureTime}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="departureLocation"
-                label="Ubicación de Salida"
-                fullWidth
-                value={formData.departureLocation}
-                onChange={handleChange}
-                error={!!errors.departureLocation}
-                helperText={errors.departureLocation}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="arrivalLocation"
-                label="Ubicación de Llegada"
-                fullWidth
-                value={formData.arrivalLocation}
-                onChange={handleChange}
-                error={!!errors.arrivalLocation}
-                helperText={errors.arrivalLocation}
-              />
-            </Grid>
-          </Grid>
+          {dialogLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : selectedEventVehicle && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Evento"
+                    value={selectedEventVehicle.eventId || ''}
+                    fullWidth
+                    disabled
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Vehículo"
+                    value={selectedEventVehicle.licensePlate || ''}
+                    fullWidth
+                    disabled
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Precio *"
+                    name="price"
+                    type="number"
+                    value={selectedEventVehicle.price || ''}
+                    onChange={handleInputChange}
+                    fullWidth
+                    required
+                    error={!!errors.price}
+                    helperText={errors.price}
+                    InputProps={{
+                      startAdornment: <span>$</span>,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Fecha *"
+                    name="date"
+                    type="date"
+                    value={selectedEventVehicle.date ? selectedEventVehicle.date.split('T')[0] : ''}
+                    onChange={handleInputChange}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    required
+                    error={!!errors.date}
+                    helperText={errors.date}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Descripción *"
+                    name="description"
+                    value={selectedEventVehicle.description || ''}
+                    onChange={handleInputChange}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    required
+                    error={!!errors.description}
+                    helperText={errors.description}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancelar</Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            sx={{ bgcolor: Colors.azul, '&:hover': { bgcolor: Colors.azulOscuro } }}
+          <Button 
+            onClick={handleSaveEventVehicle} 
+            variant="contained" 
+            color="primary"
+            disabled={dialogLoading}
           >
-            Guardar Cambios
+            Guardar
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 };
 

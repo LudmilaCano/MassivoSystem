@@ -150,7 +150,7 @@ function App() {
     {
       path: "/provider-dashboard",
       element: (
-        <ProtectedRoute allowedRoles={["Prestador"]}>
+        <ProtectedRoute allowedRoles={["Prestador","Admin"]}>
           <MainLayout>
             <ProviderDashboard />
           </MainLayout>

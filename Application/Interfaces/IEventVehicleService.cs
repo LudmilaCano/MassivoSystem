@@ -17,5 +17,7 @@ namespace Application.Interfaces
         Task<List<EventVehicleDto>> GetVehiclesByEventAsync(int eventId);
         Task<EventVehicleDto> GetEventVehicleByIdAsync(int eventVehicleId);
         Task<IEnumerable<EventVehicle>> GetEventVehiclesByUserIdAsync(int userId);
+        Task<EventVehicle> GetByIdAsync(int id);
+        Task<EventVehicle> UpdateEventVehicleAsync(UpdateEventVehicleRequest eventVehicle, int userId);
     }
 }
