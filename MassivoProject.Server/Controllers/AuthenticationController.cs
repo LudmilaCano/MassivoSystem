@@ -40,6 +40,21 @@ namespace MassivoProject.Server.Controllers
             return Ok(); // Siempre devolvé OK para no exponer si el correo existe o no
         }
 
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordWithCodeRequest request)
+        {
+            var result = await _userService.ResetPasswordWithRecoveryCodeAsync(
+                request.Email, request.RecoveryCode, request.NewPassword
+            );
+
+            if (!result)
+                return BadRequest(new { error = "Datos inválidos" });
+
+            return Ok(new { message = "Contraseña actualizada con éxito" });
+        }
+
+
+
 
     }
 }

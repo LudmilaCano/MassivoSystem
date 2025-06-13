@@ -109,10 +109,17 @@ namespace Application.Services
             await _userRepository.UpdateAsync(user);
 
             await _emailService.SendEmailAsync(
-                user.Email,
-                "Recuperación de contraseña",
-                $"Tu clave provisoria es: <b>{recoveryCode}</b>. Usala para cambiar tu contraseña."
-            );
+    user.Email,
+    "🔒 Recuperación de contraseña – Tu clave provisoria",
+    $@"
+        <p>Hola,</p>
+        <p>Recibimos tu solicitud para restablecer tu contraseña.</p>
+        <p><strong>Tu clave provisoria es:</strong> <span style='font-size:18px;'>{recoveryCode} 🔑</span></p>
+        <p>⚠️ Si no solicitaste este cambio, ignorá este mensaje.</p>
+        <br/>
+        <p>Saludos,<br/>El equipo de soporte de Massivo App.</p>"
+);
+
 
             return true;
         }
@@ -123,6 +130,21 @@ namespace Application.Services
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, 6)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public async Task<bool> ResetPasswordWithRecoveryCodeAsync(string email, string recoveryCode, string newPassword)
+        {
+            var user = _userRepository.GetUserByEmail(email);
+
+            if (user == null || user.RecoveryCode != recoveryCode || !user.MustChangePassword)
+                return false;
+
+            user.Password = newPassword;
+            user.RecoveryCode = null;
+            user.MustChangePassword = false;
+
+            await _userRepository.UpdateAsync(user);
+            return true;
         }
 
     }

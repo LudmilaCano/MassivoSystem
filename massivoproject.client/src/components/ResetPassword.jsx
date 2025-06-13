@@ -9,36 +9,38 @@ import {
 } from "@mui/material";
 import Colors from "../layout/Colors";
 import Logo2 from "../images/logo2.png";
-import loginIllustration from "../images/login.svg";
+import loginIllustration from "../images/register.svg";
 import useSwalAlert from "../hooks/useSwalAlert";
 
-const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
+const ResetPasswordWithCode = () => {
   const { showAlert } = useSwalAlert();
+  const [email, setEmail] = useState("");
+  const [recoveryCode, setRecoveryCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        "https://localhost:7089/api/authentication/forgot-password",
+      const res = await fetch(
+        "https://localhost:7089/api/authentication/reset-password",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, recoveryCode, newPassword }),
         }
       );
 
-      if (response.ok) {
-        showAlert("Si el correo está registrado, se enviará un email.", "success");
+      if (res.ok) {
+        showAlert("Contraseña actualizada correctamente", "success");
         setEmail("");
+        setRecoveryCode("");
+        setNewPassword("");
       } else {
-        showAlert("Ocurrió un error al procesar la solicitud.", "error");
+        showAlert("Error al cambiar la contraseña", "error");
       }
-    } catch (error) {
-      showAlert("Error de conexión con el servidor", "error");
+    } catch (err) {
+      showAlert("Error de conexión", "error");
     }
   };
 
@@ -87,30 +89,60 @@ const ForgotPassword = () => {
               sx={{ width: { xs: "30vw", md: "10vw" }, mb: "3vh" }}
             />
             <Typography variant="h4" gutterBottom>
-              Recuperar Contraseña
+              Restablecer Contraseña
             </Typography>
 
             <Box
               component="form"
               onSubmit={handleSubmit}
-              sx={{ display: "flex", flexDirection: "column", width: "95%", mt: 2 }}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                width: "95%",
+                mt: 2,
+                gap: 2,
+              }}
             >
               <TextField
-                type="email"
                 label="Email"
+                type="email"
                 size="small"
                 fullWidth
-                required
                 sx={textFieldStyle}
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+              <TextField
+                label="Clave Provisoria"
+                type="text"
+                size="small"
+                fullWidth
+                sx={textFieldStyle}
+                required
+                value={recoveryCode}
+                onChange={(e) => setRecoveryCode(e.target.value)}
+              />
+              <TextField
+                label="Nueva Contraseña"
+                type="password"
+                size="small"
+                fullWidth
+                sx={textFieldStyle}
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+
               <Button
                 variant="contained"
                 type="submit"
-                sx={{ mt: 3, mb: 2, backgroundColor: "#139AA0" }}
+                sx={{
+                  mt: 2,
+                  backgroundColor: "#139AA0",
+                }}
               >
-                ENVIAR
+                Cambiar Contraseña
               </Button>
             </Box>
           </Box>
@@ -128,4 +160,4 @@ const textFieldStyle = {
   width: "100%",
 };
 
-export default ForgotPassword;
+export default ResetPasswordWithCode;

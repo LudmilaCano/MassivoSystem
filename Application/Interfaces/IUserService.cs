@@ -18,6 +18,8 @@ namespace Application.Interfaces
         void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser);
         Task UpdateUser(User user);
         Task<bool> GenerateRecoveryCodeAndSendEmailAsync(string email);
+        Task<bool> ResetPasswordWithRecoveryCodeAsync(string email, string recoveryCode, string newPassword);
+
 
 
     }
