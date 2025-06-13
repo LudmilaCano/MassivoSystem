@@ -82,16 +82,16 @@ export const getEventsByUserId = async (userId) => {
 
 
 export const getEventVehiclesByUserId = async (userId) => {
-  const response = await api.get(`/api/EventVehicle/user/${userId}`);
+  const response = await api.get(`/EventVehicle/user/${userId}`);
   return response.data;
 };
 
 export const getEventVehicleById = async (id) => {
-  const response = await api.get(`/api/EventVehicle/${id}`);
+  const response = await api.get(`/EventVehicle/${id}`);
   return response.data;
 };
 
 export const updateEventVehicle = async (id, eventVehicleData) => {
-  const response = await api.put(`/api/EventVehicle/${id}`, eventVehicleData);
+  const response = await api.put(`/EventVehicle/${id}`, eventVehicleData);
   return response.data;
 };

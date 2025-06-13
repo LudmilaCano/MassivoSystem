@@ -38,7 +38,7 @@ namespace Infraestructure.Data
             return await _context.EventsVehicles
                 .Include(ev => ev.Event)
                 .Include(ev => ev.Vehicle)
-                .Where(ev => ev.Event.UserId == userId)
+                .Where(ev => ev.Vehicle.UserId == userId)
                 .ToListAsync();
         }
 
