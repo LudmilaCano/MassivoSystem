@@ -1,5 +1,7 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Domain.Entities;
+using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,10 +14,12 @@ namespace MassivoProject.Server.Controllers
     public class VehicleController : ControllerBase
     {
         private readonly IVehicleService _vehicleService;
+        private readonly INotificationService _notificationService;
 
-        public VehicleController(IVehicleService vehicleService)
+        public VehicleController(IVehicleService vehicleService, INotificationService notificationService)
         {
             _vehicleService = vehicleService;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -59,7 +63,14 @@ namespace MassivoProject.Server.Controllers
 
             try
             {
-                await _vehicleService.CreateVehicleAsync(request);
+                var createdVehicle = await _vehicleService.CreateVehicleAsync(request);
+
+                await _notificationService.SendNotificationEmail(
+                    "alexisrabbia@gmail.com",
+                    NotificationType.VehiculoCreado,
+                    createdVehicle
+                );
+
                 return StatusCode(201, new { Message = "Vehículo registrado correctamente." });
             }
             catch (InvalidOperationException ex)

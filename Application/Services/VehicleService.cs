@@ -75,14 +75,13 @@ namespace Application.Services
             };
         }
 
-        public async Task CreateVehicleAsync(VehicleRequest request)
+        public async Task<VehicleDto> CreateVehicleAsync(VehicleRequest request)
         {
             // Verificar si la patente ya existe
             bool exists = await _vehicleRepository.ExistsByLicensePlateAsync(request.LicensePlate);
             if (exists)
-            {
                 throw new InvalidOperationException("Ya existe un vehículo con esa patente.");
-            }
+            
 
             var vehicle = new Vehicle
             {
@@ -100,6 +99,19 @@ namespace Application.Services
             };
 
             await _vehicleRepository.AddAsync(vehicle);
+
+            return new VehicleDto
+            {
+                LicensePlate = vehicle.LicensePlate,
+                Name = vehicle.Name,
+                ImagePath = vehicle.ImagePath,
+                Description = vehicle.Description,
+                DriverName = vehicle.DriverName,
+                Type = vehicle.Type,
+                YearModel = vehicle.YearModel,
+                Capacity = vehicle.Capacity,
+                Available = vehicle.Available
+            };
         }
 
         public async Task UpdateVehicleAsync(string licensePlate, VehicleRequest request)

@@ -3,6 +3,7 @@ using Application.Services;
 using Domain.Interfaces;
 using Infraestructure.Data;
 using Infraestructure.Services;
+using Infraestructure.Services.Infrastructure.Services;
 using MassivoProject.Server.Exceptions;
 using MassivoProject.Server.Middlewares;
 using Microsoft.EntityFrameworkCore;
@@ -97,6 +98,7 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IEventVehicleService, EventVehicleService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
 // Authentification

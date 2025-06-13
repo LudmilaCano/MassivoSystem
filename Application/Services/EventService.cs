@@ -2,6 +2,7 @@
 using Application.Models.Requests;
 using Application.Models.Responses;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 
 namespace Application.Services
@@ -11,13 +12,14 @@ namespace Application.Services
         private readonly IEventRepository _eventRepository;
         private readonly IUserRepository _userRepository;
         private readonly IVehicleRepository _vehicleRepository;
+        private readonly INotificationService _notificationService;
 
-
-        public EventService(IEventRepository eventRepository, IUserRepository userRepository, IVehicleRepository vehicleRepository)
+        public EventService(IEventRepository eventRepository, IUserRepository userRepository, IVehicleRepository vehicleRepository, INotificationService notificationService)
         {
             _eventRepository = eventRepository;
             _userRepository = userRepository;
             _vehicleRepository = vehicleRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<List<EventDto>> GetAllEventsAsync()
@@ -70,6 +72,17 @@ namespace Application.Services
             };
 
             await _eventRepository.AddAsync(newEvent);
+
+            var user = await _userRepository.GetByIdAsync(request.UserId);
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                await _notificationService.SendNotificationEmail(
+                    user.Email,
+                    NotificationType.EventoCreado, // Agregalo al enum
+                    EventDto.Create(newEvent) // u otro DTO si lo preferís
+                );
+            }
+
             return EventDto.Create(newEvent);
 
         }

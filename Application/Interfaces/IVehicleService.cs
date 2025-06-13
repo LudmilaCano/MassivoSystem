@@ -11,7 +11,7 @@ namespace Application.Interfaces
         Task<List<VehicleDto>> GetAllVehiclesAsync();
         Task<VehicleDto> GetVehicleByLicensePlateAsync(string licensePlate);
         Task<List<VehicleDto>> GetVehiclesByUserIdAsync(int userId);
-        Task CreateVehicleAsync(VehicleRequest request);
+        Task<VehicleDto> CreateVehicleAsync(VehicleRequest request);
         Task UpdateVehicleAsync(string licensePlate, VehicleRequest request);
         Task DeactivateVehicleAsync(string licensePlate);
         Task DeleteVehicleAsync(string licensePlate);
