@@ -24,6 +24,8 @@ builder.Services.AddControllers()
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpClient();
+
 
 #region Swagger
 builder.Services.AddSwaggerGen(setupAction =>
