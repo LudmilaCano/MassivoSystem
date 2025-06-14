@@ -54,6 +54,19 @@ namespace MassivoProject.Server.Controllers
         }
 
 
+        [HttpPost("activate")]
+        public async Task<IActionResult> ActivateUser([FromBody] ActivateUserRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Datos inválidos");
+
+            var result = await _userService.ActivateAccountAsync(request.email, request.recoveryCode);
+
+            if (!result)
+                return BadRequest(new { Message = "El código es inválido o la cuenta ya está activada." });
+
+            return Ok(new { Message = "✅ Cuenta activada correctamente. Ya podés iniciar sesión." });
+        }
 
 
     }

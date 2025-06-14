@@ -64,13 +64,6 @@ namespace MassivoProject.Server.Controllers
             try
             {
                 var createdVehicle = await _vehicleService.CreateVehicleAsync(request);
-
-                await _notificationService.SendNotificationEmail(
-                    "alexisrabbia@gmail.com",
-                    NotificationType.VehiculoCreado,
-                    createdVehicle
-                );
-
                 return StatusCode(201, new { Message = "Vehículo registrado correctamente." });
             }
             catch (InvalidOperationException ex)

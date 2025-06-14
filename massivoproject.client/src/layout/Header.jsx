@@ -421,6 +421,16 @@ const Header = () => {
                 <ListItemText primary="Agregar Vehículo" />
               </ListItem>
             )}
+            {role === "Prestador" && (
+              <ListItem button onClick={() => handleNavigate("/add-event")}>
+                <ListItemText primary="Agregar Evento" />
+              </ListItem>
+            )}
+            {role === "Prestador" && (
+              <ListItem button onClick={() => handleNavigate("/")}>
+                <ListItemText primary="Agregar Vehículo a Evento" />
+              </ListItem>
+            )}
           </List>
         </div>
       </Drawer>

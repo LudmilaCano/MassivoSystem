@@ -180,6 +180,5 @@ namespace MassivoApp.Server.Controllers
             return Ok(claims);
         }
 
-
     }
 }

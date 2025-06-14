@@ -22,6 +22,7 @@ import AddVehicleEvent from "./components/AddEventVehicle.jsx";
 import Booking from "./components/Booking.jsx";
 import { useSelector } from "react-redux";
 import AboutUs from "./components/AboutUs.jsx";
+import ActivateAccount from "./components/ActivateAccount.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -138,11 +139,19 @@ function App() {
     },
     {
       path: "/reset-password",
-        element: (
-          <MainLayout>
-            <ResetPasswordWithCode />
-          </MainLayout>
-        ),
+      element: (
+        <MainLayout>
+          <ResetPasswordWithCode />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/activate-account",
+      element: (
+        <MainLayout>
+          <ActivateAccount />
+        </MainLayout>
+      ),
     },
     {
       path: "/about-us",

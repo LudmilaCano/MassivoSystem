@@ -31,14 +31,15 @@ namespace Infraestructure.Services
                         var vehiculo = data as VehicleDto;
                         subject = "🚗 Vehículo creado exitosamente";
                         body = $"<p>Hola,</p>" +
-                               $"<p>Tu vehículo <b>{vehiculo.Name}</b> con patente <b>{vehiculo.LicensePlate}</b> fue creado correctamente.</p>" +
+                               $"<p>Tu vehículo <b>{vehiculo.Name}</b> con patente <span style='font-size:18px;'>{vehiculo.LicensePlate} 🚗 </span> fue creado correctamente.</p>" +
                                "<p>¡Gracias por confiar en nosotros!</p>";
                         break;
+
                     case NotificationType.EventoCreado:
                         var evento = data as EventDto;
                         subject = "🎉 Evento creado correctamente";
                         body = $"<p>Hola,</p>" +
-                               $"<p>Tu evento <b>{evento.Name}</b> fue registrado para el <b>{evento.EventDate.ToShortDateString()}</b>.</p>" +
+                               $"<p>Tu evento <b>{evento.Name}</b> fue registrado para el <span style='font-size:18px;'>{evento.EventDate.ToShortDateString()} 🎉 </span>.</p>" +
                                "<p>¡Gracias por usar nuestra plataforma!</p>";
                         break;
 

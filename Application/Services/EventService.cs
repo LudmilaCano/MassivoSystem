@@ -78,8 +78,8 @@ namespace Application.Services
             {
                 await _notificationService.SendNotificationEmail(
                     user.Email,
-                    NotificationType.EventoCreado, // Agregalo al enum
-                    EventDto.Create(newEvent) // u otro DTO si lo preferís
+                    NotificationType.EventoCreado,
+                    EventDto.Create(newEvent)
                 );
             }
 

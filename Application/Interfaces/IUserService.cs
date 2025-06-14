@@ -14,12 +14,12 @@ namespace Application.Interfaces
         void DesactiveUser(int idUser);
         User? GetUserById(int idUser);
         List<User> GetUsers();
-        void SignUpUser(UserSignUpRequest userSignUpRequest);
+        Task SignUpUser(UserSignUpRequest userSignUpRequest);
         void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser);
         Task UpdateUser(User user);
         Task<bool> GenerateRecoveryCodeAndSendEmailAsync(string email);
         Task<bool> ResetPasswordWithRecoveryCodeAsync(string email, string recoveryCode, string newPassword);
-
+        Task<bool> ActivateAccountAsync(string email, string code);
 
 
     }

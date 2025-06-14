@@ -13,10 +13,14 @@ namespace Application.Services
     public class VehicleService : IVehicleService
     {
         private readonly IVehicleRepository _vehicleRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly INotificationService _notificationService;
 
-        public VehicleService(IVehicleRepository vehicleRepository)
+        public VehicleService(IVehicleRepository vehicleRepository, IUserRepository userRepository, INotificationService notificationService)
         {
             _vehicleRepository = vehicleRepository;
+            _userRepository = userRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<List<VehicleDto>> GetAllVehiclesAsync()
@@ -100,7 +104,7 @@ namespace Application.Services
 
             await _vehicleRepository.AddAsync(vehicle);
 
-            return new VehicleDto
+            var vDto = new VehicleDto
             {
                 LicensePlate = vehicle.LicensePlate,
                 Name = vehicle.Name,
@@ -112,6 +116,18 @@ namespace Application.Services
                 Capacity = vehicle.Capacity,
                 Available = vehicle.Available
             };
+
+            var user = await _userRepository.GetByIdAsync(vehicle.UserId);
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                await _notificationService.SendNotificationEmail(
+                    user.Email,
+                    NotificationType.VehiculoCreado,
+                    vDto
+                );
+            }
+
+            return vDto;
         }
 
         public async Task UpdateVehicleAsync(string licensePlate, VehicleRequest request)

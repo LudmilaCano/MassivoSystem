@@ -29,7 +29,7 @@ namespace Domain.Entities
 
         public string Role { get; set; }
 
-        public EntityState IsActive { get; set; } = EntityState.Active;
+        public EntityState IsActive { get; set; } = EntityState.Inactive;
         public ICollection<Event> Events { get; set; }
         public string? RecoveryCode { get; set; }
         public bool MustChangePassword { get; set; } = false;
