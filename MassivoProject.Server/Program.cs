@@ -25,6 +25,8 @@ builder.Services.AddControllers()
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpClient();
+
 
 #region Swagger
 builder.Services.AddSwaggerGen(setupAction =>
@@ -85,6 +87,7 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IEventVehicleRepository, EventVehicleRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
 #endregion
 
@@ -96,10 +99,14 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IEventVehicleService, EventVehicleService>();
+<<<<<<< HEAD
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
+=======
+builder.Services.AddScoped<IReviewService, ReviewService>();
+>>>>>>> development
 
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();

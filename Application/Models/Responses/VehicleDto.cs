@@ -1,4 +1,5 @@
-﻿using Domain.Enums;
+﻿using Domain.Entities;
+using Domain.Enums;
 
 namespace Application.Models.Responses
 {
@@ -14,5 +15,22 @@ namespace Application.Models.Responses
         public int Available { get; set; }
         public string From { get; set; }
         public string DriverName { get; set; }
+
+        public static VehicleDto Create(Vehicle vehicleEntity)
+        {
+            return new VehicleDto
+            {
+                LicensePlate = vehicleEntity.LicensePlate,
+                Name = vehicleEntity.Name,
+                ImagePath = vehicleEntity.ImagePath,
+                Description = vehicleEntity.Description,
+                Type = vehicleEntity.Type,
+                YearModel = vehicleEntity.YearModel,
+                Capacity = vehicleEntity.Capacity,
+                Available = vehicleEntity.Available,
+                From = vehicleEntity.User?.City?.Name,
+                DriverName = vehicleEntity.User?.FirstName
+            };
+        }
     }
 }

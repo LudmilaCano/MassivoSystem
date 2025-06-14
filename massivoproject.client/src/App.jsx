@@ -23,6 +23,7 @@ import Booking from "./components/Booking.jsx";
 import { useSelector } from "react-redux";
 import AboutUs from "./components/AboutUs.jsx";
 import ActivateAccount from "./components/ActivateAccount.jsx";
+import BookingList from "./components/BookingList.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -158,6 +159,14 @@ function App() {
       element: (
         <MainLayout>
           <AboutUs />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/booking-list",
+      element: (
+        <MainLayout>
+          <BookingList />
         </MainLayout>
       ),
     },
