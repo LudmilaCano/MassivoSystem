@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import Collapse from "@mui/material/Collapse";
 import {
   Button,
   Typography,
@@ -15,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/AuthSlice";
 import Colors from "./Colors.jsx";
 import logo from "../Images/logo2.png";
+import useChangeRol from "../hooks/useChangeRol.jsx";
 
 const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -28,6 +32,14 @@ const Header = () => {
 
   const logueado = !!token;
   const enPerfil = location.pathname === "/profile";
+
+  const [openOpciones, setOpenOpciones] = useState(false);
+
+  const handleChangeRol = useChangeRol();
+
+  const toggleOpciones = () => {
+    setOpenOpciones(!openOpciones);
+  };
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
@@ -111,12 +123,7 @@ const Header = () => {
         )}
       </div>
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-        <div
-          style={{ width: 250 }}
-          role="presentation"
-          onClick={toggleDrawer(false)}
-          onKeyDown={toggleDrawer(false)}
-        >
+        <div style={{ width: 250 }} role="presentation">
           <List>
             <ListItem>
               <Typography variant="h6">
@@ -155,22 +162,48 @@ const Header = () => {
                 <ListItemText primary="Panel Admin" />
               </ListItem>
             )}
-
-            {role === "Prestador" && (
-              <ListItem button onClick={() => handleNavigate("/add-vehicle")}>
-                <ListItemText primary="Agregar Vehículo" />
+            <>
+              <ListItem button onClick={toggleOpciones}>
+                <ListItemText primary="Opciones" />
+                {openOpciones ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
-            )}
-            {role === "Prestador" && (
-              <ListItem button onClick={() => handleNavigate("/add-event")}>
-                <ListItemText primary="Agregar Evento" />
-              </ListItem>
-            )}
-            {role === "Prestador" && (
-              <ListItem button onClick={() => handleNavigate("/")}>
-                <ListItemText primary="Agregar Vehículo a Evento" />
-              </ListItem>
-            )}
+              <Collapse in={openOpciones} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {role === "User" && (
+                    <ListItem button onClick={handleChangeRol} sx={{ pl: 4 }}>
+                      <ListItemText primary="Quiero ser Prestador" />
+                    </ListItem>
+                  )}
+                  {role === "Prestador" && (
+                    <ListItem
+                      button
+                      onClick={() => handleNavigate("/add-vehicle")}
+                      sx={{ pl: 4 }}
+                    >
+                      <ListItemText primary="Agregar Vehículo" />
+                    </ListItem>
+                  )}
+                  {role === "Prestador" && (
+                    <ListItem
+                      button
+                      onClick={() => handleNavigate("/add-event")}
+                      sx={{ pl: 4 }}
+                    >
+                      <ListItemText primary="Agregar Evento" />
+                    </ListItem>
+                  )}
+                  {role === "Prestador" && (
+                    <ListItem
+                      button
+                      onClick={() => handleNavigate("/")}
+                      sx={{ pl: 4 }}
+                    >
+                      <ListItemText primary="Agregar Vehículo a Evento" />
+                    </ListItem>
+                  )}
+                </List>
+              </Collapse>
+            </>
           </List>
         </div>
       </Drawer>

@@ -41,22 +41,45 @@ const HeaderPerfil = () => {
   };
 
   return (
-    <>
-      <AppBar position="static" sx={{ backgroundColor: Colors.azul }}>
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          <img src={logo} alt="Logo" style={{ height: "40px" }} />
+    <div
+      style={{
+        backgroundColor: Colors.azul,
+        width: "100%",
+        padding: "10px 20px",
+        boxSizing: "border-box",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <IconButton onClick={toggleDrawer(true)} sx={{ color: "white" }}>
+          <MenuIcon />
+        </IconButton>
+        <img
+          src={logo}
+          alt="Logo"
+          style={{ width: "auto", height: "7vh", marginLeft: 10 }}
+        />
+      </div>
 
-          <Typography sx={{ color: "white", fontWeight: "bold" }}>
-            {fullName} - {role}
-          </Typography>
+      <div>
+        <Button
+          onClick={handleLogout}
+          variant="outlined"
+          sx={{
+            borderRadius: 15,
+            color: Colors.naranjaOscuro,
+            borderColor: Colors.naranjaOscuro,
+            fontWeight: "600",
+            marginX: 1,
+          }}
+        >
+          Logout
+        </Button>
+      </div>
 
-          <IconButton color="inherit" onClick={toggleDrawer(true)}>
-            <MenuIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-
-      <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
+      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         <List sx={{ width: 250, paddingTop: 2 }}>
           {!token && (
             <>
@@ -100,7 +123,7 @@ const HeaderPerfil = () => {
           </ListItem>
         </List>
       </Drawer>
-    </>
+    </div>
   );
 };
 
