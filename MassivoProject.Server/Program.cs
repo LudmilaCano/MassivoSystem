@@ -99,15 +99,10 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IEventVehicleService, EventVehicleService>();
-<<<<<<< HEAD
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-
-=======
 builder.Services.AddScoped<IReviewService, ReviewService>();
->>>>>>> development
-
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 //validador unicidad DNI y Email

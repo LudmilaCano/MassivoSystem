@@ -98,7 +98,7 @@ namespace Application.Services
                 Type = request.Type,
                 YearModel = request.YearModel,
                 Capacity = request.Capacity,
-                Available = 0,
+                Available = request.Capacity,
                 IsActive = EntityState.Active
             };
 
