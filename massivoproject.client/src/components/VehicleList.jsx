@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Box, Grid, Typography, Paper, Button, TextField, Chip } from '@mui/material';
 import Pagination from '@mui/material/Pagination';
 import { useParams } from 'react-router-dom';
-import { getEventById,getVehiclesByEvent, } from '../api/EventEndpoints';
-import { getEventTypeLabel,getEventTypeIcon } from '../constants/eventCategories';
+import { getEventById, getVehiclesByEvent, } from '../api/EventEndpoints';
+import { getEventTypeLabel, getEventTypeIcon } from '../constants/eventCategories';
 import { getVehicleTypeImage } from '../constants/vehicleType';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -37,25 +37,25 @@ const VehicleList = () => {
             setLoadingEvent(false);
         };
         fetchEvent();
-    }, [eventId ]);
+    }, [eventId]);
 
     useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-        const filtered = vehicles.filter(vehicle =>
-            (vehicle.from || '').toLowerCase().includes(search.toLowerCase())
-        );
-        setFilteredVehicles(filtered);
-        setCurrentPage(1);
-    }, 500);
+        const delayDebounce = setTimeout(() => {
+            const filtered = vehicles.filter(vehicle =>
+                (vehicle.from || '').toLowerCase().includes(search.toLowerCase())
+            );
+            setFilteredVehicles(filtered);
+            setCurrentPage(1);
+        }, 500);
 
-    return () => clearTimeout(delayDebounce);
-}, [search, vehicles]);
+        return () => clearTimeout(delayDebounce);
+    }, [search, vehicles]);
 
     useEffect(() => {
         const fetchVehicles = async () => {
             try {
                 const data = await getVehiclesByEvent(eventId);
-                setVehicles(data);                
+                setVehicles(data);
                 setFilteredVehicles(data); // si quieres filtrar sobre estos datos
             } catch (error) {
                 setVehicles([]);
@@ -83,210 +83,217 @@ const VehicleList = () => {
     }
 
     return (
-    <Box sx={{ width: '100%', minHeight: '90vh', backgroundColor: '#F5F5F5', p: 4, paddingRight: '5vw', paddingLeft: '5vw' }}>
-        <Paper
-            elevation={8}
-            sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', md: 'row' },
-                alignItems: 'stretch',
-                mb: 5,
-                p: 0,
-                borderRadius: 4,
-                background: '#fff',
-                boxShadow: '0 8px 32px 0 rgba(19,154,160,0.18)',
-                overflow: 'hidden',
-                minHeight: { xs: 340, md: 340 }
-            }}
-        >
-            <Box
-                component="img"
-                src={event.image}
-                alt={event.name}
+        <Box sx={{ width: '100%', minHeight: '90vh', backgroundColor: '#F5F5F5', p: 4, paddingRight: '5vw', paddingLeft: '5vw' }}>
+            <Paper
+                elevation={8}
                 sx={{
-                    width: { xs: '100%', md: 420 },
-                    height: { xs: 260, md: 340 },
-                    objectFit: 'cover',
-                    borderRadius: 0,
-                    boxShadow: '0 4px 24px 0 rgba(19,154,160,0.10)'
-                }}
-            />
-            <Box
-                sx={{
-                    flex: 1,
                     display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    p: { xs: 3, md: 5 },
-                    background: 'rgba(255,255,255,0.97)',
-                    borderTopRightRadius: { xs: 0, md: 32 },
-                    borderBottomRightRadius: { xs: 0, md: 32 },
+                    flexDirection: { xs: 'column', md: 'row' },
+                    alignItems: 'stretch',
+                    mb: 5,
+                    p: 0,
+                    borderRadius: 4,
+                    background: '#fff',
+                    boxShadow: '0 8px 32px 0 rgba(19,154,160,0.18)',
+                    overflow: 'hidden',
+                    minHeight: { xs: 340, md: 340 }
                 }}
             >
-                <Box>
-                    <Typography
-                        variant="h3"
-                        fontWeight="bold"
-                        color="#139AA0"
-                        sx={{
-                            textShadow: '0 2px 8px rgba(19,154,160,0.10)',
-                            mb: 1
-                        }}
-                    >
-                        {event.name}
-                    </Typography>
-                    <Chip
-                        label={getEventTypeLabel(event.type)}
-                        icon={<span role="img" aria-label={event.type}>{getEventTypeIcon(event.type)}</span>}
-                        color="success"
-                        sx={{
-                            backgroundColor: '#43A047',
-                            color: '#fff',
-                            fontWeight: 'bold',
-                            fontSize: '1.1rem',
-                            px: 2,
-                            py: 1,
-                            mb: 2,
-                            boxShadow: '0 2px 8px 0 rgba(67,160,71,0.18)'
-                        }}
-                    />
-                    <Typography
-                        variant="h6"
-                        color="text.secondary"
-                        mb={3}
-                        sx={{
-                            fontWeight: 500,
-                            lineHeight: 1.6
-                        }}
-                    >
-                        {event.description}
-                    </Typography>
-                </Box>
-                <Box>
-                    <Chip
-                        label={event.location}
-                        color="primary"
-                        sx={{
-                            backgroundColor: '#139AA0',
-                            color: '#fff',
-                            fontWeight: 'bold',
-                            fontSize: '1.15rem',
-                            px: 2.5,
-                            py: 1.5,
-                            boxShadow: '0 2px 8px 0 rgba(19,154,160,0.18)'
-                        }}
-                        icon={<span role="img" aria-label="location">📍</span>}
-                    />
-                </Box>
-                {(auth?.role === "Prestador" || auth?.role === "Admin") && (
-                <Button  
-                    onClick={() => navigate(`/add-vehicle-event/${eventId}`, {
-                    state: { description: event.name }
-                    })}
-                    
-                    color="warning"
-                    size="small"
+                <Box
+                    component="img"
+                    src={event.image}
+                    alt={event.name}
+                    sx={{
+                        width: { xs: '100%', md: 420 },
+                        height: { xs: 260, md: 340 },
+                        objectFit: 'cover',
+                        borderRadius: 0,
+                        boxShadow: '0 4px 24px 0 rgba(19,154,160,0.10)'
+                    }}
+                />
+                <Box
+                    sx={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        p: { xs: 3, md: 5 },
+                        background: 'rgba(255,255,255,0.97)',
+                        borderTopRightRadius: { xs: 0, md: 32 },
+                        borderBottomRightRadius: { xs: 0, md: 32 },
+                    }}
                 >
-                    Agregar Vehículo
-                </Button>
-                )}
-            </Box>
-        </Paper>
+                    <Box>
+                        <Typography
+                            variant="h3"
+                            fontWeight="bold"
+                            color="#139AA0"
+                            sx={{
+                                textShadow: '0 2px 8px rgba(19,154,160,0.10)',
+                                mb: 1
+                            }}
+                        >
+                            {event.name}
+                        </Typography>
+                        <Chip
+                            label={getEventTypeLabel(event.type)}
+                            icon={<span role="img" aria-label={event.type}>{getEventTypeIcon(event.type)}</span>}
+                            color="success"
+                            sx={{
+                                backgroundColor: '#43A047',
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                fontSize: '1.1rem',
+                                px: 2,
+                                py: 1,
+                                mb: 2,
+                                boxShadow: '0 2px 8px 0 rgba(67,160,71,0.18)'
+                            }}
+                        />
+                        <Typography
+                            variant="h6"
+                            color="text.secondary"
+                            mb={3}
+                            sx={{
+                                fontWeight: 500,
+                                lineHeight: 1.6
+                            }}
+                        >
+                            {event.description}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Chip
+                            label={event.location}
+                            color="primary"
+                            sx={{
+                                backgroundColor: '#139AA0',
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                fontSize: '1.15rem',
+                                px: 2.5,
+                                py: 1.5,
+                                boxShadow: '0 2px 8px 0 rgba(19,154,160,0.18)'
+                            }}
+                            icon={<span role="img" aria-label="location">📍</span>}
+                        />
+                    </Box>
+                    {(auth?.role === "Prestador" || auth?.role === "Admin") && (
+                        <Button
+                            onClick={() => navigate(`/add-vehicle-event/${eventId}`, {
+                                state: { description: event.name }
+                            })}
 
-        <Box sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
-            <TextField
-                margin="normal"
-                label="Buscar lugar de salida"
-                sx={{
-                    height: '8vh',
-                    width: { md: '90vw' },
-                    '& label.Mui-focused': { color: '#139AA0' },
-                    '& .MuiOutlinedInput-root': {
-                        '&.Mui-focused fieldset': { borderColor: '#139AA0' }
-                    }
-                }}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-            />
-        </Box>
-
-        <Box mt={1} mb={2} display="flex" justifyContent="center">
-            <Pagination
-                variant="outlined"
-                shape="rounded"
-                count={totalPages}
-                page={currentPage}
-                onChange={(event, value) => setCurrentPage(value)}
-                color="primary"
-            />
-        </Box>
-
-        <Box sx={{
-            maxHeight: '50vh',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2
-        }}>
-            {currentItems.length !== 0 ? (
-                currentItems.map((item, index) => (
-                    <Paper key={index} elevation={3} sx={{ display: 'flex', p: 2, alignItems: 'center' }}>
-                        <Button sx={{ width: '100%' }} color='black'>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-                                <img
-                                    src={getVehicleTypeImage(item.vehicleType)}
-                                    alt={item.vehicleType}
-                                    style={{ width: 60, height: 40, objectFit: 'contain', borderRadius: 8 }}
-                                />
-                            </Box>
-
-                            <Box sx={{ flexGrow: 1 }}>
-                                <Typography variant="h6" fontWeight="bold">
-                                    {item.name}
-                                </Typography>
-                              
-                                <Typography variant="body2" mt={1}>
-                                    👥 {item.capacity} Personas máximo
-                                </Typography>
-                            </Box>
-
-                            <Box sx={{
-                                textAlign: 'right',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'flex-end',
-                                gap: 1
-                            }}>
-                                <Chip label={item.available < 2 ? `${item.available} lugar disponible` : `${item.available} lugares disponibles`} color={item.available < 2 ? "error" : "success"} size="small" />
-                                <Typography variant="body2">
-                                    Salida: <strong>{item.from}</strong><br />
-                                    14/05/25 - 16:30hs
-                                </Typography>
-                                <Typography variant="h6" color="primary">
-                                    ${item.price}
-                                </Typography>
-                                <Button
-                                    onClick={() => navigate(`/trip-detail/${item.eventVehicleId}`, {
-                                        state: { destination: event.location }
-                                    })}
-                                    variant="contained"
-                                    color="warning"
-                                    size="small"
-                                >
-                                Ver más detalles
-                                </Button>
-                            </Box>
+                            color="warning"
+                            size="small"
+                        >
+                            Agregar Vehículo
                         </Button>
-                    </Paper>
-                ))
-            ) : (
-                <Typography variant="h5" fontWeight="bold" mb={3}>
-                    No hay vehículos que coincidan con la búsqueda
-                </Typography>
-            )}
+                    )}
+                </Box>
+            </Paper>
+
+            <Box sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
+                <TextField
+                    margin="normal"
+                    label="Buscar lugar de salida"
+                    sx={{
+                        height: '8vh',
+                        width: { md: '90vw' },
+                        '& label.Mui-focused': { color: '#139AA0' },
+                        '& .MuiOutlinedInput-root': {
+                            '&.Mui-focused fieldset': { borderColor: '#139AA0' }
+                        }
+                    }}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+            </Box>
+
+            <Box mt={1} mb={2} display="flex" justifyContent="center">
+                <Pagination
+                    variant="outlined"
+                    shape="rounded"
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={(event, value) => setCurrentPage(value)}
+                    color="primary"
+                />
+            </Box>
+
+            <Box sx={{
+                maxHeight: '50vh',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2
+            }}>
+                {currentItems.length !== 0 ? (
+                    currentItems.map((item, index) => (
+                        <Paper key={index} elevation={3} sx={{ display: 'flex', p: 2, alignItems: 'center' }}>
+                            <Button sx={{ width: '100%' }} color='black'>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+                                    <img
+                                        src={getVehicleTypeImage(item.vehicleType)}
+                                        alt={item.vehicleType}
+                                        style={{ width: 60, height: 40, objectFit: 'contain', borderRadius: 8 }}
+                                    />
+                                </Box>
+
+                                <Box sx={{ flexGrow: 1 }}>
+                                    <Typography variant="h6" fontWeight="bold">
+                                        {item.vehicle.name}
+                                    </Typography>
+
+                                    <Typography variant="body2" mt={1}>
+                                        👥 {item.vehicle.capacity} Personas máximo
+                                    </Typography>
+                                </Box>
+
+                                <Box sx={{
+                                    textAlign: 'right',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-end',
+                                    gap: 1
+                                }}>
+                                    <Chip
+                                        label={item.vehicle.available < 2
+                                            ? `${item.vehicle.available} lugar disponible`
+                                            : `${item.vehicle.available} lugares disponibles`}
+                                        color={item.vehicle.available < 2 ? "error" : "success"}
+                                        size="small"
+                                    />
+                                    <Typography variant="body2">
+                                        Salida: <strong>{item.vehicle.from}</strong><br />
+                                        {new Date(item.date).toLocaleDateString()} - {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
+                                    </Typography>
+                                    <Typography variant="h6" color="primary">
+                                        ${item.price}
+                                    </Typography>
+                                    <Button
+                                        onClick={() => navigate(`/trip-detail/${item.eventVehicleId}`, {
+                                            state: { destination: event.location }
+                                        })}
+                                        variant="contained"
+                                        color="warning"
+                                        size="small"
+                                    >
+                                        Ver más detalles
+                                    </Button>
+                                </Box>
+                            </Button>
+                        </Paper>
+                    ))
+                ) : (
+                    <Typography variant="h5" fontWeight="bold" mb={3}>
+                        No hay vehículos que coincidan con la búsqueda
+                    </Typography>
+                )}
+
+            </Box>
         </Box>
-    </Box>
-);
+    );
 }
 
 export default VehicleList

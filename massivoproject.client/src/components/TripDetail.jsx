@@ -121,7 +121,7 @@ const TripDetail = () => {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 'bold', textAlign: 'center' }}>{eventVehicle.name}</Typography>
             <Rating name="read-only" value={5} readOnly size="small" sx={{ mt: 1 }} />
             <Chip
-              label={eventVehicle.available < 2 ? `${eventVehicle.available} lugar disponible` : `${eventVehicle.available} lugares disponibles`}
+              label={eventVehicle.available < 2 ? `${eventVehicle.available} lugar disponible` : `${eventVehicle.vehicle.available} lugares disponibles`}
               color={eventVehicle.available < 2 ? "error" : "success"}
               sx={{ mt: 1 }}
             />
@@ -152,7 +152,7 @@ const TripDetail = () => {
                   Ver Descripción
                 </Button>
                 <Chip label={eventVehicle.vehicleType} color="primary" sx={{ml: 2, mb: 1 }} />
-                <Chip label={`Capacidad: ${eventVehicle.capacity}`} color="info" sx={{ ml: 1, mb: 1 }} />
+                <Chip label={`Capacidad máxima: ${eventVehicle.vehicle.capacity}`} color="info" sx={{ ml: 1, mb: 1 }} />
               </Box>
               <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, width: { xs: '100%', sm: 'auto' } }}>
                 <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold' }}>${eventVehicle.price || 999}</Typography>
