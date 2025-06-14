@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Typography, Paper, Container, Grid, Card, CardContent,
-  Tabs, Tab
+  Tabs, Tab,Button
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import PeopleIcon from '@mui/icons-material/People';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import EventIcon from '@mui/icons-material/Event';
@@ -12,6 +13,7 @@ import { getAllEvents } from '../../api/EventEndpoints';
 import AdminUserPanel from './AdminUserPanel';
 import AdminVehiclePanel from './AdminVehiclePanel';
 import AdminEventPanel from './AdminEventPanel';
+import AdminCreatePanel from './AdminCreatePanel';
 import Swal from 'sweetalert2';
 
 function TabPanel(props) {
@@ -29,7 +31,7 @@ const AdminDashboard = () => {
   const [vehicles, setVehicles] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [openCreatePanel, setOpenCreatePanel] = useState(false);
   // Alert functions
   const showSuccessAlert = (message) => {
     Swal.fire({
@@ -79,9 +81,19 @@ const AdminDashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Panel de Administración
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1">
+          Panel de Administración
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setOpenCreatePanel(true)}
+          
+        >
+          Crear Nuevo
+        </Button>
+      </Box>
 
       {/* Summary Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -155,6 +167,11 @@ const AdminDashboard = () => {
           />
         </TabPanel>
       </Paper>
+<AdminCreatePanel
+        open={openCreatePanel}
+        onClose={() => setOpenCreatePanel(false)}
+        onSuccess={fetchData}
+      />
     </Container>
   );
 };
