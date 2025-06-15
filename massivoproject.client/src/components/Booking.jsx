@@ -8,47 +8,46 @@ import Colors from '../layout/Colors';
 import { useNavigate, useLocation } from 'react-router';
 import useSwalAlert from '../hooks/useSwalAlert';
 import { createBooking } from '../api/BookingEndpoints';
-
-const paymentMethods = ['Tarjeta de Crédito', 'Mercado Pago', 'Efectivo'];
+import { PAYMENT_TYPE_ENUM, PAYMENT_TYPE_LABELS, PAYMENT_TYPE_ICONS } from '../constants/paymentsTypes'
+import { useSelector } from 'react-redux';
 
 const Booking = () => {
+  const [errors, setErrors] = useState({});
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [paymentSelected, setPaymentSelected] = useState({});
+  const [loading, setLoading] = useState(false);
+  const { showAlert } = useSwalAlert();
+  const navigate = useNavigate();
   const location = useLocation();
-  const { eventVehicle } = location.state; 
-
-  // eventVehicle me trae: 
-  // date:"2025-06-14T23:23:53.446"
-  // description: "una descripcion"
-  // eventId:2
-  // eventVehicleId:3
-  // from:"San Lorenzo"
-  // licensePlate:"DDD444"
-  // occupation:0
-  // price:2500
-  // vehicleType:"Combi"
-
-  const event = {
-    name: 'Recital Los Piojos',
-    eventDate: '2025-08-15',
-    location: 'Buenos Aires',
-  };
-
-  const vehicle = {
-    type: 'Mercedes Sprinter',
-    seats: 15,
-  };
+  const { eventVehicle, destination } = location.state;
+  const userId = useSelector((state) => state.auth.userId);
 
   const [formData, setFormData] = useState({
     travelers: '',
-    paymentMethod: '',
+    paymentMethod: {},
   });
 
-  const [errors, setErrors] = useState({});
-  const { showAlert } = useSwalAlert();
-  const navigate = useNavigate();
+  useEffect(() => {
+    console.log("eventVehicle: ", eventVehicle);
+    console.log("destination: ", destination);
+    setPaymentMethods(Object.keys(PAYMENT_TYPE_ENUM).map((key) => ({
+      value: PAYMENT_TYPE_ENUM[key],
+      label: PAYMENT_TYPE_LABELS[key],
+      icon: PAYMENT_TYPE_ICONS[key],
+    })))
+  }, [])
+
+  useEffect(() => {
+    if (paymentMethods.length > 0) {
+      setPaymentSelected(paymentMethods[0].value);
+      setFormData(prev => ({ ...prev, paymentMethod: paymentMethods[0].value }));
+    }
+  }, [paymentMethods]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    console.log("payment change: ", e.target);
   };
 
   const validateForm = () => {
@@ -57,7 +56,7 @@ const Booking = () => {
 
     if (!travelers) {
       newErrors.travelers = 'Debe indicar cuántas personas viajan.';
-    } else if (isNaN(travelers) || travelers < 1 || travelers > vehicle.seats) {
+    } else if (isNaN(travelers) || travelers < 1) { //|| travelers > vehicle.seats
       newErrors.travelers = `No puede excederse la capacidad máxima.`;
     }
 
@@ -69,21 +68,34 @@ const Booking = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
-      const bookingData = {
-        ...formData,
-        event,
-        vehicle,
-      };
 
+      setLoading(true);
+      try {
+        const payload = {
+          userId: Number(userId),
+          eventId: Number(eventVehicle.eventId),
+          licensePlate: eventVehicle.licensePlate,
+          payment: {paymentMethod: Number(formData.paymentMethod), amount: Number(eventVehicle.price) * Number(formData.travelers)},
+          seatNumber: Number(formData.travelers),
+        };
 
+        console.log("payload: ", payload);
 
-      console.log("Datos de la reserva:", bookingData);
-      showAlert('¡Reserva realizada con éxito!', 'success');
-      navigate('/');
+        await createBooking(payload);
+        showAlert('Reserva creada con éxito', 'success');
+        navigate('/');
+
+      } catch (err) {
+        console.log("Error: ", err);
+        showAlert('Error al crear la reserva', 'error');
+      }
+      setLoading(false);
+
     }
   };
+
 
   return (
     <div style={{ backgroundColor: Colors.azul, width: '100%', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -107,15 +119,15 @@ const Booking = () => {
 
             {/* Info del evento */}
             <Box sx={{ width: '95%', mb: 2 }}>
-              <Typography variant="subtitle1"><strong>Evento:</strong> {event.name}</Typography>
-              <Typography variant="subtitle1"><strong>Fecha:</strong> {event.eventDate}</Typography>
-              <Typography variant="subtitle1"><strong>Lugar:</strong> {event.location}</Typography>
+              <Typography variant="subtitle1"><strong>Evento:</strong> {eventVehicle.description}</Typography>
+              <Typography variant="subtitle1"><strong>Fecha:</strong> {new Date(eventVehicle.date).toLocaleDateString('es-ES')}</Typography>
+              <Typography variant="subtitle1"><strong>Lugar:</strong> {eventVehicle.from}</Typography>
             </Box>
 
             {/* Info del vehículo */}
             <Box sx={{ width: '95%', mb: 2 }}>
-              <Typography variant="subtitle1"><strong>Vehículo:</strong> {vehicle.type}</Typography>
-              <Typography variant="subtitle1"><strong>Capacidad máxima:</strong> {vehicle.seats} personas</Typography>
+              <Typography variant="subtitle1"><strong>Vehículo:</strong> {eventVehicle.vehicleType}</Typography>
+              {eventVehicle.available && <Typography variant="subtitle1"><strong>Capacidad máxima:</strong> {eventVehicle.available} {eventVehicle.available == 1 ? "persona" : "personas"}</Typography>}
             </Box>
 
             {/* Formulario */}
@@ -146,8 +158,8 @@ const Booking = () => {
                 sx={textFieldStyle}
               >
                 {paymentMethods.map((method) => (
-                  <MenuItem key={method} value={method}>
-                    {method}
+                  <MenuItem key={method.value} value={method.value}>
+                    {method.label}
                   </MenuItem>
                 ))}
               </TextField>
@@ -162,6 +174,7 @@ const Booking = () => {
                 width: '95%',
                 backgroundColor: '#139AA0',
               }}
+              disabled={loading}
             >
               CONFIRMAR RESERVA
             </Button>

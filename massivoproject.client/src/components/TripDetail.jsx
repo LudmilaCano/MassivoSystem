@@ -74,7 +74,7 @@ const TripDetail = () => {
   if (!eventVehicle) return <Typography>No se encontró el viaje.</Typography>;
 
   const handleReservar = () => {
-    navigate('/booking', {state: {eventVehicle}});
+    navigate('/booking', {state: {eventVehicle, destination }});
   }
 
 
