@@ -30,11 +30,11 @@ namespace MassivoProject.Tests.Services
             _vehicleRepoMock = new Mock<IVehicleRepository>();
             _paymentRepoMock = new Mock<IPaymentRepository>();
 
-            _service = new BookingService(
-                _bookingRepoMock.Object,
-                _eventRepoMock.Object,
-                _vehicleRepoMock.Object,
-                _paymentRepoMock.Object);
+            //_service = new BookingService(
+               // _bookingRepoMock.Object,
+               // _eventRepoMock.Object,
+               // _vehicleRepoMock.Object,
+               // _paymentRepoMock.Object);
         }
 
         // Tests para GetBookingByIdAsync

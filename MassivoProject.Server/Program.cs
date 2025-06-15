@@ -103,6 +103,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IPaymentService, MercadoPagoService>();
+
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 //validador unicidad DNI y Email

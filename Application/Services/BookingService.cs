@@ -19,12 +19,16 @@ namespace Application.Services
         private readonly IEventRepository _eventRepository;
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IPaymentRepository _paymentRepository;
-        public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository)
+        private readonly IPaymentService _paymentService;
+        private readonly IUserRepository _userRepository;
+        public BookingService(IUserRepository userRepository, IPaymentService paymentService, IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository)
         {
             _bookingRepository = bookingRepository;
             _eventRepository = eventRepository;
             _vehicleRepository = vehicleRepository;
             _paymentRepository = paymentRepository;
+            _paymentService = paymentService;
+            _userRepository = userRepository;
         }
 
         public async Task<List<BookingDto>> GetBookingsAsync()
@@ -79,45 +83,70 @@ namespace Application.Services
         public async Task<BookingDto> AddBookingAsync(AddBookingRequest addBookingRequest)
         {
             var eventEntity = await _eventRepository.GetEventByIdWithVehiclesIncludedAsync(addBookingRequest.EventId)
-               ?? throw new KeyNotFoundException($"Evento con ID {addBookingRequest.EventId} no fue encontrado.");
+                ?? throw new KeyNotFoundException($"Evento con ID {addBookingRequest.EventId} no fue encontrado.");
+
             var eventVehicle = eventEntity.EventVehicles.FirstOrDefault(ev => ev.LicensePlate == addBookingRequest.LicensePlate)
-               ?? throw new KeyNotFoundException($"El vehículo con matrícula {addBookingRequest.LicensePlate} no se asignó a este evento.");
+                ?? throw new KeyNotFoundException($"El vehículo con matrícula {addBookingRequest.LicensePlate} no se asignó a este evento.");
+
             var vehicle = await _vehicleRepository.GetByIdAsync(addBookingRequest.LicensePlate)
-               ?? throw new KeyNotFoundException($"Vehículo con matrícula {addBookingRequest.LicensePlate} no fue encontrado.");
+                ?? throw new KeyNotFoundException($"Vehículo con matrícula {addBookingRequest.LicensePlate} no fue encontrado.");
+
+            var ownerUser = await _userRepository.GetByIdAsync(vehicle.UserId.Value)
+                ?? throw new KeyNotFoundException($"El vehículo {vehicle.LicensePlate} no tiene un usuario asignado.");
+
+            if (string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken)) 
+                throw new InvalidOperationException("El usuario dueño del vehículo no tiene un token de MercadoPago configurado.");
+
             if (addBookingRequest.SeatNumber + vehicle.Available > vehicle.Capacity)
-            {
                 throw new InvalidOperationException("La suma del número de asientos y la disponibilidad no debe exceder la capacidad del vehículo.");
-            }
+
             if (addBookingRequest.Payment == null)
-            {
                 throw new ArgumentNullException(nameof(addBookingRequest.Payment), "El pago no puede ser nulo.");
-            }
-            var booking = new Booking()
+
+            // 👉 Paso 1: Crear preferencia de pago
+            string paymentUrl = await _paymentService.CrearPreferenciaPagoAsync(
+                accessToken: ownerUser.MercadoPagoAccessToken, // token de MP guardado
+                title: $"Reserva para {eventEntity.Name}",
+                amount: (decimal)addBookingRequest.Payment.Amount,
+                externalReference: Guid.NewGuid().ToString(),
+                successUrl: "https://tusitio.com/success", // reemplazar
+                failureUrl: "https://tusitio.com/failure"  // reemplazar
+            );
+
+            // 👉 Paso 2: Crear objeto Payment en BD
+            var payment = new Payment
+            {
+                Amount = addBookingRequest.Payment.Amount,
+                Date = DateTime.Now,
+                PaymentMethod = addBookingRequest.Payment.PaymentMethod,
+                PaymentStatus = PaymentStatus.Pending, // Ahora es pending
+                Details = $"Preferencia generada en MP. Link de pago: {paymentUrl}"
+            };
+
+            var paymentSaved = await _paymentRepository.AddAsync(payment);
+
+            // 👉 Paso 3: Crear Booking
+            var booking = new Booking
             {
                 Date = DateTime.Now,
                 UserId = addBookingRequest.UserId,
                 EventVehicleId = eventVehicle.EventVehicleId,
                 BookingStatus = BookingStatus.Confirmed,
                 SeatNumber = addBookingRequest.SeatNumber ?? 0,
+                PaymentId = paymentSaved.Id
             };
 
-            var payment = new Payment()
-            {
-                Amount = addBookingRequest.Payment.Amount,
-                Date = DateTime.Now,
-                PaymentMethod = addBookingRequest.Payment.PaymentMethod,
-                PaymentStatus = PaymentStatus.Success,
-                Details = $"Pago de {eventEntity.Name} que va con el vehiculo {vehicle.LicensePlate} - {vehicle.Name}"
-            };
-            var paymentSaved = await _paymentRepository.AddAsync(payment);
-            booking.PaymentId = paymentSaved.Id;
             var bookingSaved = await _bookingRepository.AddAsync(booking);
+
             vehicle.Available += booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
+
             bookingSaved.Payment = paymentSaved;
 
+            // incluir el link de pago en el DTO si querés mostrarlo al frontend
             return BookingDto.Create(bookingSaved, eventEntity, vehicle);
         }
+
 
         public async Task CancelBookingAsync(int bookingId)
         {

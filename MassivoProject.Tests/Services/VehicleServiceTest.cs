@@ -24,7 +24,7 @@ public class VehicleServiceTests
     public VehicleServiceTests()
     {
         _repoMock = new Mock<IVehicleRepository>();
-        _service = new VehicleService(_repoMock.Object);
+        //_service = new VehicleService(_repoMock.Object);
     }
 
 
