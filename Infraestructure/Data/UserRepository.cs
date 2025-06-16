@@ -42,5 +42,46 @@ namespace Infraestructure.Data
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             return user?.Role == "Prestador";
         }
+
+        public async Task<bool> ToggleStatusAsync(int userId)
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+                return false;
+
+            user.IsActive = user.IsActive == Domain.Enums.EntityState.Active
+                    ? Domain.Enums.EntityState.Inactive
+                    : Domain.Enums.EntityState.Active;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+
+        public async Task<List<string>> GetUserVehicleLicensePlatesAsync(int userId)
+        {
+            return await _dbContext.Vehicles
+                .Where(v => v.UserId == userId)
+                .Select(v => v.LicensePlate)
+                .ToListAsync();
+        }
+
+        public async Task<List<int>> GetUserEventIdsAsync(int userId)
+        {
+            return await _dbContext.Events
+                .Where(e => e.UserId == userId)
+                .Select(e => e.EventId)
+                .ToListAsync();
+        }
+
+        public async Task<Domain.Enums.EntityState> GetUserEntityStateAsync(int userId)
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            return user?.IsActive ?? Domain.Enums.EntityState.Inactive;
+        }
+
+
+
+
+
     }
 }

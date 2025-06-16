@@ -1,5 +1,7 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Domain.Entities;
+using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,10 +14,12 @@ namespace MassivoProject.Server.Controllers
     public class VehicleController : ControllerBase
     {
         private readonly IVehicleService _vehicleService;
+        private readonly INotificationService _notificationService;
 
-        public VehicleController(IVehicleService vehicleService)
+        public VehicleController(IVehicleService vehicleService, INotificationService notificationService)
         {
             _vehicleService = vehicleService;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -59,7 +63,7 @@ namespace MassivoProject.Server.Controllers
 
             try
             {
-                await _vehicleService.CreateVehicleAsync(request);
+                var createdVehicle = await _vehicleService.CreateVehicleAsync(request);
                 return StatusCode(201, new { Message = "Vehículo registrado correctamente." });
             }
             catch (InvalidOperationException ex)
@@ -91,33 +95,38 @@ namespace MassivoProject.Server.Controllers
             }
         }
 
-        [HttpPut("{licensePlate}/deactivate")]
-        public async Task<IActionResult> DeactivateVehicle(string licensePlate)
+        [Authorize(Roles = "Admin")]
+        [HttpPut("admin/{licensePlate}")]
+        public async Task<IActionResult> AdminUpdateVehicle(string licensePlate, [FromBody] AdminVehicleUpdateRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             try
             {
-                await _vehicleService.DeactivateVehicleAsync(licensePlate);
-                return NoContent();
+                var result = await _vehicleService.AdminUpdateVehicleAsync(licensePlate, request);
+                if (!result)
+                    return NotFound(new { Message = "Vehículo no encontrado." });
+
+                return Ok(new { Message = "Vehículo actualizado correctamente." });
             }
-            catch (ArgumentNullException)
+            catch (Exception ex)
             {
-                return NotFound(new { Message = "Vehículo no encontrado." });
+                return StatusCode(500, new { Message = $"Error al actualizar el vehículo: {ex.Message}" });
             }
         }
 
-        [HttpDelete("{licensePlate}")]
+        [HttpPut("toggle-status/{licensePlate}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteVehicle(string licensePlate)
+        public async Task<IActionResult> ToggleStatus(string licensePlate)
         {
-            try
-            {
-                await _vehicleService.DeleteVehicleAsync(licensePlate);
-                return NoContent();
-            }
-            catch (ArgumentNullException)
-            {
-                return NotFound(new { Message = "Vehículo no encontrado." });
-            }
+            var result = await _vehicleService.ToggleStatusAsync(licensePlate);
+            if (!result)
+                return NotFound($"Vehículo con patente {licensePlate} no encontrado");
+
+            return Ok(new { message = "Estado del vehículo actualizado correctamente" });
         }
+
+
     }
 }

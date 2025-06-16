@@ -1,4 +1,5 @@
 ﻿using Application.Models.Requests;
+using Application.Models.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Application.Interfaces
 {
     public interface IAuthenticationService
     {
-        string Authenticate(UserLoginRequest userLoginRequest);
+        AuthenticationResult Authenticate(UserLoginRequest userLoginRequest);
 
     }
 }

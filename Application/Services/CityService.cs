@@ -17,6 +17,18 @@ namespace Application.Services
         {
             _cityRepository = cityRepository;
         }
+        public async Task<List<City>> GetAllCitiesAsync()
+        {
+            var cities = await _cityRepository.ListAsync();
+            return cities.Select(c => new City
+            {
+                Id = c.Id,
+                Name = c.Name,
+                ProvinceId = c.ProvinceId,
+                Latitude = c.Latitude,
+                Longitude = c.Longitude
+            }).ToList();
+        }
 
         public async Task<List<City>> GetCitiesByProvinceAsync(int provinceId)
         {

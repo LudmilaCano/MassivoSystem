@@ -18,6 +18,7 @@ namespace Application.Models.Responses
         public int Price { get; set; }
         public string VehicleType { get; set; }
         public string? From { get; set; }
+        public VehicleDto Vehicle { get; set; }
 
         public static EventVehicleDto Create(EventVehicle eventVehicleEntity)
         {
@@ -30,8 +31,9 @@ namespace Application.Models.Responses
                 Occupation = eventVehicleEntity.Occupation,
                 Description = eventVehicleEntity.Description,
                 Price = eventVehicleEntity.Price,
-                VehicleType = eventVehicleEntity.Vehicle?.Type.ToString(), // <-- Incluye el tipo de vehículo
-                From = eventVehicleEntity.Vehicle?.User?.City.Name            // <-- Incluye el lugar de partida
+                VehicleType = eventVehicleEntity.Vehicle?.Type.ToString(),
+                From = eventVehicleEntity.Vehicle?.User?.City?.Name,
+                Vehicle = eventVehicleEntity.Vehicle != null ? VehicleDto.Create(eventVehicleEntity.Vehicle) : null
             };
         }
     }
