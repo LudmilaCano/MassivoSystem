@@ -16,11 +16,14 @@ namespace Application.Services
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IEventVehicleRepository _eventVehicleRepository;
 
-        public VehicleService(
-            IVehicleRepository vehicleRepository,
-            IEventVehicleRepository eventVehicleRepository)
+        private readonly IUserRepository _userRepository;
+        private readonly INotificationService _notificationService;
+
+        public VehicleService(IVehicleRepository vehicleRepository, IUserRepository userRepository, INotificationService notificationService, IEventVehicleRepository eventVehicleRepository )
         {
             _vehicleRepository = vehicleRepository;
+            _userRepository = userRepository;
+            _notificationService = notificationService;
             _eventVehicleRepository = eventVehicleRepository;
         }
 
@@ -81,14 +84,13 @@ namespace Application.Services
             };
         }
 
-        public async Task CreateVehicleAsync(VehicleRequest request)
+        public async Task<VehicleDto> CreateVehicleAsync(VehicleRequest request)
         {
             // Verificar si la patente ya existe
             bool exists = await _vehicleRepository.ExistsByLicensePlateAsync(request.LicensePlate);
             if (exists)
-            {
                 throw new InvalidOperationException("Ya existe un vehículo con esa patente.");
-            }
+            
 
             var vehicle = new Vehicle
             {
@@ -101,11 +103,36 @@ namespace Application.Services
                 Type = request.Type,
                 YearModel = request.YearModel,
                 Capacity = request.Capacity,
-                Available = 0,
+                Available = request.Capacity,
                 IsActive = EntityState.Active
             };
 
             await _vehicleRepository.AddAsync(vehicle);
+
+            var vDto = new VehicleDto
+            {
+                LicensePlate = vehicle.LicensePlate,
+                Name = vehicle.Name,
+                ImagePath = vehicle.ImagePath,
+                Description = vehicle.Description,
+                DriverName = vehicle.DriverName,
+                Type = vehicle.Type,
+                YearModel = vehicle.YearModel,
+                Capacity = vehicle.Capacity,
+                Available = vehicle.Available
+            };
+
+            var user = await _userRepository.GetByIdAsync(vehicle.UserId);
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                await _notificationService.SendNotificationEmail(
+                    user.Email,
+                    NotificationType.VehiculoCreado,
+                    vDto
+                );
+            }
+
+            return vDto;
         }
 
         public async Task UpdateVehicleAsync(string licensePlate, VehicleRequest request)

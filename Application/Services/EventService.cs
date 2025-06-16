@@ -14,13 +14,17 @@ namespace Application.Services
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IEventVehicleRepository _eventVehicleRepository;
 
+        private readonly INotificationService _notificationService;
 
-        public EventService(IEventRepository eventRepository, IUserRepository userRepository, IVehicleRepository vehicleRepository, IEventVehicleRepository eventVehicleRepository)
+
+
+        public EventService(IEventRepository eventRepository, IUserRepository userRepository, IVehicleRepository vehicleRepository, INotificationService notificationService, IEventVehicleRepository eventVehicleRepository)
         {
             _eventRepository = eventRepository;
             _userRepository = userRepository;
             _vehicleRepository = vehicleRepository;
             _eventVehicleRepository = eventVehicleRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId)
@@ -78,6 +82,17 @@ namespace Application.Services
             };
 
             await _eventRepository.AddAsync(newEvent);
+
+            var user = await _userRepository.GetByIdAsync(request.UserId);
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                await _notificationService.SendNotificationEmail(
+                    user.Email,
+                    NotificationType.EventoCreado,
+                    EventDto.Create(newEvent)
+                );
+            }
+
             return EventDto.Create(newEvent);
 
         }

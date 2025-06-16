@@ -2,7 +2,8 @@ import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import MainLayout from "./layout/MainLayout.jsx";
 import Login from "./components/Login.jsx";
-
+import ForgotPassword from "./components/ForgotPassword.jsx";
+import ResetPasswordWithCode from "./components/ResetPassword.jsx";
 import CustomerProfile from "./components/Customer_profile/CustomerProfile.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import Register from "./components/Register.jsx";
@@ -23,6 +24,8 @@ import Booking from "./components/Booking.jsx";
 import { useSelector } from "react-redux";
 import AboutUs from "./components/AboutUs.jsx";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard.jsx";
+import ActivateAccount from "./components/ActivateAccount.jsx";
+import BookingList from "./components/BookingList.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -130,6 +133,30 @@ function App() {
       ),
     },
     {
+      path: "/forgot-password",
+      element: (
+        <MainLayout>
+          <ForgotPassword />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/reset-password",
+      element: (
+        <MainLayout>
+          <ResetPasswordWithCode />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/activate-account",
+      element: (
+        <MainLayout>
+          <ActivateAccount />
+        </MainLayout>
+      ),
+    },
+    {
       path: "/about-us",
       element: (
         <MainLayout>
@@ -155,6 +182,14 @@ function App() {
             <ProviderDashboard />
           </MainLayout>
         </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/booking-list",
+      element: (
+        <MainLayout>
+          <BookingList />
+        </MainLayout>
       ),
     },
   ]);

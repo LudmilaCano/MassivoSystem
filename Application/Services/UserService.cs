@@ -19,17 +19,21 @@ namespace Application.Services
         private readonly IEventRepository _eventRepository;
         private readonly IEventVehicleRepository _eventVehicleRepository;
 
+        private readonly IEmailService _emailService;
+
         public UserService(
         IUserRepository userRepository,
         IVehicleRepository vehicleRepository,
         IEventRepository eventRepository,
-        IEventVehicleRepository eventVehicleRepository)
+        IEventVehicleRepository eventVehicleRepository,IEmailService emailService)
         {
             _userRepository = userRepository;
             _vehicleRepository = vehicleRepository;
             _eventRepository = eventRepository;
             _eventVehicleRepository = eventVehicleRepository;
+            _emailService = emailService;
         }
+      
 
         public List<User> GetUsers()
         {
@@ -41,8 +45,10 @@ namespace Application.Services
             return _userRepository.GetByIdAsync(idUser).Result;
         }
 
-        public void SignUpUser(UserSignUpRequest userSignUpRequest)
+        public async Task SignUpUser(UserSignUpRequest userSignUpRequest)
         {
+            var recoveryCode = GenerateRecoveryCode();
+
             var user = new User
             {
                 FirstName = userSignUpRequest.FirstName,
@@ -52,10 +58,43 @@ namespace Application.Services
                 Email = userSignUpRequest.Email ?? "",
                 Password = userSignUpRequest.Password,
                 CityId = userSignUpRequest.City,
-                ProvinceId = userSignUpRequest.Province
+                ProvinceId = userSignUpRequest.Province,
+                IsActive = EntityState.Inactive,
+                RecoveryCode = recoveryCode
             };
-            _userRepository.AddAsync(user).Wait();
+
+
+            await _userRepository.AddAsync(user);
+
+            await _emailService.SendEmailAsync(
+                user.Email,
+                "🚀 Activación de cuenta en Massivo App",
+                $@"
+            <p>¡Hola {user.FirstName}!</p>
+            <p>Gracias por registrarte. Para activar tu cuenta, ingresá el siguiente código:</p>
+            <p style='font-size: 18px; font-weight: bold;'>{recoveryCode}</p>
+            <p>⚠️ Si no te registraste, ignorá este mensaje.</p>
+            <br/>
+            <p>El equipo de soporte de Massivo App.</p>"
+            );
+
         }
+
+        public async Task<bool> ActivateAccountAsync(string email, string code)
+        {
+            var user = (await _userRepository.ListAsync())
+                .FirstOrDefault(u => u.Email == email && u.RecoveryCode == code);
+
+            if (user == null || user.IsActive == EntityState.Active)
+                return false;
+
+            user.IsActive = EntityState.Active;
+            user.RecoveryCode = null;
+
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
 
         public void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser)
         {
@@ -121,6 +160,61 @@ namespace Application.Services
             {
                 user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
             }*/
+
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
+        public async Task UpdateUser(User user)
+        {
+            await _userRepository.UpdateAsync(user);
+        }
+
+        public async Task<bool> GenerateRecoveryCodeAndSendEmailAsync(string email)
+        {
+            var user = (await _userRepository.ListAsync()).FirstOrDefault(u => u.Email == email);
+            if (user == null) return false;
+
+            var recoveryCode = GenerateRecoveryCode();
+            user.RecoveryCode = recoveryCode;
+            user.MustChangePassword = true;
+
+            await _userRepository.UpdateAsync(user);
+
+            await _emailService.SendEmailAsync(
+                user.Email,
+                "🔒 Recuperación de contraseña – Tu clave provisoria",
+                $@"
+                    <p>Hola,</p>
+                    <p>Recibimos tu solicitud para restablecer tu contraseña.</p>
+                    <p><strong>Tu clave provisoria es:</strong> <span style='font-size:18px;'>{recoveryCode} 🔑</span></p>
+                    <p>⚠️ Si no solicitaste este cambio, ignorá este mensaje.</p>
+                    <br/>
+                    <p>Saludos,<br/>El equipo de soporte de Massivo App.</p>"
+            );
+
+
+            return true;
+        }
+
+        private string GenerateRecoveryCode()
+        {
+            var random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, 6)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public async Task<bool> ResetPasswordWithRecoveryCodeAsync(string email, string recoveryCode, string newPassword)
+        {
+            var user = _userRepository.GetUserByEmail(email);
+
+            if (user == null || user.RecoveryCode != recoveryCode || !user.MustChangePassword)
+                return false;
+
+            user.Password = newPassword;
+            user.RecoveryCode = null;
+            user.MustChangePassword = false;
 
             await _userRepository.UpdateAsync(user);
             return true;
