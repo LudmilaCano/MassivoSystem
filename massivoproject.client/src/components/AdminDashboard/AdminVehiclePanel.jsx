@@ -163,7 +163,7 @@ console.log(vehicles)
                   variant='contained'
                     size="small"
                     onClick={() => handleToggleStatus(vehicle.licensePlate)}
-                  sx={{ mr: 1,ml:1,backgroundColor: vehicle.isActive == 0 ? 'green' : 'red', color: 'white' } }
+                  sx={{ mr: 1,ml:1 } }
                   >
                      {vehicle.isActive == 0 ?" Desactivar" : "Activar"}
                   </Button>

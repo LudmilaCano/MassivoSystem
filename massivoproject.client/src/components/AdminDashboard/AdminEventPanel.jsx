@@ -6,7 +6,7 @@ import {
   TextField, FormControl, InputLabel, Select, MenuItem, Box,
   Autocomplete
 } from '@mui/material';
-import { adminUpdateEvent } from '../../api/EventEndpoints';
+import { adminUpdateEvent, toggleEventStatus} from '../../api/EventEndpoints';
 import { getAllCities } from '../../api/CityEndpoints';
 import Swal from 'sweetalert2';
 
@@ -141,6 +141,17 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
     setErrors({});
   };
 
+   const handleToggleStatus = async (eventId) => {
+    try {
+      await toggleEventStatus(eventId);
+      showSuccessAlert("Estado del evento actualizado correctamente");
+      onRefresh();
+    } catch (error) {
+      console.error("Error updating event status:", error);
+      showErrorAlert(`Error al actualizar estado del evento: ${error.message}`);
+    }
+  };
+
   return (
     <>
       <TableContainer>
@@ -179,6 +190,14 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
                     onClick={() => handleViewEventDetails(event)}
                   >
                     Detalles
+                  </Button>
+                   <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleToggleStatus(event.eventId)}
+                    sx={{ mr: 1, ml: 1 }}
+                  >
+                    {event.isActive == 0 ? "Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>
