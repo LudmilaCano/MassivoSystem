@@ -43,6 +43,7 @@ namespace MassivoProject.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> AddBooking([FromBody] AddBookingRequest addBookingRequest)
         {
+            Console.WriteLine($"👉 Booking recibido: {(addBookingRequest)}");
             if (addBookingRequest == null)
             {
                 return BadRequest("Invalid booking request.");

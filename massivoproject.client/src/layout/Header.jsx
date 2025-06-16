@@ -135,6 +135,7 @@ const Header = () => {
             <ListItem button onClick={() => handleNavigate("/")}>
               <ListItemText primary="Inicio" />
             </ListItem>
+            <Divider />
 
             {logueado && (
               <ListItem button onClick={() => handleNavigate("/profile")}>
@@ -153,10 +154,12 @@ const Header = () => {
             >
               <ListItemText primary="Contacto" />
             </ListItem>
+            <Divider />
 
             <ListItem button onClick={() => handleNavigate("about-us")}>
               <ListItemText primary="Nosotros" />
             </ListItem>
+            <Divider />
             {role === "Admin" && (
               <ListItem button onClick={() => handleNavigate("/admin")}>
                 <ListItemText primary="Panel Admin" />
@@ -167,6 +170,7 @@ const Header = () => {
                 <ListItemText primary="Opciones" />
                 {openOpciones ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
+              <Divider />
               <Collapse in={openOpciones} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
                   {role === "User" && (

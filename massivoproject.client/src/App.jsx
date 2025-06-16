@@ -123,7 +123,7 @@ function App() {
     {
       path: "/booking",
       element: (
-        <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
+        <ProtectedRoute allowedRoles={["Admin", "Prestador", "User"]}>
           <MainLayout>
             <Booking />
           </MainLayout>

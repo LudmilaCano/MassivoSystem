@@ -21,7 +21,8 @@ namespace Application.Services
         private readonly IPaymentRepository _paymentRepository;
         private readonly IPaymentService _paymentService;
         private readonly IUserRepository _userRepository;
-        public BookingService(IUserRepository userRepository, IPaymentService paymentService, IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository)
+        private readonly INotificationService _notificationService;
+        public BookingService(INotificationService notificationService,IUserRepository userRepository, IPaymentService paymentService, IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository)
         {
             _bookingRepository = bookingRepository;
             _eventRepository = eventRepository;
@@ -29,6 +30,7 @@ namespace Application.Services
             _paymentRepository = paymentRepository;
             _paymentService = paymentService;
             _userRepository = userRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<List<BookingDto>> GetBookingsAsync()
@@ -98,34 +100,50 @@ namespace Application.Services
                 throw new InvalidOperationException("El usuario dueño del vehículo no tiene un token de MercadoPago configurado.");
 
             if (addBookingRequest.SeatNumber + vehicle.Available > vehicle.Capacity)
-                throw new InvalidOperationException("La suma del número de asientos y la disponibilidad no debe exceder la capacidad del vehículo.");
+                throw new InvalidOperationException($"La suma del número de asientos '{addBookingRequest.SeatNumber + vehicle.Available}' y la disponibilidad '{vehicle.Capacity}' no debe exceder la capacidad del vehículo.");
 
             if (addBookingRequest.Payment == null)
                 throw new ArgumentNullException(nameof(addBookingRequest.Payment), "El pago no puede ser nulo.");
 
-            // 👉 Paso 1: Crear preferencia de pago
-            string paymentUrl = await _paymentService.CrearPreferenciaPagoAsync(
-                accessToken: ownerUser.MercadoPagoAccessToken, // token de MP guardado
+            Payment payment;
+
+            if ((PaymentMethod)addBookingRequest.Payment.PaymentMethod == PaymentMethod.MercadoPago)
+            {
+                if (string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken))
+                    throw new InvalidOperationException("El usuario dueño del vehículo no tiene un token de MercadoPago configurado.");
+
+                string paymentUrl = await _paymentService.CrearPreferenciaPagoAsync(
+                accessToken: ownerUser.MercadoPagoAccessToken, 
                 title: $"Reserva para {eventEntity.Name}",
                 amount: (decimal)addBookingRequest.Payment.Amount,
                 externalReference: Guid.NewGuid().ToString(),
-                successUrl: "https://tusitio.com/success", // reemplazar
-                failureUrl: "https://tusitio.com/failure"  // reemplazar
+                successUrl: "https://localhost:5173/", // ver reemplazar
+                failureUrl: "https://localhost:5173/"  // ver reemplazar
             );
 
-            // 👉 Paso 2: Crear objeto Payment en BD
-            var payment = new Payment
+                payment = new Payment
+                {
+                    Amount = addBookingRequest.Payment.Amount,
+                    Date = DateTime.Now,
+                    PaymentMethod = addBookingRequest.Payment.PaymentMethod,
+                    PaymentStatus = PaymentStatus.Success, // Pending deberia ser pero en testing lo ponemos como aprobado ya que no usamos WebHooks de MP
+                    Details = paymentUrl
+                };
+            }
+            else
             {
-                Amount = addBookingRequest.Payment.Amount,
-                Date = DateTime.Now,
-                PaymentMethod = addBookingRequest.Payment.PaymentMethod,
-                PaymentStatus = PaymentStatus.Pending, // Ahora es pending
-                Details = $"Preferencia generada en MP. Link de pago: {paymentUrl}"
-            };
+                payment = new Payment
+                {
+                    Amount = addBookingRequest.Payment.Amount,
+                    Date = DateTime.Now,
+                    PaymentMethod = addBookingRequest.Payment.PaymentMethod,
+                    PaymentStatus = PaymentStatus.Success,
+                    Details = $"Pago de {eventEntity.Name} para el vehículo {vehicle.LicensePlate} - {vehicle.Name}"
+                };
+            }
 
             var paymentSaved = await _paymentRepository.AddAsync(payment);
 
-            // 👉 Paso 3: Crear Booking
             var booking = new Booking
             {
                 Date = DateTime.Now,
@@ -143,8 +161,27 @@ namespace Application.Services
 
             bookingSaved.Payment = paymentSaved;
 
-            // incluir el link de pago en el DTO si querés mostrarlo al frontend
-            return BookingDto.Create(bookingSaved, eventEntity, vehicle);
+            var bookingDto = BookingDto.Create(bookingSaved, eventEntity, vehicle);
+            // Email al prestador
+            await _notificationService.SendNotificationEmail(
+                ownerUser.Email,
+                NotificationType.ReservaCreadaPrestador,
+                bookingDto
+            );
+
+            var user = await _userRepository.GetByIdAsync(addBookingRequest.UserId);
+            if (user != null)
+            {
+                await _notificationService.SendNotificationEmail(
+                    user.Email,
+                    NotificationType.ReservaCreadaUser,
+                    bookingDto
+            );
+            }
+
+            return bookingDto;
+
+
         }
 
 

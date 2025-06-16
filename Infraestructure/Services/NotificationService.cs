@@ -43,6 +43,33 @@ namespace Infraestructure.Services
                                "<p>¡Gracias por usar nuestra plataforma!</p>";
                         break;
 
+                    case NotificationType.ReservaCreadaPrestador:
+                        var reservaPrestador = data as BookingDto;
+                        subject = "📢 Nueva reserva para tu vehículo";
+                        body = $@"
+                            <p>Hola,</p>
+                            <p>Se ha realizado una nueva reserva para tu vehículo <b>{reservaPrestador.Vehicle.Name}</b> con matrícula  <span style='font-size:18px;'>{reservaPrestador.Vehicle.LicensePlate}🚗 </span>.</p>
+                            <p>Evento: <span style='font-size:18px;'>{reservaPrestador.Event.Name}🎉 </span></p>
+                            <p>Fecha: {reservaPrestador.Event.EventDate} 📆 </p>
+                            <p>Asientos reservados: {reservaPrestador.SeatNumber}</p>
+                            <b>Monto abonado:</b> {reservaPrestador.Payment.Amount:N2}
+                            <p>Por favor, revisá tu panel para más información.</p>";
+                        break;
+
+                    case NotificationType.ReservaCreadaUser:
+                        var reservaUsuario = data as BookingDto;
+                        subject = "✅ Reserva confirmada";
+                        body = $@"
+                            <p>Hola,</p>
+                            <p>Tu reserva fue confirmada correctamente.</p>
+                            <p>Evento: <b>{reservaUsuario.Event.Name}</b></p>
+                            <p>Fecha de salida: {reservaUsuario.Event.EventDate}</p>
+                            <p>Vehículo: <b>{reservaUsuario.Vehicle.Name}</b> ({reservaUsuario.Vehicle.LicensePlate})</p>
+                            <p>Asientos reservados: {reservaUsuario.SeatNumber}</p>                            
+                            <b>Monto abonado:</b> {reservaUsuario.Payment.Amount:N2}
+                            <p>Con este correo podés presentarte el día de la salida programada.</p>";
+                        break;
+
 
 
                         // Agregar casos según el tipo
