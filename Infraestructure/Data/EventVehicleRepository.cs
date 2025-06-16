@@ -66,5 +66,18 @@ namespace Infraestructure.Data
 
             return eventVehicle != null && eventVehicle.Event.UserId == userId;
         }
+
+        public async Task<bool> ToggleStatusAsync(int eventVehicleId)
+        {
+            var eventVehicle = await _context.EventsVehicles.FindAsync(eventVehicleId);
+            if (eventVehicle == null)
+                return false;
+
+            eventVehicle.IsActive = eventVehicle.IsActive == Domain.Enums.EntityState.Active
+                    ? Domain.Enums.EntityState.Inactive
+                    : Domain.Enums.EntityState.Active; 
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

@@ -141,5 +141,10 @@ namespace Application.Services
                 
             return EventVehicleDto.Create(entity);
         }
+
+        public async Task<bool> ToggleStatusAsync(int eventVehicleId)
+        {
+            return await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+        }
     }
 }

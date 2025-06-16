@@ -46,3 +46,9 @@ export const cambiarRolAPrestador = async () => {
     const response = await api.patch('Users/cambiar-prestador');
     return response.data;
 };
+
+
+export const toggleUserStatus = async (userId) => {
+  const response = await api.put(`/Users/toggle-status/${userId}`);
+  return response.data;
+};

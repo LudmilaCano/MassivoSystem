@@ -39,3 +39,8 @@ export const deleteVehicle = async (licensePlate) => {
     const response = await api.delete(`/Vehicle/${licensePlate}`);
     return response.data;
 };
+
+export const toggleVehicleStatus = async (licensePlate) => {
+  const response = await api.put(`/Vehicle/toggle-status/${licensePlate}`);
+  return response.data;
+};

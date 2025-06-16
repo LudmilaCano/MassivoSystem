@@ -17,6 +17,7 @@ namespace Domain.Entities
         public EventType Type { get; set; }
         public string Image { get; set; }
         public ICollection<EventVehicle> EventVehicles { get; set; }
+        public EntityState IsActive { get; set; } = EntityState.Active;
 
         public Event()
         {

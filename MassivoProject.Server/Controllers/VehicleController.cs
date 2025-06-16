@@ -112,35 +112,17 @@ namespace MassivoProject.Server.Controllers
             }
         }
 
-
-
-        [HttpPut("{licensePlate}/deactivate")]
-        public async Task<IActionResult> DeactivateVehicle(string licensePlate)
-        {
-            try
-            {
-                await _vehicleService.DeactivateVehicleAsync(licensePlate);
-                return NoContent();
-            }
-            catch (ArgumentNullException)
-            {
-                return NotFound(new { Message = "Vehículo no encontrado." });
-            }
-        }
-
-        [HttpDelete("{licensePlate}")]
+        [HttpPut("toggle-status/{licensePlate}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteVehicle(string licensePlate)
+        public async Task<IActionResult> ToggleStatus(string licensePlate)
         {
-            try
-            {
-                await _vehicleService.DeleteVehicleAsync(licensePlate);
-                return NoContent();
-            }
-            catch (ArgumentNullException)
-            {
-                return NotFound(new { Message = "Vehículo no encontrado." });
-            }
+            var result = await _vehicleService.ToggleStatusAsync(licensePlate);
+            if (!result)
+                return NotFound($"Vehículo con patente {licensePlate} no encontrado");
+
+            return Ok(new { message = "Estado del vehículo actualizado correctamente" });
         }
+
+
     }
 }

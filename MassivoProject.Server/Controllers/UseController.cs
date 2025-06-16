@@ -200,5 +200,17 @@ namespace MassivoApp.Server.Controllers
                 return StatusCode(500, new { Message = $"Error al actualizar el usuario: {ex.Message}" });
             }
         }
+
+        [HttpPut("toggle-status/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            var result = await _userService.ToggleStatusAsync(id);
+            if (!result)
+                return NotFound($"Usuario con ID {id} no encontrado");
+
+            return Ok(new { message = "Estado del usuario actualizado correctamente" });
+        }
+
     }
 }

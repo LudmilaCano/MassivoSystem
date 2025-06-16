@@ -3,6 +3,7 @@ using Application.Models.Requests;
 using Application.Models.Responses;
 using Application.Services;
 using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -100,5 +101,18 @@ namespace MassivoProject.Server.Controllers
             }
         }
 
+        [HttpPut("toggle-status/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            var result = await _eventVehicleService.ToggleStatusAsync(id);
+            if (!result)
+                return NotFound($"Viaje con ID {id} no encontrado");
+
+            return Ok(new { message = "Estado del viaje actualizado correctamente" });
+        }
+
     }
+
+
 }

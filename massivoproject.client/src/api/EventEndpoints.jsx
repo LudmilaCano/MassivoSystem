@@ -95,3 +95,13 @@ export const updateEventVehicle = async (id, eventVehicleData) => {
   const response = await api.put(`/EventVehicle/${id}`, eventVehicleData);
   return response.data;
 };
+
+export const toggleEventStatus = async (eventId) => {
+  const response = await api.put(`/Event/toggle-status/${eventId}`);
+  return response.data;
+};
+
+export const toggleEventVehicleStatus = async (eventVehicleId) => {
+  const response = await api.put(`/EventVehicle/toggle-status/${eventVehicleId}`);
+  return response.data;
+};

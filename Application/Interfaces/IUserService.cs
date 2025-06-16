@@ -17,7 +17,7 @@ namespace Application.Interfaces
         void SignUpUser(UserSignUpRequest userSignUpRequest);
         void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser);
         Task<bool> AdminUpdateUserAsync(int userId, AdminUserUpdateRequest request);
-
+        Task<bool> ToggleStatusAsync(int userId);
 
     }
 }

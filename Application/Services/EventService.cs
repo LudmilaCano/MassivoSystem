@@ -2,6 +2,7 @@
 using Application.Models.Requests;
 using Application.Models.Responses;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 
 namespace Application.Services
@@ -11,13 +12,15 @@ namespace Application.Services
         private readonly IEventRepository _eventRepository;
         private readonly IUserRepository _userRepository;
         private readonly IVehicleRepository _vehicleRepository;
+        private readonly IEventVehicleRepository _eventVehicleRepository;
 
 
-        public EventService(IEventRepository eventRepository, IUserRepository userRepository, IVehicleRepository vehicleRepository)
+        public EventService(IEventRepository eventRepository, IUserRepository userRepository, IVehicleRepository vehicleRepository, IEventVehicleRepository eventVehicleRepository)
         {
             _eventRepository = eventRepository;
             _userRepository = userRepository;
             _vehicleRepository = vehicleRepository;
+            _eventVehicleRepository = eventVehicleRepository;
         }
 
         public async Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId)
@@ -201,6 +204,27 @@ namespace Application.Services
             }
 
             return EventDto.Create(eventEntity);
+        }
+
+        public async Task<bool> ToggleStatusAsync(int eventId)
+        {
+            // Verificar el estado actual del evento
+            var currentState = await _eventRepository.GetEventEntityStateAsync(eventId);
+            bool isDeactivating = currentState == EntityState.Active;
+
+            // Si estamos desactivando, desactivar recursos relacionados
+            if (isDeactivating)
+            {
+                // Desactivar EventVehicles asociados al evento
+                var eventVehicleIds = await _eventRepository.GetEventEventVehicleIdsAsync(eventId);
+                foreach (var eventVehicleId in eventVehicleIds)
+                {
+                    await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+                }
+            }
+
+            // Finalmente, cambiar el estado del evento
+            return await _eventRepository.ToggleStatusAsync(eventId);
         }
     }
 }

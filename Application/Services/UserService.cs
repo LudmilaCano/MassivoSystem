@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,20 @@ namespace Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IVehicleRepository _vehicleRepository;
+        private readonly IEventRepository _eventRepository;
+        private readonly IEventVehicleRepository _eventVehicleRepository;
+
+        public UserService(
+        IUserRepository userRepository,
+        IVehicleRepository vehicleRepository,
+        IEventRepository eventRepository,
+        IEventVehicleRepository eventVehicleRepository)
         {
             _userRepository = userRepository;
+            _vehicleRepository = vehicleRepository;
+            _eventRepository = eventRepository;
+            _eventVehicleRepository = eventVehicleRepository;
         }
 
         public List<User> GetUsers()
@@ -112,6 +124,50 @@ namespace Application.Services
 
             await _userRepository.UpdateAsync(user);
             return true;
+        }
+
+        public async Task<bool> ToggleStatusAsync(int userId)
+        {
+            // Verificar el estado actual del usuario
+            var currentState = await _userRepository.GetUserEntityStateAsync(userId);
+            bool isDeactivating = currentState == EntityState.Active;
+
+            // Si estamos desactivando, desactivar recursos relacionados
+            if (isDeactivating)
+            {
+                // Desactivar vehículos del usuario
+                var licensePlates = await _userRepository.GetUserVehicleLicensePlatesAsync(userId);
+                foreach (var licensePlate in licensePlates)
+                {
+                    // Desactivar EventVehicles asociados al vehículo
+                    var eventVehicleIds = await _vehicleRepository.GetVehicleEventVehicleIdsAsync(licensePlate);
+                    foreach (var eventVehicleId in eventVehicleIds)
+                    {
+                        await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+                    }
+
+                    // Desactivar el vehículo
+                    await _vehicleRepository.ToggleStatusAsync(licensePlate);
+                }
+
+                // Desactivar eventos del usuario
+                var eventIds = await _userRepository.GetUserEventIdsAsync(userId);
+                foreach (var eventId in eventIds)
+                {
+                    // Desactivar EventVehicles asociados al evento
+                    var eventVehicleIds = await _eventRepository.GetEventEventVehicleIdsAsync(eventId);
+                    foreach (var eventVehicleId in eventVehicleIds)
+                    {
+                        await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+                    }
+
+                    // Desactivar el evento
+                    await _eventRepository.ToggleStatusAsync(eventId);
+                }
+            }
+
+            // Finalmente, cambiar el estado del usuario
+            return await _userRepository.ToggleStatusAsync(userId);
         }
     }
 }

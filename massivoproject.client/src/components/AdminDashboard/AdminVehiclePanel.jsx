@@ -5,7 +5,7 @@ import {
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, FormControl, InputLabel, Select, MenuItem, Box
 } from '@mui/material';
-import { adminUpdateVehicle } from '../../api/VehicleEndpoints';
+import { adminUpdateVehicle,toggleVehicleStatus}from '../../api/VehicleEndpoints';
 import Swal from 'sweetalert2';
 
 const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAlert }) => {
@@ -18,7 +18,7 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
     setErrors({});
     setOpenDialog(true);
   };
-
+console.log(vehicles)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSelectedVehicle(prev => ({ ...prev, [name]: value }));
@@ -109,6 +109,17 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
     setErrors({});
   };
 
+  const handleToggleStatus = async(licensePlate) => {
+    try {
+      await toggleVehicleStatus(licensePlate);
+      showSuccessAlert("Estado del vehículo actualizado correctamente");
+      onRefresh();
+    } catch (error) {
+      console.error("Error updating vehicle status:", error);
+      showErrorAlert(`Error al actualizar estado del vehículo: ${error.message}`);
+    }
+  };  
+
   return (
     <>
       <TableContainer>
@@ -147,6 +158,14 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
                     onClick={() => handleViewVehicleDetails(vehicle)}
                   >
                     Detalles
+                  </Button>
+                  <Button
+                  variant='contained'
+                    size="small"
+                    onClick={() => handleToggleStatus(vehicle.licensePlate)}
+                  sx={{ mr: 1,ml:1,backgroundColor: vehicle.isActive == 0 ? 'green' : 'red', color: 'white' } }
+                  >
+                     {vehicle.isActive == 0 ?" Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>

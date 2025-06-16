@@ -11,6 +11,7 @@ import { getAllProvince } from '../../api/ProvinceEndpoints';
 import { getCitiesByProvince } from '../../api/CityEndpoints';
 import Swal from 'sweetalert2';
 import { useSelector } from 'react-redux';
+import { toggleUserStatus } from '../../api/UserEndpoints';
 
 const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -23,6 +24,8 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
 
   
    const { userId } = useSelector((state) => state.auth);
+
+   console.log(users)
 
   // Cargar provincias al montar el componente
   useEffect(() => {
@@ -37,6 +40,17 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
     };
     fetchProvinces();
   }, []);
+
+  const handleToggleStatus = async (userId) => {
+  try {
+    await toggleUserStatus(userId);
+    showSuccessAlert("Estado del usuario actualizado correctamente");
+    onRefresh(); // Recargar la lista de usuarios
+  } catch (error) {
+    console.error("Error toggling user status:", error);
+    showErrorAlert("Error al actualizar el estado del usuario");
+  }
+};
 
   // Ordenar provincias alfabéticamente
   useEffect(() => {
@@ -226,6 +240,13 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
                     sx={{ mr: 1 }}
                   >
                     Detalles
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color={user.isActive === 'Active' ? "error" : "success"}
+                    onClick={() => handleToggleStatus(user.userId)}
+                  >
+                    {user.isActive === 0 ?"Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>

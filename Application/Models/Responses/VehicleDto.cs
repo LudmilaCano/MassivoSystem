@@ -14,5 +14,6 @@ namespace Application.Models.Responses
         public int Available { get; set; }
         public string From { get; set; }
         public string DriverName { get; set; }
+        public EntityState IsActive { get; set; }
     }
 }

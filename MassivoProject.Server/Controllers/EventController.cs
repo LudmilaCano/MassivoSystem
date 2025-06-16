@@ -120,5 +120,16 @@ namespace MassivoProject.Server.Controllers
             var events = await _eventService.FilterEventsAsync(name, date);
             return Ok(events);
         }
+
+        [HttpPut("toggle-status/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            var result = await _eventService.ToggleStatusAsync(id);
+            if (!result)
+                return NotFound($"Evento con ID {id} no encontrado");
+
+            return Ok(new { message = "Estado del evento actualizado correctamente" });
+        }
     }       
 }
