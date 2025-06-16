@@ -26,6 +26,7 @@ import AboutUs from "./components/AboutUs.jsx";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard.jsx";
 import ActivateAccount from "./components/ActivateAccount.jsx";
 import BookingList from "./components/BookingList.jsx";
+import BookingDetail from "./components/BookingDetail.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -189,6 +190,14 @@ function App() {
       element: (
         <MainLayout>
           <BookingList />
+        </MainLayout>
+      ),
+    },
+        {
+      path: "/booking/:bookingId",
+      element: (
+        <MainLayout>
+          <BookingDetail />
         </MainLayout>
       ),
     },

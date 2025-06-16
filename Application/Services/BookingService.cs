@@ -147,5 +147,23 @@ namespace Application.Services
             payment.PaymentStatus = PaymentStatus.Refunded;
             await _paymentRepository.UpdateAsync(payment);
         }
+
+        public async Task CompleteBookingAsync(int bookingId)
+        {
+            var booking = await _bookingRepository.GetBookingWithEventVehicleIdAsync(bookingId)
+                ?? throw new KeyNotFoundException($"Reserva con ID {bookingId} no fue encontrada.");
+
+            if (booking.BookingStatus == BookingStatus.Completed)
+            {
+                throw new InvalidOperationException("La reserva ya fue confirmada anteriormente.");
+            }
+            if (booking.BookingStatus == BookingStatus.Cancelled)
+            {
+                throw new InvalidOperationException("La reserva que intenta confirmar fue cancelada.");
+            }
+
+            booking.BookingStatus = BookingStatus.Completed;
+            await _bookingRepository.UpdateAsync(booking);
+        }
     }
 }

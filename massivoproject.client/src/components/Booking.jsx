@@ -9,6 +9,7 @@ import { useNavigate, useLocation } from 'react-router';
 import useSwalAlert from '../hooks/useSwalAlert';
 import { createBooking } from '../api/BookingEndpoints';
 import { PAYMENT_TYPE_ENUM, PAYMENT_TYPE_LABELS, PAYMENT_TYPE_ICONS } from '../constants/paymentsTypes'
+import { BOOKING_TYPE, BOOKING_LABEL } from '../constants/bookingStatus'
 import { useSelector } from 'react-redux';
 
 const Booking = () => {
@@ -28,8 +29,6 @@ const Booking = () => {
   });
 
   useEffect(() => {
-    console.log("eventVehicle: ", eventVehicle);
-    console.log("destination: ", destination);
     setPaymentMethods(Object.keys(PAYMENT_TYPE_ENUM).map((key) => ({
       value: PAYMENT_TYPE_ENUM[key],
       label: PAYMENT_TYPE_LABELS[key],

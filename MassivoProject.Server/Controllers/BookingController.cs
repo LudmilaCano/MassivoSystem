@@ -56,5 +56,23 @@ namespace MassivoProject.Server.Controllers
             await _bookingService.CancelBookingAsync(bookingId);
             return NoContent();
         }
+        [HttpPut("{bookingId}/complete")]
+        public async Task<IActionResult> CompleteBooking(int bookingId)
+        {
+            try
+            {
+                await _bookingService.CompleteBookingAsync(bookingId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }
