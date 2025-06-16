@@ -9,7 +9,7 @@ import 'leaflet/dist/leaflet.css';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { getEventVehicleById } from '../api/EventEndpoints';
 import { getCoordinatesByCityName, getCoordinatesByCityId } from '../api/EventEndpoints';
-import  fetchRoute  from '../api/OpenRouteService';
+import { calculateRouteInfo, fetchRoute } from '../api/OpenRouteService';
 
 const TripDetail = () => {
     const { tripId } = useParams(); // tripId = eventVehicleId
@@ -22,9 +22,10 @@ const TripDetail = () => {
     const [coordsLoading, setCoordsLoading] = useState(true);
     const [openDescription, setOpenDescription] = useState(false);
     const [route, setRoute] = useState([]);
+    const [routeInfo, setRouteInfo] = useState(null);
 
-    
-  const navigate = useNavigate();
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchEventVehicle = async () => {
@@ -86,7 +87,27 @@ const TripDetail = () => {
         }
     }, [coordsFrom, coordsTo]);
 
+  useEffect(() => {
+    const fetchRouteInfo = async () => {
+        if (coordsFrom && coordsTo) {
+            setLoading(true);
+            try {
+                // Invertir las coordenadas para que sean [longitud, latitud] como espera la API OSRM
+                const fromLonLat = [coordsFrom[1], coordsFrom[0]];
+                const toLonLat = [coordsTo[1], coordsTo[0]];
+                
+                const info = await calculateRouteInfo(fromLonLat, toLonLat);
+                setRouteInfo(info);
+            } catch (error) {
+                console.error('Error al obtener información de la ruta:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
 
+    fetchRouteInfo();
+}, [coordsFrom, coordsTo]);
 
     // Loader mientras carga todo
     if (loading || coordsLoading || !coordsFrom || !coordsTo) {
@@ -100,9 +121,9 @@ const TripDetail = () => {
     if (loading) return <Typography>Cargando...</Typography>;
     if (!eventVehicle) return <Typography>No se encontró el viaje.</Typography>;
 
-  const handleReservar = () => {
-    navigate('/booking', {state: {eventVehicle, destination }});
-  }
+    const handleReservar = () => {
+        navigate('/booking', { state: { eventVehicle, destination } });
+    }
 
 
     const bounds = [coordsFrom, coordsTo];
@@ -206,6 +227,18 @@ const TripDetail = () => {
                                 <b>Patente:</b> {eventVehicle.licensePlate}
                             </Typography>
                         </Box>
+                        {routeInfo && (
+    <Box sx={{ mt: 2 }}>
+        <Typography variant="body1">
+            <AccessTimeIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
+            Duración estimada: {routeInfo.duration.text}
+        </Typography>
+        <Typography variant="body1">
+            <DriveEtaIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
+            Distancia: {routeInfo.distance.text}
+        </Typography>
+    </Box>
+)}
                         <Button
                             onClick={() => handleReservar()}
                             variant="contained"
@@ -239,7 +272,7 @@ const TripDetail = () => {
                             </Popup>
                         </Marker>
                         {route.length > 0 && <Polyline positions={route} color="blue" />}
-                    {/*    <Polyline positions={[coordsFrom, coordsTo]} color="blue" />*/}
+                        {/*    <Polyline positions={[coordsFrom, coordsTo]} color="blue" />*/}
                     </MapContainer>
 
                 </Box>

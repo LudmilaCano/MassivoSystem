@@ -231,7 +231,7 @@ const VehicleList = () => {
                 {currentItems.length !== 0 ? (
                     currentItems.map((item, index) => (
                         <Paper key={index} elevation={3} sx={{ display: 'flex', p: 2, alignItems: 'center' }}>
-                            <Button sx={{ width: '100%' }} color='black'>
+                            <Paper sx={{ width: '100%' }} color='black'>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
                                     <img
                                         src={getVehicleTypeImage(item.vehicleType)}
@@ -282,7 +282,7 @@ const VehicleList = () => {
                                         Ver más detalles
                                     </Button>
                                 </Box>
-                            </Button>
+                            </Paper>
                         </Paper>
                     ))
                 ) : (
