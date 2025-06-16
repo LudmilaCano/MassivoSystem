@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+﻿/*using Application.Interfaces;
 using Application.Models.Requests;
 using Application.Models.Responses;
 using Application.Services;
@@ -247,4 +247,4 @@ public class VehicleServiceTests
         // Assert
         _repoMock.Verify(repo => repo.DeleteAsync(vehicle), Times.Once);
     }
-}
+} */

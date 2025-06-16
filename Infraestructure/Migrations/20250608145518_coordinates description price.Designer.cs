@@ -3,6 +3,7 @@ using System;
 using Infraestructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infraestructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250608145518_coordinates description price")]
+    partial class coordinatesdescriptionprice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -98,9 +101,6 @@ namespace Infraestructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("IsActive")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int?>("LocationId")
                         .HasColumnType("INTEGER");
 
@@ -137,9 +137,6 @@ namespace Infraestructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("EventId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("IsActive")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("LicensePlate")
@@ -185,7 +182,7 @@ namespace Infraestructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payment");
                 });
 
             modelBuilder.Entity("Domain.Entities.Province", b =>
@@ -204,39 +201,6 @@ namespace Infraestructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Provinces");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Review", b =>
-                {
-                    b.Property<int>("ReviewId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Comments")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EventVehicleId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Score")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ReviewId");
-
-                    b.HasIndex("EventVehicleId");
-
-                    b.HasIndex("UserId", "EventVehicleId")
-                        .IsUnique();
-
-                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -270,18 +234,12 @@ namespace Infraestructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("MustChangePassword")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("ProvinceId")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("RecoveryCode")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -415,25 +373,6 @@ namespace Infraestructure.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("Vehicle");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Review", b =>
-                {
-                    b.HasOne("Domain.Entities.EventVehicle", "EventVehicle")
-                        .WithMany()
-                        .HasForeignKey("EventVehicleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("EventVehicle");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>

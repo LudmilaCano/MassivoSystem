@@ -16,6 +16,8 @@ namespace Application.Interfaces
         List<User> GetUsers();
         Task SignUpUser(UserSignUpRequest userSignUpRequest);
         void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser);
+        Task<bool> AdminUpdateUserAsync(int userId, AdminUserUpdateRequest request);
+        Task<bool> ToggleStatusAsync(int userId);
         Task UpdateUser(User user);
         Task<bool> GenerateRecoveryCodeAndSendEmailAsync(string email);
         Task<bool> ResetPasswordWithRecoveryCodeAsync(string email, string recoveryCode, string newPassword);

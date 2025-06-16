@@ -15,13 +15,25 @@ namespace Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IVehicleRepository _vehicleRepository;
+        private readonly IEventRepository _eventRepository;
+        private readonly IEventVehicleRepository _eventVehicleRepository;
+
         private readonly IEmailService _emailService;
-        public UserService(IUserRepository userRepository, IEmailService emailService)
+
+        public UserService(
+        IUserRepository userRepository,
+        IVehicleRepository vehicleRepository,
+        IEventRepository eventRepository,
+        IEventVehicleRepository eventVehicleRepository,IEmailService emailService)
         {
             _userRepository = userRepository;
+            _vehicleRepository = vehicleRepository;
+            _eventRepository = eventRepository;
+            _eventVehicleRepository = eventVehicleRepository;
             _emailService = emailService;
-
         }
+      
 
         public List<User> GetUsers()
         {
@@ -128,6 +140,31 @@ namespace Application.Services
             user.IsActive = Domain.Enums.EntityState.Inactive;
             _userRepository.UpdateAsync(user).Wait();
         }
+
+        public async Task<bool> AdminUpdateUserAsync(int userId, AdminUserUpdateRequest request)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.BirthDate = request.BirthDate;
+            user.IdentificationNumber = request.IdentificationNumber;
+            user.Email = request.Email;
+            user.CityId = request.CityId;
+            user.ProvinceId = request.ProvinceId;
+            user.Role = request.Role;
+
+            /*if (!string.IsNullOrEmpty(request.Password))
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            }*/
+
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
         public async Task UpdateUser(User user)
         {
             await _userRepository.UpdateAsync(user);
@@ -183,5 +220,48 @@ namespace Application.Services
             return true;
         }
 
+        public async Task<bool> ToggleStatusAsync(int userId)
+        {
+            // Verificar el estado actual del usuario
+            var currentState = await _userRepository.GetUserEntityStateAsync(userId);
+            bool isDeactivating = currentState == EntityState.Active;
+
+            // Si estamos desactivando, desactivar recursos relacionados
+            if (isDeactivating)
+            {
+                // Desactivar vehículos del usuario
+                var licensePlates = await _userRepository.GetUserVehicleLicensePlatesAsync(userId);
+                foreach (var licensePlate in licensePlates)
+                {
+                    // Desactivar EventVehicles asociados al vehículo
+                    var eventVehicleIds = await _vehicleRepository.GetVehicleEventVehicleIdsAsync(licensePlate);
+                    foreach (var eventVehicleId in eventVehicleIds)
+                    {
+                        await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+                    }
+
+                    // Desactivar el vehículo
+                    await _vehicleRepository.ToggleStatusAsync(licensePlate);
+                }
+
+                // Desactivar eventos del usuario
+                var eventIds = await _userRepository.GetUserEventIdsAsync(userId);
+                foreach (var eventId in eventIds)
+                {
+                    // Desactivar EventVehicles asociados al evento
+                    var eventVehicleIds = await _eventRepository.GetEventEventVehicleIdsAsync(eventId);
+                    foreach (var eventVehicleId in eventVehicleIds)
+                    {
+                        await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+                    }
+
+                    // Desactivar el evento
+                    await _eventRepository.ToggleStatusAsync(eventId);
+                }
+            }
+
+            // Finalmente, cambiar el estado del usuario
+            return await _userRepository.ToggleStatusAsync(userId);
+        }
     }
 }

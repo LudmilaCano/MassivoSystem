@@ -25,6 +25,11 @@ export const updateVehicle = async (licensePlate, vehicleData) => {
     return response.data;
 };
 
+export const adminUpdateVehicle = async (licensePlate, vehicleData) => {
+  const response = await api.put(`Vehicle/admin/${licensePlate}`, vehicleData);
+  return response.data;
+};
+
 export const deactivateVehicle = async (licensePlate) => {
     const response = await api.put(`/Vehicle/${licensePlate}/deactivate`);
     return response.data;
@@ -33,4 +38,9 @@ export const deactivateVehicle = async (licensePlate) => {
 export const deleteVehicle = async (licensePlate) => {
     const response = await api.delete(`/Vehicle/${licensePlate}`);
     return response.data;
+};
+
+export const toggleVehicleStatus = async (licensePlate) => {
+  const response = await api.put(`/Vehicle/toggle-status/${licensePlate}`);
+  return response.data;
 };

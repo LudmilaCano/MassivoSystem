@@ -95,33 +95,38 @@ namespace MassivoProject.Server.Controllers
             }
         }
 
-        [HttpPut("{licensePlate}/deactivate")]
-        public async Task<IActionResult> DeactivateVehicle(string licensePlate)
+        [Authorize(Roles = "Admin")]
+        [HttpPut("admin/{licensePlate}")]
+        public async Task<IActionResult> AdminUpdateVehicle(string licensePlate, [FromBody] AdminVehicleUpdateRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             try
             {
-                await _vehicleService.DeactivateVehicleAsync(licensePlate);
-                return NoContent();
+                var result = await _vehicleService.AdminUpdateVehicleAsync(licensePlate, request);
+                if (!result)
+                    return NotFound(new { Message = "Vehículo no encontrado." });
+
+                return Ok(new { Message = "Vehículo actualizado correctamente." });
             }
-            catch (ArgumentNullException)
+            catch (Exception ex)
             {
-                return NotFound(new { Message = "Vehículo no encontrado." });
+                return StatusCode(500, new { Message = $"Error al actualizar el vehículo: {ex.Message}" });
             }
         }
 
-        [HttpDelete("{licensePlate}")]
+        [HttpPut("toggle-status/{licensePlate}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteVehicle(string licensePlate)
+        public async Task<IActionResult> ToggleStatus(string licensePlate)
         {
-            try
-            {
-                await _vehicleService.DeleteVehicleAsync(licensePlate);
-                return NoContent();
-            }
-            catch (ArgumentNullException)
-            {
-                return NotFound(new { Message = "Vehículo no encontrado." });
-            }
+            var result = await _vehicleService.ToggleStatusAsync(licensePlate);
+            if (!result)
+                return NotFound($"Vehículo con patente {licensePlate} no encontrado");
+
+            return Ok(new { message = "Estado del vehículo actualizado correctamente" });
         }
+
+
     }
 }

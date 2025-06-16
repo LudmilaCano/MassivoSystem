@@ -13,7 +13,10 @@ namespace Application.Interfaces
         Task<List<VehicleDto>> GetVehiclesByUserIdAsync(int userId);
         Task<VehicleDto> CreateVehicleAsync(VehicleRequest request);
         Task UpdateVehicleAsync(string licensePlate, VehicleRequest request);
-        Task DeactivateVehicleAsync(string licensePlate);
-        Task DeleteVehicleAsync(string licensePlate);
+        Task<bool> AdminUpdateVehicleAsync(string licensePlate, AdminVehicleUpdateRequest request);
+
+        Task<bool> ToggleStatusAsync(string licensePlate);
+
+
     }
 }

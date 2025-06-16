@@ -13,6 +13,13 @@ namespace MassivoProject.Server.Controllers
             _cityService = cityService;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var cities = await _cityService.GetAllCitiesAsync();
+            return Ok(cities);
+        }
+
         [HttpGet("GetCitiesByProvince/{provinceId}")]
         public async Task<IActionResult> GetCitiesByProvince(int provinceId)
         {

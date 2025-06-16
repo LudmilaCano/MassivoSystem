@@ -50,6 +50,32 @@ const Header = () => {
     navigate("/");
   };
 
+  const handleProfile = () => {
+    navigate("/profile");
+  };
+
+  const handleHome = () => {
+    navigate("/");
+  };
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleRegister = () => {
+    navigate("/register");
+  };
+
+  const handleAdminPanel = () => {
+    navigate("/admin");
+  };
+
+  const handleAboutUs = () => {
+    navigate("/about-us");
+  };
+
+  const handleContacto = () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   const handleNavigate = (path) => {
     navigate(path);
     setDrawerOpen(false);
@@ -209,6 +235,7 @@ const Header = () => {
       </Drawer>
     </div>
   );
+}
 };
 
 export default Header;
