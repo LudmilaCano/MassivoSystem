@@ -48,7 +48,7 @@ const Register = () => {
         const fetchProvinces = async () => {
             try {
                 const data = await getAllProvince();               
-                setProvinces(data.result);
+                setProvinces(data);
             } catch (error) {
                 console.error("Error al obtener provincias:", error);
             }

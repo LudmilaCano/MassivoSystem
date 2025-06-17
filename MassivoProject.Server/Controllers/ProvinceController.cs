@@ -15,9 +15,9 @@ namespace MassivoProject.Server.Controllers
 
 
         [HttpGet]
-        public IActionResult GetAllProvince()
+        public async Task<IActionResult> GetAllProvince()
         {
-            var provinces = _provinceService.GetAllProvincesAsync();
+            var provinces = await _provinceService.GetAllProvincesAsync();
             return Ok(provinces);
         }
     }

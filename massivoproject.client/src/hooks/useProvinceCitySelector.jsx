@@ -15,7 +15,7 @@ const useProvinceCitySelector = () => {
         const fetchProvinces = async () => {
             try {
                 const response = await getAllProvince();
-                setProvinces(response.result);
+                setProvinces(response);
             } catch (err) {
                 console.error("Error fetching provinces:", err.message);
             } finally {

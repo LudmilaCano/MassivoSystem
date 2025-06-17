@@ -54,7 +54,10 @@ builder.Services.AddSwaggerGen(setupAction =>
 
 #region ContextDatabase
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseMySql(
+    builder.Configuration.GetConnectionString("DefaultConnection"),
+    new MySqlServerVersion(new Version(8, 0, 32))
+));
 #endregion
 
 #region JWT
