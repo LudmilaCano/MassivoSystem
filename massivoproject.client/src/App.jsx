@@ -2,11 +2,13 @@ import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import MainLayout from "./layout/MainLayout.jsx";
 import Login from "./components/Login.jsx";
-
+import ForgotPassword from "./components/ForgotPassword.jsx";
+import ResetPasswordWithCode from "./components/ResetPassword.jsx";
 import CustomerProfile from "./components/Customer_profile/CustomerProfile.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import Register from "./components/Register.jsx";
 import Home from "./components/Home.jsx";
+import ProviderDashboard from "./components/ServiceProviderDashboard/ProviderDashboard.jsx";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "./layout/Theme.jsx";
@@ -21,6 +23,10 @@ import AddVehicleEvent from "./components/AddEventVehicle.jsx";
 import Booking from "./components/Booking.jsx";
 import { useSelector } from "react-redux";
 import AboutUs from "./components/AboutUs.jsx";
+import AdminDashboard from "./components/AdminDashboard/AdminDashboard.jsx";
+import ActivateAccount from "./components/ActivateAccount.jsx";
+import BookingList from "./components/BookingList.jsx";
+import BookingDetail from "./components/BookingDetail.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -128,10 +134,70 @@ function App() {
       ),
     },
     {
+      path: "/forgot-password",
+      element: (
+        <MainLayout>
+          <ForgotPassword />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/reset-password",
+      element: (
+        <MainLayout>
+          <ResetPasswordWithCode />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/activate-account",
+      element: (
+        <MainLayout>
+          <ActivateAccount />
+        </MainLayout>
+      ),
+    },
+    {
       path: "/about-us",
       element: (
         <MainLayout>
           <AboutUs />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/admin-dashboard",
+      element: (
+        <ProtectedRoute allowedRoles={["Admin"]}>
+          <MainLayout>
+            <AdminDashboard />
+          </MainLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/provider-dashboard",
+      element: (
+        <ProtectedRoute allowedRoles={["Prestador","Admin"]}>
+          <MainLayout>
+            <ProviderDashboard />
+          </MainLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/booking-list",
+      element: (
+        <MainLayout>
+          <BookingList />
+        </MainLayout>
+      ),
+    },
+        {
+      path: "/booking/:bookingId",
+      element: (
+        <MainLayout>
+          <BookingDetail />
         </MainLayout>
       ),
     },

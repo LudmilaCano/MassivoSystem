@@ -13,6 +13,7 @@ namespace Application.Models.Responses
         public DateTime EventDate { get; set; }
         public EventType Type { get; set; }
         public string Image { get; set; }
+        public EntityState IsActive { get; set; }
         public ICollection<EventVehicleDto> EventVehicles { get; set; }
 
         public static EventDto Create(Event eventEntity)
@@ -27,6 +28,7 @@ namespace Application.Models.Responses
                 Type = eventEntity.Type,
                 EventDate = eventEntity.EventDate,
                 Image = eventEntity.Image,
+                IsActive = eventEntity.IsActive,
                 EventVehicles = eventEntity.EventVehicles.Select(ev => new EventVehicleDto
                 {
                     EventVehicleId = ev.EventVehicleId,

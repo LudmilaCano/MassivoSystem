@@ -23,6 +23,7 @@ import axios from "axios";
 import { useNavigate } from "react-router";
 import useSwalAlert from "../../hooks/useSwalAlert";
 import { getVehiclesByUserId } from "../../api/VehicleEndpoints";
+import useChangeRol from "../../hooks/useChangeRol";
 
 const modalStyle = {
   position: "absolute",
@@ -50,23 +51,8 @@ const CustomerProfile = () => {
   const [guardado, setGuardado] = useState(false);
   const navigate = useNavigate();
   const { showAlert } = useSwalAlert();
+  const { handleChangeRol } = useChangeRol(setUserData);
   const userIdFromState = useSelector((state) => state.auth.userId);
-
-  const handleCambiarRol = async () => {
-    try {
-      showAlert("¡Tu rol ha sido actualizado a Prestador!", "success");
-      await cambiarRolAPrestador();
-      // refrescamos los datos del usuario
-      const updatedUser = await getUserById(userId);
-      setUserData(updatedUser);
-      //navegamos al formulario de alta de vehiculos
-      navigate("/add-vehicle");
-      return;
-    } catch (error) {
-      console.error("Error al cambiar el rol:", error);
-      alert("Ocurrió un error al cambiar el rol.");
-    }
-  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -200,7 +186,7 @@ const CustomerProfile = () => {
         {userData.role !== "Prestador" && (
           <Button
             variant="outlined"
-            onClick={handleCambiarRol}
+            onClick={handleChangeRol}
             sx={{
               mt: 2,
               borderRadius: 3,

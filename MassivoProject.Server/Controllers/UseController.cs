@@ -170,5 +170,37 @@ namespace MassivoApp.Server.Controllers
             var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
             return Ok(claims);
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPut("admin/{id}")]
+        public async Task<IActionResult> AdminUpdateUser(int id, [FromBody] AdminUserUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var result = await _userService.AdminUpdateUserAsync(id, request);
+                if (!result)
+                    return NotFound(new { Message = "Usuario no encontrado." });
+
+                return Ok(new { Message = "Usuario actualizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"Error al actualizar el usuario: {ex.Message}" });
+            }
+        }
+
+        [HttpPut("toggle-status/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            var result = await _userService.ToggleStatusAsync(id);
+            if (!result)
+                return NotFound($"Usuario con ID {id} no encontrado");
+
+            return Ok(new { message = "Estado del usuario actualizado correctamente" });
+        }
+
     }
 }

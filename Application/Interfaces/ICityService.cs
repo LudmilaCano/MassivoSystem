@@ -9,8 +9,8 @@ namespace Application.Interfaces
 {
     public interface ICityService
     {
+        Task<List<City>> GetAllCitiesAsync();
         Task<List<City>> GetCitiesByProvinceAsync(int provinceId);
-
         Task<City> GetCityByIdAsync(int cityId);
         Task<City> GetCityByNameAsync(string cityName);
     }

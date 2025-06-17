@@ -33,6 +33,14 @@ namespace Infraestructure.Data
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<EventVehicle>> GetEventVehiclesByUserIdAsync(int userId)
+        {
+            return await _context.EventsVehicles
+                .Include(ev => ev.Event)
+                .Include(ev => ev.Vehicle)
+                .Where(ev => ev.Vehicle.UserId == userId)
+                .ToListAsync();
+        }
 
         public async Task<EventVehicle> GetById(int eventVehicleId)
         {
@@ -41,6 +49,35 @@ namespace Infraestructure.Data
                     .ThenInclude(v => v.User)
                         .ThenInclude(u => u.City)
                 .FirstOrDefaultAsync(ev => ev.EventVehicleId == eventVehicleId);
+        }
+
+        public async Task<EventVehicle> UpdateEventVehicle(EventVehicle eventVehicle)
+        {
+            _context.Entry(eventVehicle).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return eventVehicle;
+        }
+
+        public async Task<bool> BelongsToUserAsync(int eventVehicleId, int userId)
+        {
+            var eventVehicle = await _context.EventsVehicles
+                .Include(ev => ev.Event)
+                .FirstOrDefaultAsync(ev => ev.EventVehicleId == eventVehicleId);
+
+            return eventVehicle != null && eventVehicle.Event.UserId == userId;
+        }
+
+        public async Task<bool> ToggleStatusAsync(int eventVehicleId)
+        {
+            var eventVehicle = await _context.EventsVehicles.FindAsync(eventVehicleId);
+            if (eventVehicle == null)
+                return false;
+
+            eventVehicle.IsActive = eventVehicle.IsActive == Domain.Enums.EntityState.Active
+                    ? Domain.Enums.EntityState.Inactive
+                    : Domain.Enums.EntityState.Active; 
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

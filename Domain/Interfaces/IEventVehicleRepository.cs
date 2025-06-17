@@ -12,6 +12,10 @@ namespace Domain.Interfaces
         Task<EventVehicle> GetByEventIdAndLicensePlateAsync(int eventId, string licensePlate);
         Task<List<EventVehicle>> GetVehiclesByEventAsync(int eventId);
         Task<EventVehicle> GetById(int eventVehicleId);
+        Task<IEnumerable<EventVehicle>> GetEventVehiclesByUserIdAsync(int userId);
+        Task<EventVehicle> UpdateEventVehicle(EventVehicle eventVehicle);
+        Task<bool> BelongsToUserAsync(int eventVehicleId, int userId);
+        Task<bool> ToggleStatusAsync(int eventVehicleId);
 
     }
 }

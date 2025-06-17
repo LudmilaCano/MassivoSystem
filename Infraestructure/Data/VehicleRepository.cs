@@ -31,5 +31,36 @@ namespace Infraestructure.Data
                 .Where(v => v.UserId == userId)
                 .ToListAsync();
         }
+
+        public async Task<bool> ToggleStatusAsync(string licensePlate)
+        {
+            var vehicle = await _dbContext.Vehicles.FindAsync(licensePlate);
+            if (vehicle == null)
+                return false;
+
+            vehicle.IsActive = vehicle.IsActive == Domain.Enums.EntityState.Active
+                    ? Domain.Enums.EntityState.Inactive
+                    : Domain.Enums.EntityState.Active; 
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<int>> GetVehicleEventVehicleIdsAsync(string licensePlate)
+        {
+            return await _dbContext.EventsVehicles
+                .Where(ev => ev.LicensePlate == licensePlate)
+                .Select(ev => ev.EventVehicleId)
+                .ToListAsync();
+        }
+
+        public async Task<Domain.Enums.EntityState> GetVehicleEntityStateAsync(string licensePlate)
+        {
+            var vehicle = await _dbContext.Vehicles.FindAsync(licensePlate);
+            if (vehicle == null)
+                return Domain.Enums.EntityState.Inactive;
+
+            return vehicle.IsActive;
+        }
+
     }
 }
