@@ -14,22 +14,23 @@ namespace Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+
         public UserService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
         }
 
-        public List<User> GetUsers()
+        public async Task<List<User>> GetUsers()
         {
-            return _userRepository.ListAsync().Result ?? new List<User>();
+            return await _userRepository.ListAsync() ?? new List<User>();
         }
 
-        public User? GetUserById(int idUser)
+        public async Task<User?> GetUserById(int idUser)
         {
-            return _userRepository.GetByIdAsync(idUser).Result;
+            return await _userRepository.GetByIdAsync(idUser);
         }
 
-        public void SignUpUser(UserSignUpRequest userSignUpRequest)
+        public async Task SignUpUser(UserSignUpRequest userSignUpRequest)
         {
             var user = new User
             {
@@ -42,12 +43,12 @@ namespace Application.Services
                 CityId = userSignUpRequest.City,
                 ProvinceId = userSignUpRequest.Province
             };
-            _userRepository.AddAsync(user).Wait();
+            await _userRepository.AddAsync(user);
         }
 
-        public void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser)
+        public async Task UpdateUser(UserUpdateRequest userUpdateRequest, int idUser)
         {
-            User? user = _userRepository.GetByIdAsync(idUser).Result;
+            User? user = await _userRepository.GetByIdAsync(idUser);
             if (user == null)
             {
                 throw new ArgumentNullException("User not found");
@@ -64,30 +65,31 @@ namespace Application.Services
             user.CityId = userUpdateRequest.City;
             user.ProvinceId = userUpdateRequest.Province;
 
-            _userRepository.UpdateAsync(user).Wait();
+            await _userRepository.UpdateAsync(user);
         }
 
-        public void ChangeUserRole(RoleChangeRequest roleChangeRequest)
+        public async Task ChangeUserRole(RoleChangeRequest roleChangeRequest)
         {
-            User? user = _userRepository.GetByIdAsync(roleChangeRequest.UserId).Result;
+            User? user = await _userRepository.GetByIdAsync(roleChangeRequest.UserId);
             if (user == null)
             {
                 throw new ArgumentNullException("User not found");
             }
 
             user.Role = roleChangeRequest.NewRole;
-            _userRepository.UpdateAsync(user).Wait();
+            await _userRepository.UpdateAsync(user);
         }
 
-        public void DesactiveUser(int idUser)
+        public async Task DesactiveUser(int idUser)
         {
-            User? user = _userRepository.GetByIdAsync(idUser).Result;
+            User? user = await _userRepository.GetByIdAsync(idUser);
             if (user == null)
             {
                 throw new ArgumentNullException("User not found");
             }
+
             user.IsActive = Domain.Enums.EntityState.Inactive;
-            _userRepository.UpdateAsync(user).Wait();
+            await _userRepository.UpdateAsync(user);
         }
     }
 }
