@@ -398,11 +398,11 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
               </FormControl>
 
               <Typography variant="subtitle1">Foto de Perfil</Typography>
-<FileUploader 
-  onFileUploaded={handleFileUploaded} 
-  initialImage={selectedUser.profileImage} 
-  entityType="user"
-/>
+              <FileUploader 
+                onFileUploaded={handleFileUploaded} 
+                initialImage={selectedUser.profileImage} 
+                entityType="user"
+              />
               <FormControl fullWidth required error={!!errors.role}>
                 <InputLabel>Rol *</InputLabel>
                 <Select
