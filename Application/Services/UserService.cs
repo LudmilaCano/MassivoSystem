@@ -110,12 +110,12 @@ namespace Application.Services
             user.IdentificationNumber = userUpdateRequest.DniNumber;
             user.Email = userUpdateRequest.Email ?? user.Email;
             user.ProfileImage = userUpdateRequest.ProfileImage ?? user.ProfileImage;
-            if (!string.IsNullOrEmpty(userUpdateRequest.Password))
+            /*if (!string.IsNullOrEmpty(userUpdateRequest.Password))
             {
                 user.Password = userUpdateRequest.Password;
             }
             user.CityId = userUpdateRequest.City;
-            user.ProvinceId = userUpdateRequest.Province;
+            user.ProvinceId = userUpdateRequest.Province;*/
 
             _userRepository.UpdateAsync(user).Wait();
         }

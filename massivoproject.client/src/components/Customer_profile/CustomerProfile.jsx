@@ -1,300 +1,294 @@
-import React, { useEffect, useState } from "react";
-import "./CustomerProfile.css";
+import React, { useState, useEffect } from 'react';
 import {
-  Button,
-  Typography,
-  TextField,
-  Avatar,
-  Modal,
-  Box,
-  Alert,
-} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import Colors from "../../layout/Colors";
-import { useSelector } from "react-redux";
-import {
-  cambiarRolAPrestador,
-  getUserById,
-  updateUser,
-} from "../../api/UserEndpoints";
-import { createVehicle } from "../../api/VehicleEndpoints";
-import axios from "axios";
-import { useNavigate } from "react-router";
-import useSwalAlert from "../../hooks/useSwalAlert";
-import { getVehiclesByUserId } from "../../api/VehicleEndpoints";
-import useChangeRol from "../../hooks/useChangeRol";
-
-const modalStyle = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  borderRadius: "10px",
-  boxShadow: 24,
-  p: 4,
-  display: "flex",
-  flexDirection: "column",
-  gap: 2,
-};
-
-// ...imports (sin cambios)
+  Container, Box, Typography, TextField, Button, Paper,
+  Grid, Avatar, CircularProgress, Alert, Divider, Dialog,
+  DialogTitle, DialogContent, DialogActions
+} from '@mui/material';
+import { useSelector } from 'react-redux';
+import { getUserById, updateUser, cambiarRolAPrestador } from '../../api/UserEndpoints';
+import FileUploader from '../FileUploader/FileUploader';
+import PersonIcon from '@mui/icons-material/Person';
+import SaveIcon from '@mui/icons-material/Save';
+import EditIcon from '@mui/icons-material/Edit';
+import Colors from '../../layout/Colors';
+import Swal from 'sweetalert2';
+import useSwalAlert from '../../hooks/useSwalAlert';
 
 const CustomerProfile = () => {
   const { userId } = useSelector((state) => state.auth);
-  const [userData, setUserData] = useState(null);
-  const [editData, setEditData] = useState({});
-  const [profilePic, setProfilePic] = useState(null);
-  const [open, setOpen] = useState(false);
-  const [guardado, setGuardado] = useState(false);
-  const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const { showAlert } = useSwalAlert();
-  const { handleChangeRol } = useChangeRol(setUserData);
-  const userIdFromState = useSelector((state) => state.auth.userId);
 
+  // Cargar perfil del usuario
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchProfile = async () => {
       try {
+        setLoading(true);
         const data = await getUserById(userId);
-        setUserData({
-          ...data,
-          dniNumber: data.identificationNumber || "", // 👈 TAMBIÉN ACÁ
-        });
+        setProfile(data);
         setEditData({
           userId: data.userId,
-          firstName: data.firstName || "",
-          lastName: data.lastName || "",
-          email: data.email || "",
-          dniNumber: data.identificationNumber || "", // ✅ cambiamos a dniNumber
-          profilePic: data.profilePic || "",
-          password: "",
-          birthDate: data.birthDate || "",
-          phone: data.phone || "",
-          province: data.province || "",
-          city: data.city || "",
-          role: data.role || "User",
-          isActive: data.isActive ?? 1,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          identificationNumber: data.identificationNumber,
+          profileImage: data.profileImage
         });
-
-        if (data.profilePic) {
-          setProfilePic(data.profilePic);
-        }
       } catch (error) {
-        console.error("Error cargando datos del usuario:", error);
+        setError('No se pudo cargar el perfil del usuario');
+      } finally {
+        setLoading(false);
       }
     };
-    if (userId) fetchUser();
+
+    if (userId) {
+      fetchProfile();
+    }
   }, [userId]);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSave = async () => {
-    try {
-      const payload = {
-        UserId: userId,
-        FirstName: editData.firstName,
-        LastName: editData.lastName,
-        DniNumber: editData.dniNumber, // ✅ este campo con mayúsculas exactas
-        Email: editData.email,
-        Password: editData.password || null,
-        City: editData.city || "",
-        Province: editData.province || "",
-      };
+  try {
+    setSaving(true);
 
-      await updateUser(userId, payload);
+    let profileImageUrl = editData.profileImage;
 
-      setUserData({
-        ...userData,
-        firstName: editData.firstName,
-        lastName: editData.lastName,
-        dniNumber: editData.dniNumber,
-        email: editData.email,
-        city: editData.city,
-        province: editData.province,
-        profilePic: editData.profilePic || userData.profilePic,
+    // Si hay un archivo seleccionado, súbelo primero
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const response = await fetch('https://localhost:7089/api/File/upload/user', {
+        method: 'POST',
+        body: formData
       });
 
-      setOpen(false);
-      setGuardado(true);
-      setTimeout(() => setGuardado(false), 1500);
-    } catch (error) {
-      if (error.response) {
-        console.error("Error al actualizar usuario:", error.response.data);
-      } else {
-        console.error("Error al actualizar usuario:", error.message);
+      if (!response.ok) {
+        throw new Error('Error al subir la imagen');
       }
+
+      const data = await response.json();
+      profileImageUrl = data.url;
+    }
+
+    // Asegúrate de incluir todos los campos necesarios, especialmente las claves foráneas
+    const userData = {
+      UserId: editData.userId,
+      FirstName: editData.firstName,
+      LastName: editData.lastName,
+      Email: editData.email,
+      DniNumber: editData.identificationNumber,
+      profileImage: profileImageUrl,
+    };
+
+    await updateUser(editData.userId, userData);
+    
+    // Actualiza el perfil local con los nuevos datos
+    setProfile({
+      ...profile,
+      firstName: editData.firstName,
+      lastName: editData.lastName,
+      email: editData.email,
+      identificationNumber: editData.identificationNumber,
+      profileImage: profileImageUrl
+    });
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Éxito',
+      text: 'Perfil actualizado correctamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    setOpenDialog(false);
+    setSelectedFile(null); // Limpiar el archivo seleccionado
+  } catch (err) {
+  
+    showAlert('error', 'Error al actualizar el perfil: ' + (err.message || 'Error desconocido'));
+  } finally {
+    setSaving(false);
+  }
+};
+
+  const handleChangeRol = async () => {
+    try {
+      await cambiarRolAPrestador(userId);
+      const updatedProfile = await getUserById(userId);
+      setProfile(updatedProfile);
+      showAlert('success', 'Rol actualizado a Prestador correctamente');
+    } catch (error) {
+     
+      showAlert('error', 'Error al cambiar el rol: ' + (error.message || 'Error desconocido'));
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePic(reader.result);
-        setEditData({ ...editData, profilePic: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  if (!userData) return <div>Cargando datos del perfil...</div>;
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
-    <div className="container">
-      <div className="profile-section">
-        <div className="profile-pic-placeholder">
-          <Avatar src={profilePic} sx={{ width: 120, height: 120 }} />
-        </div>
-
-        <h2>Datos personales</h2>
-
-        <div className="form-group">
-          <label>Nombre</label>
-          <input type="text" value={userData.firstName} disabled />
-        </div>
-        <div className="form-group">
-          <label>Apellido</label>
-          <input type="text" value={userData.lastName} disabled />
-        </div>
-        <div className="form-group">
-          <label>DNI</label>
-          <input type="text" value={userData.dniNumber} disabled /> {/* ✅ */}
-        </div>
-        <div className="form-group">
-          <label>Mail</label>
-          <input type="email" value={userData.email} disabled />
-        </div>
-
-        <Button
-          variant="contained"
-          startIcon={<EditIcon />}
-          onClick={() => setOpen(true)}
-          sx={{
-            backgroundColor: Colors.celeste,
-            color: "white",
-            borderRadius: 3,
-            mt: 1,
-            "&:hover": {
-              backgroundColor: "#0ea5e9",
-            },
-          }}
-        >
-          Editar perfil
-        </Button>
-
-        {userData.role !== "Prestador" && (
-          <Button
-            variant="outlined"
-            onClick={handleChangeRol}
-            sx={{
-              mt: 2,
-              borderRadius: 3,
-              borderColor: Colors.celeste,
-              color: Colors.celeste,
-              "&:hover": {
-                backgroundColor: "#e0f7ff",
-                borderColor: Colors.celeste,
-              },
-            }}
-          >
-            Cambiar a Prestador
-          </Button>
-        )}
-
-        <Modal open={guardado} onClose={() => setGuardado(false)}>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "30%",
-              left: "50%",
-              transform: "translate(-50%, -30%)",
-              bgcolor: "background.paper",
-              boxShadow: 24,
-              p: 3,
-              borderRadius: 2,
-              minWidth: 300,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
-            <Alert
-              severity="success"
-              sx={{ width: "100%", textAlign: "center" }}
-            >
-              ¡Datos guardados correctamente!
-            </Alert>
-          </Box>
-        </Modal>
-      </div>
-
-      {/* MODAL EDICIÓN */}
-      <Modal open={open} onClose={() => setOpen(false)}>
-        <Box sx={modalStyle}>
-          <Typography variant="h6" mb={1}>
-            Editar perfil
-          </Typography>
-
-          <Avatar
-            src={profilePic}
-            sx={{ width: 80, height: 80, alignSelf: "center" }}
-          />
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-
-          <TextField
-            label="Nombre"
-            value={editData.firstName}
-            onChange={(e) =>
-              setEditData({ ...editData, firstName: e.target.value })
-            }
-            fullWidth
-          />
-          <TextField
-            label="Apellido"
-            value={editData.lastName}
-            onChange={(e) =>
-              setEditData({ ...editData, lastName: e.target.value })
-            }
-            fullWidth
-          />
-          <TextField
-            label="DNI"
-            value={editData.dniNumber} // ✅ corregido aquí
-            onChange={(e) =>
-              setEditData({ ...editData, dniNumber: e.target.value })
-            }
-            fullWidth
-          />
-          <TextField
-            label="Email"
-            value={editData.email}
-            onChange={(e) =>
-              setEditData({ ...editData, email: e.target.value })
-            }
-            fullWidth
-          />
-
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" component="h1">Mi Perfil</Typography>
           <Button
             variant="contained"
-            onClick={handleSave}
+            startIcon={<EditIcon />}
+            onClick={() => setOpenDialog(true)}
             sx={{
               backgroundColor: Colors.celeste,
-              color: "white",
-              borderRadius: 3,
-              mt: 1,
-              "&:hover": {
-                backgroundColor: "#0ea5e9",
-              },
+              '&:hover': { backgroundColor: '#0ea5e9' }
             }}
           >
-            Guardar cambios
+            Editar Perfil
           </Button>
         </Box>
-      </Modal>
-    </div>
+
+        <Divider sx={{ mb: 4 }} />
+
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
+            {(editData.profileImage || selectedFile) && (
+              <Box sx={{ textAlign: 'center', mb: 2 }}>
+                <Avatar
+                  src={selectedFile ? URL.createObjectURL(selectedFile) : editData.profileImage}
+                  sx={{ width: 150, height: 150, margin: 'auto' }}
+                />
+              </Box>
+            )}
+          </Grid>
+
+          <Grid item xs={12} md={8}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography><strong>Nombre:</strong> {profile?.firstName}</Typography>
+              <Typography><strong>Apellido:</strong> {profile?.lastName}</Typography>
+              <Typography><strong>Email:</strong> {profile?.email}</Typography>
+              <Typography><strong>DNI:</strong> {profile?.identificationNumber}</Typography>
+              <Typography><strong>Rol:</strong> {profile?.role}</Typography>
+
+              {profile?.role !== "Prestador" && (
+                <Button
+                  variant="outlined"
+                  onClick={handleChangeRol}
+                  sx={{
+                    mt: 2,
+                    borderRadius: 3,
+                    borderColor: Colors.celeste,
+                    color: Colors.celeste,
+                    "&:hover": {
+                      backgroundColor: "#e0f7ff",
+                      borderColor: Colors.celeste,
+                    },
+                  }}
+                >
+                  Cambiar a Prestador
+                </Button>
+              )}
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Diálogo de edición */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Perfil</DialogTitle>
+        <DialogContent>
+          {editData && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+              {/* <FileUploader
+                onFileUploaded={handleFileUploaded}
+                initialImage={editData.profileImage}
+                entityType="user"
+              /> */}
+              <input
+                accept="image/*"
+                style={{ display: 'none' }}
+                id="contained-button-file"
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setSelectedFile(file);
+                  }
+                }}
+              />
+              <label htmlFor="contained-button-file">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  fullWidth
+                >
+                  Seleccionar Imagen
+                </Button>
+              </label>
+
+              <TextField
+                label="Nombre"
+                name="firstName"
+                value={editData.firstName}
+                onChange={handleInputChange}
+                fullWidth
+              />
+
+              <TextField
+                label="Apellido"
+                name="lastName"
+                value={editData.lastName}
+                onChange={handleInputChange}
+                fullWidth
+              />
+
+              <TextField
+                label="Email"
+                name="email"
+                value={editData.email}
+                onChange={handleInputChange}
+                fullWidth
+              />
+
+              <TextField
+                label="DNI"
+                name="identificationNumber"
+                value={editData.identificationNumber}
+                onChange={handleInputChange}
+                fullWidth
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            disabled={saving}
+            startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+          >
+            {saving ? 'Guardando...' : 'Guardar Cambios'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 
