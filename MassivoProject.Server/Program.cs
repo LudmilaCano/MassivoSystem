@@ -7,6 +7,7 @@ using Infraestructure.Services.Infrastructure.Services;
 using MassivoProject.Server.Exceptions;
 using MassivoProject.Server.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
@@ -125,7 +126,25 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseDefaultFiles();
+// Asegurarse de que exista la carpeta wwwroot
+var webRootPath = builder.Environment.WebRootPath;
+if (string.IsNullOrEmpty(webRootPath))
+{
+    webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+    Directory.CreateDirectory(webRootPath);
+}
+
+// Asegurarse de que exista la carpeta uploads
+var uploadsFolder = Path.Combine(webRootPath, "uploads");
+Directory.CreateDirectory(uploadsFolder);
+
+// Asegurarse de que existan las subcarpetas para cada tipo de entidad
+Directory.CreateDirectory(Path.Combine(uploadsFolder, "user"));
+Directory.CreateDirectory(Path.Combine(uploadsFolder, "vehicle"));
+Directory.CreateDirectory(Path.Combine(uploadsFolder, "event"));
 app.UseStaticFiles();
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -149,5 +168,11 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
+
+//var uploadsFolder = Path.Combine(builder.Environment.WebRootPath, "uploads");
+if (!Directory.Exists(uploadsFolder))
+{
+    Directory.CreateDirectory(uploadsFolder);
+}
 
 app.Run();

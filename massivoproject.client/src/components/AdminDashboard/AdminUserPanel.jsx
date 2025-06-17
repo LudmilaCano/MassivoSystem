@@ -1,10 +1,10 @@
 // AdminUserPanel.jsx
 import React, { useState, useEffect } from 'react';
-import { 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, FormControl, InputLabel, Select, MenuItem, Box,
-  FormHelperText
+  FormHelperText, Avatar, Typography
 } from '@mui/material';
 import { adminUpdateUser } from '../../api/UserEndpoints';
 import { getAllProvince } from '../../api/ProvinceEndpoints';
@@ -12,6 +12,8 @@ import { getCitiesByProvince } from '../../api/CityEndpoints';
 import Swal from 'sweetalert2';
 import { useSelector } from 'react-redux';
 import { toggleUserStatus } from '../../api/UserEndpoints';
+import  FileUploader  from '../FileUploader/FileUploader';
+import { uploadFile } from '../../api/FileEndpoints';
 
 const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -21,11 +23,11 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
   const [errors, setErrors] = useState({});
   const [sortedProvinces, setSortedProvinces] = useState([]);
   const [sortedCities, setSortedCities] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  
-   const { userId } = useSelector((state) => state.auth);
+  const { userId } = useSelector((state) => state.auth);
 
-   console.log(users)
+  console.log(users)
 
   // Cargar provincias al montar el componente
   useEffect(() => {
@@ -42,16 +44,24 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
   }, []);
 
   const handleToggleStatus = async (userId) => {
-  try {
-    await toggleUserStatus(userId);
-    showSuccessAlert("Estado del usuario actualizado correctamente");
-    onRefresh(); // Recargar la lista de usuarios
-  } catch (error) {
-    console.error("Error toggling user status:", error);
-    showErrorAlert("Error al actualizar el estado del usuario");
-  }
+    try {
+      await toggleUserStatus(userId);
+      showSuccessAlert("Estado del usuario actualizado correctamente");
+      onRefresh(); // Recargar la lista de usuarios
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+      showErrorAlert("Error al actualizar el estado del usuario");
+    }
+  };
+  const handleFileUploaded = (fileUrl) => {
+  setSelectedUser(prev => ({
+    ...prev,
+    profileImage: fileUrl
+  }));
 };
-
+  const handleFileSelected = (file) => {
+    setSelectedFile(file);
+  };
   // Ordenar provincias alfabéticamente
   useEffect(() => {
     setSortedProvinces(() => [...provinces].sort((a, b) => a.name.localeCompare(b.name)));
@@ -83,7 +93,7 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
         }
       }
     };
-    
+
     if (selectedUser) {
       fetchCities();
     }
@@ -96,8 +106,8 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
       showErrorAlert("No puedes editar tu propio usuario desde el panel de administración");
       return;
     }
-    
-    setSelectedUser({...user});
+
+    setSelectedUser({ ...user });
     setErrors({});
     setOpenDialog(true);
   };
@@ -105,12 +115,12 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSelectedUser(prev => ({ ...prev, [name]: value }));
-    
+
     // Si cambia la provincia, resetear la ciudad
     if (name === 'provinceId') {
       setSelectedUser(prev => ({ ...prev, cityId: null }));
     }
-    
+
     // Limpiar error
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
@@ -119,7 +129,7 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!selectedUser.firstName) newErrors.firstName = "El nombre es obligatorio";
     if (!selectedUser.lastName) newErrors.lastName = "El apellido es obligatorio";
     if (!selectedUser.email) newErrors.email = "El email es obligatorio";
@@ -128,7 +138,7 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
     if (!selectedUser.provinceId) newErrors.provinceId = "La provincia es obligatoria";
     if (!selectedUser.cityId) newErrors.cityId = "La ciudad es obligatoria";
     if (!selectedUser.role) newErrors.role = "El rol es obligatorio";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -140,7 +150,27 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
     }
 
     try {
-      // Crear objeto sin incluir la contraseña
+      let profileImageUrl = selectedUser.profileImage;
+
+      // Si hay un archivo seleccionado, súbelo primero
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        
+        const response = await fetch('/api/File/upload/user', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Error al subir la imagen');
+        }
+        
+        const data = await response.json();
+        profileImageUrl = data.url;
+      }
+
+      // Crear objeto con todos los datos, incluyendo la URL de la imagen
       const userData = {
         userId: selectedUser.userId,
         firstName: selectedUser.firstName,
@@ -150,7 +180,8 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
         birthDate: selectedUser.birthDate,
         cityId: parseInt(selectedUser.cityId),
         provinceId: parseInt(selectedUser.provinceId),
-        role: selectedUser.role
+        role: selectedUser.role,
+        profileImage: profileImageUrl
       };
 
       await adminUpdateUser(selectedUser.userId, userData);
@@ -175,7 +206,7 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
         <p><strong>Provincia:</strong> ${user.province || 'No especificada'}</p>
       </div>
     `;
-    
+
     Swal.fire({
       title: 'Detalles de Usuario',
       html: content,
@@ -206,6 +237,22 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.userId}>
+                <TableCell>
+                  {user.profileImage ? (
+                    <img
+                      src={user.profileImage}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  ) : (
+                    <Avatar>{user.firstName[0]}{user.lastName[0]}</Avatar>
+                  )}
+                </TableCell>
                 <TableCell>{user.userId}</TableCell>
                 <TableCell>{user.firstName}</TableCell>
                 <TableCell>{user.lastName}</TableCell>
@@ -213,8 +260,8 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
                   {user.userId === userId ? (
-                    <Button 
-                      size="small" 
+                    <Button
+                      size="small"
                       variant="outlined"
                       disabled
                       sx={{ mr: 1 }}
@@ -223,8 +270,8 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
                       Editar
                     </Button>
                   ) : (
-                    <Button 
-                      size="small" 
+                    <Button
+                      size="small"
                       variant="outlined"
                       onClick={() => handleEditUser(user)}
                       sx={{ mr: 1 }}
@@ -232,9 +279,9 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
                       Editar
                     </Button>
                   )}
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
+                  <Button
+                    size="small"
+                    variant="outlined"
                     color="info"
                     onClick={() => handleViewUserDetails(user)}
                     sx={{ mr: 1 }}
@@ -246,7 +293,7 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
                     color={user.isActive === 'Active' ? "error" : "success"}
                     onClick={() => handleToggleStatus(user.userId)}
                   >
-                    {user.isActive === 0 ?"Desactivar" : "Activar"}
+                    {user.isActive === 0 ? "Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -313,7 +360,7 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
                 error={!!errors.birthDate}
                 helperText={errors.birthDate}
               />
-              
+
               <FormControl fullWidth required error={!!errors.provinceId}>
                 <InputLabel>Provincia *</InputLabel>
                 <Select
@@ -330,7 +377,7 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
                 </Select>
                 {errors.provinceId && <FormHelperText>{errors.provinceId}</FormHelperText>}
               </FormControl>
-              
+
               <FormControl fullWidth required error={!!errors.cityId} disabled={!selectedUser.provinceId}>
                 <InputLabel>Ciudad *</InputLabel>
                 <Select
@@ -349,7 +396,13 @@ const AdminUserPanel = ({ users, onRefresh, showSuccessAlert, showErrorAlert }) 
                 {errors.cityId && <FormHelperText>{errors.cityId}</FormHelperText>}
                 {!selectedUser.provinceId && <FormHelperText>Seleccione una provincia primero</FormHelperText>}
               </FormControl>
-              
+
+              <Typography variant="subtitle1">Foto de Perfil</Typography>
+<FileUploader 
+  onFileUploaded={handleFileUploaded} 
+  initialImage={selectedUser.profileImage} 
+  entityType="user"
+/>
               <FormControl fullWidth required error={!!errors.role}>
                 <InputLabel>Rol *</InputLabel>
                 <Select

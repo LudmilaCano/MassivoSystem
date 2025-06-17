@@ -60,6 +60,7 @@ namespace Application.Services
                 CityId = userSignUpRequest.City,
                 ProvinceId = userSignUpRequest.Province,
                 IsActive = EntityState.Inactive,
+                ProfileImage = userSignUpRequest.ProfileImage,
                 RecoveryCode = recoveryCode
             };
 
@@ -108,6 +109,7 @@ namespace Application.Services
             user.LastName = userUpdateRequest.LastName;
             user.IdentificationNumber = userUpdateRequest.DniNumber;
             user.Email = userUpdateRequest.Email ?? user.Email;
+            user.ProfileImage = userUpdateRequest.ProfileImage ?? user.ProfileImage;
             if (!string.IsNullOrEmpty(userUpdateRequest.Password))
             {
                 user.Password = userUpdateRequest.Password;
@@ -155,7 +157,7 @@ namespace Application.Services
             user.CityId = request.CityId;
             user.ProvinceId = request.ProvinceId;
             user.Role = request.Role;
-
+            user.ProfileImage = request.ProfileImage;
             /*if (!string.IsNullOrEmpty(request.Password))
             {
                 user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);

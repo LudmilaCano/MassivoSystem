@@ -39,5 +39,6 @@ namespace Application.Models.Requests
         [Required(ErrorMessage = "La provincia es obligatoria.")]
         public int Province { get; set; } 
 
+        public string ProfileImage { get; set; }
     }
 }
