@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Chip, Button, Backdrop, CircularProgress, Rating, Divider, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { MapContainer, TileLayer, Marker, Popup , Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import FlagIcon from '@mui/icons-material/Flag';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -9,9 +9,13 @@ import 'leaflet/dist/leaflet.css';
 import { useParams, useLocation } from 'react-router-dom';
 import { getEventVehicleById } from '../api/EventEndpoints';
 import { getCoordinatesByCityName, getCoordinatesByCityId } from '../api/EventEndpoints';
+import  ReviewList  from './ReviewList';
+import { useSelector } from 'react-redux';
+
 
 const TripDetail = () => {
   const { tripId } = useParams(); // tripId = eventVehicleId
+
   const location = useLocation();
   const destination = location.state?.destination;
   const [eventVehicle, setEventVehicle] = useState(null);
@@ -22,11 +26,15 @@ const TripDetail = () => {
   const [openDescription, setOpenDescription] = useState(false);
 
 
+  const userId = useSelector((state) => state.auth.userId);
+
+
   useEffect(() => {
     const fetchEventVehicle = async () => {
       try {
         const data = await getEventVehicleById(tripId);
         setEventVehicle(data);
+
       } catch (error) {
         setEventVehicle(null);
       }
@@ -118,8 +126,11 @@ const TripDetail = () => {
                 marginBottom: 8
               }}
             />
+            <Box sx={{ mt: 4 }}>
+              <ReviewList eventVehicleId={tripId} userId={userId} />
+            </Box>
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 'bold', textAlign: 'center' }}>{eventVehicle.name}</Typography>
-            <Rating name="read-only" value={5} readOnly size="small" sx={{ mt: 1 }} />
+            
             <Chip
               label={eventVehicle.available < 2 ? `${eventVehicle.available} lugar disponible` : `${eventVehicle.available} lugares disponibles`}
               color={eventVehicle.available < 2 ? "error" : "success"}
@@ -147,11 +158,11 @@ const TripDetail = () => {
                   variant="outlined"
                   size="small"
                   onClick={() => setOpenDescription(true)}
-                  sx={{ mb: 1,ml:1 }}
+                  sx={{ mb: 1, ml: 1 }}
                 >
                   Ver Descripción
                 </Button>
-                <Chip label={eventVehicle.vehicleType} color="primary" sx={{ml: 2, mb: 1 }} />
+                <Chip label={eventVehicle.vehicleType} color="primary" sx={{ ml: 2, mb: 1 }} />
                 <Chip label={`Capacidad: ${eventVehicle.capacity}`} color="info" sx={{ ml: 1, mb: 1 }} />
               </Box>
               <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, width: { xs: '100%', sm: 'auto' } }}>
@@ -207,9 +218,10 @@ const TripDetail = () => {
             </Marker>
             <Polyline positions={[coordsFrom, coordsTo]} color="blue" />
           </MapContainer>
-          
+
         </Box>
       </Paper>
+
 
       <Dialog
         open={openDescription}
