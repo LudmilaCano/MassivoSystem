@@ -51,11 +51,22 @@ namespace MassivoProject.Server.Controllers
             var booking = await _bookingService.AddBookingAsync(addBookingRequest);
             return CreatedAtAction(nameof(GetBookingById), new { id = booking.Id }, booking);
         }
+
         [HttpDelete("{bookingId}")]
         public async Task<IActionResult> CancelBooking(int bookingId)
         {
             await _bookingService.CancelBookingAsync(bookingId);
             return NoContent();
         }
+
+        [HttpPost("notificar-reservas-proximas")]
+        public async Task<IActionResult> NotificarReservasProximas()
+        {
+            await _bookingService.NotificarReservasProximasAsync();
+            return Ok("Notificaciones enviadas.");
+        }
+
+
+
     }
 }

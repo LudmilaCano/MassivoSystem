@@ -69,6 +69,21 @@ namespace Infraestructure.Services
                             <b>Monto abonado:</b> {reservaUsuario.Payment.Amount:N2}
                             <p>Con este correo podés presentarte el día de la salida programada.</p>";
                         break;
+                    case NotificationType.ReservaProxima:
+                        var recordatorio = data as BookingDto;
+                        subject = "📅 Recordatorio de tu reserva";
+                        body = $@"
+                            <p>Hola,</p>
+                            <p>Te recordamos que mañana es la salida para el evento <b>{recordatorio.Event.Name}</b>.</p>
+                            <p>Fecha: {recordatorio.Event.EventDate.ToShortDateString()} 📆</p>
+                            <p>Vehículo: <b>{recordatorio.Vehicle.Name}</b> ({recordatorio.Vehicle.LicensePlate})</p>
+                            <p>Asientos reservados: {recordatorio.SeatNumber}</p>
+                            <b>Monto abonado:</b> {recordatorio.Payment.Amount:N2}
+                            <p>¡Te esperamos!</p>";
+                        break;
+
+
+
 
 
 

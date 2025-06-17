@@ -32,3 +32,8 @@ export const getBookingByUser = async (userId) => {
   const response = await api.get(`/Booking/user/${userId}`);
   return response.data;
 };
+
+export const sendUpcomingBookingNotifications = async () => {
+  const response = await api.post("/Booking/notificar-reservas-proximas");
+  return response.data;
+};

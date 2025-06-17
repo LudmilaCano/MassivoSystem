@@ -184,6 +184,31 @@ namespace Application.Services
 
         }
 
+        //envio de mails masivos avisos por reservas proximas
+        public async Task NotificarReservasProximasAsync()
+        {
+            var reservasProximas = await _bookingRepository.GetConfirmedBookingsForTomorrowAsync();
+
+            foreach (var reserva in reservasProximas)
+            {
+                var user = await _userRepository.GetByIdAsync(reserva.UserId);
+                var vehicle = reserva.EventVehicle.Vehicle;
+                var eventEntity = reserva.EventVehicle.Event;
+
+                if (user != null && !string.IsNullOrEmpty(user.Email))
+                {
+                    var bookingDto = BookingDto.Create(reserva, eventEntity, vehicle);
+
+                    await _notificationService.SendNotificationEmail(
+                        user.Email,
+                        NotificationType.ReservaProxima,
+                        bookingDto
+                    );
+                }
+            }
+        }
+
+
 
         public async Task CancelBookingAsync(int bookingId)
         {
