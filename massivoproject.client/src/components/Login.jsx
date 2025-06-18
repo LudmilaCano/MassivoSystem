@@ -81,15 +81,13 @@ const Login = () => {
             if (token) {
                 dispatch(setToken(token));
                 navigate('/');
-
                 showAlert('Bienvenido', 'success');
             }
         } catch (err) {
-
-            showAlert('Usuario o contraseña incorrectos', 'error');
-
-            setDniOrEmail("");
-            setPassword("");
+            const errorMsg = err?.response?.data?.error || 'Error inesperado';
+            showAlert(errorMsg, 'error');
+            setDniOrEmail('');
+            setPassword('');
         } finally {
             setLoading(false);
         }
@@ -115,7 +113,7 @@ const Login = () => {
                         }}
                     >
                         <Box
-                            onClick={() =>  navigate('/')}
+                            onClick={() => navigate('/')}
                             component="img"
                             src={Logo2}
                             alt="Logo"

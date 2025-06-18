@@ -202,5 +202,19 @@ namespace MassivoApp.Server.Controllers
             return Ok(new { message = "Estado del usuario actualizado correctamente" });
         }
 
+        [Authorize]
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateOwnUser([FromBody] UpdateOwnUserDto dto)
+        {
+            var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "");
+            var response = await _userService.UpdateOwnProfileAsync(userId, dto);
+
+            if (!response)
+                return NotFound("No se encontró el usuario o no se pudo actualizar");
+
+            return Ok("Perfil actualizado correctamente");
+        }
+
+
     }
 }
