@@ -3,6 +3,7 @@ using Application.Models.Requests;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace MassivoProject.Server.Controllers
@@ -56,8 +57,15 @@ namespace MassivoProject.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateEvent([FromBody] CreateEventRequest request)
         {
-            var createdEvent = await _eventService.AddEventAsync(request);
-            return Ok(createdEvent);
+            try
+            {
+                var createdEvent = await _eventService.AddEventAsync(request);
+                return Ok(createdEvent);
+            }catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+         
         }
 
         [HttpPut("{eventId}")]

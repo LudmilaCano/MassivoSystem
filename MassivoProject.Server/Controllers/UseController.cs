@@ -36,17 +36,24 @@ namespace MassivoApp.Server.Controllers
         [HttpPost("signup")]
         public async Task<IActionResult> SignUp([FromBody] UserSignUpRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            var (isIdUnique, isEmailUnique) = await _uniquenessChecker.ValidateUniqueness(request.DniNumber, request.Email!);
-            if (!isIdUnique)
-                return Conflict(new { Message = "El DNI ya está registrado." });
-            if (!isEmailUnique)
-                return Conflict(new { Message = "El email ya está registrado." });
+                var (isIdUnique, isEmailUnique) = await _uniquenessChecker.ValidateUniqueness(request.DniNumber, request.Email!);
+                if (!isIdUnique)
+                    return Conflict(new { Message = "El DNI ya está registrado." });
+                if (!isEmailUnique)
+                    return Conflict(new { Message = "El email ya está registrado." });
 
-            _userService.SignUpUser(request);
-            return StatusCode(StatusCodes.Status201Created, new { Message = "Usuario registrado correctamente." });
+                _userService.SignUpUser(request);
+                return StatusCode(StatusCodes.Status201Created, new { Message = "Usuario registrado correctamente." });
+            }catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
 
         // Actualizar datos de un usuario existente

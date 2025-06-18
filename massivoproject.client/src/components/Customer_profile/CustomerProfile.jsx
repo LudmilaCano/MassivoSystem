@@ -13,6 +13,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import Colors from '../../layout/Colors';
 import Swal from 'sweetalert2';
 import useSwalAlert from '../../hooks/useSwalAlert';
+import { useNavigate } from 'react-router';
 
 const CustomerProfile = () => {
   const { userId } = useSelector((state) => state.auth);
@@ -24,6 +25,7 @@ const CustomerProfile = () => {
   const [editData, setEditData] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const { showAlert } = useSwalAlert();
+  const navigate = useNavigate();
 
   // Cargar perfil del usuario
   useEffect(() => {
@@ -41,6 +43,7 @@ const CustomerProfile = () => {
           profileImage: data.profileImage
         });
       } catch (error) {
+        navigate('/login');
         setError('No se pudo cargar el perfil del usuario');
       } finally {
         setLoading(false);
@@ -106,16 +109,12 @@ const CustomerProfile = () => {
       profileImage: profileImageUrl
     });
 
-    Swal.fire({
-      icon: 'success',
-      title: 'Éxito',
-      text: 'Perfil actualizado correctamente',
-      timer: 2000,
-      showConfirmButton: false
-    });
-
+  
+    showAlert('success', 'Perfil actualizado correctamente');
+     // Refrescar el perfil después de la actualización
     setOpenDialog(false);
     setSelectedFile(null); // Limpiar el archivo seleccionado
+    navigate('/');
   } catch (err) {
   
     showAlert('error', 'Error al actualizar el perfil: ' + (err.message || 'Error desconocido'));

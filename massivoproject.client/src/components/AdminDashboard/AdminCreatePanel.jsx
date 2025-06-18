@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid,
     InputLabel, MenuItem, Select, TextField, Typography, Autocomplete, Tabs, Tab, Paper,
-    Container, Avatar
+    Container, Avatar, CircularProgress
 } from '@mui/material';
 import { createEvent } from '../../api/EventEndpoints';
 import { createUser } from '../../api/UserEndpoints';
@@ -13,6 +13,7 @@ import Colors from '../../layout/Colors';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EventIcon from '@mui/icons-material/Event';
 import { EVENT_TYPE_ENUM, EVENT_TYPE_LABELS } from '../../constants/eventCategories';
+
 
 // TabPanel component for switching between user and event creation forms
 function TabPanel(props) {
@@ -34,6 +35,8 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
     const [provinces, setProvinces] = useState([]);
     const [cities, setCities] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [userSelectedFile, setUserSelectedFile] = useState(null);
+    const [eventSelectedFile, setEventSelectedFile] = useState(null);
     const { showAlert } = useSwalAlert();
 
     // User form state
@@ -163,6 +166,26 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
 
         try {
             setLoading(true);
+
+            let profileImageUrl = null;
+
+            // Si hay un archivo seleccionado, súbelo primero
+            if (userSelectedFile) {
+                const formData = new FormData();
+                formData.append('file', userSelectedFile);
+
+                const response = await fetch('https://localhost:7089/api/File/upload/user', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al subir la imagen');
+                }
+
+                const data = await response.json();
+                profileImageUrl = data.url;
+            }
             const userData = {
                 firstName: userForm.firstName,
                 lastName: userForm.lastName,
@@ -172,12 +195,25 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                 birthDate: userForm.birthDate.toString().split('T')[0],
                 city: parseInt(userForm.cityId),
                 province: parseInt(userForm.provinceId),
+                profileImage: profileImageUrl
                 //role: userForm.role
             };
 
             await createUser(userData);
             showAlert("Usuario creado correctamente", "success");
             onSuccess();
+            setUserForm({
+                firstName: '',
+                lastName: '',
+                email: '',
+                password: '',
+                confirmPassword: '',
+                identificationNumber: '',
+                birthDate: '',
+                cityId: null,
+                provinceId: null,
+                role: 'Customer'
+            });
             onClose();
         } catch (error) {
             console.error("Error creating user:", error);
@@ -237,7 +273,8 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleCreateEvent = async () => {
+    const handleCreateEvent = async e => {
+        e.preventDefault();
         if (!validateEventForm()) {
             showAlert("Por favor complete todos los campos obligatorios", "error");
             return;
@@ -245,18 +282,44 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
 
         try {
             setLoading(true);
-            console.log("Creating event with data:", eventForm);
+            let imageUrl = eventForm.image;
+            if (eventSelectedFile) {
+                const formData = new FormData();
+                formData.append('file', eventSelectedFile);
+
+                const response = await fetch('https://localhost:7089/api/File/upload/event', {
+                    method: 'POST',
+                    body: formData
+                });
+                console.log(response)
+                if (!response.ok) {
+                    throw new Error('Error al subir la imagen');
+                }
+
+                const data = await response.json();
+                imageUrl = data.url;
+            }
+
             const payload = {
                 userId: 1,
                 locationId: Number(eventForm.locationId),
                 name: eventForm.name,
                 description: eventForm.description,
-                eventDate: eventForm.eventDate,
+                eventDate: eventForm.eventDate ,
                 type: Number(eventForm.type),
-                image: eventForm.image || "https://picsum.photos/200/300" //esto es un placeholder, revisar dps como se van a manejar las imagenes.
+                image: imageUrl  //esto es un placeholder, revisar dps como se van a manejar las imagenes.
             };
             await createEvent(payload);
             showAlert("Evento creado correctamente", "success");
+            setEventForm({
+                name: '',
+                eventDate: '',
+                type: '',
+                description: '',
+                provinceId: '',
+                locationId: '',
+                image: ''
+            });
             onSuccess();
             onClose();
         } catch (error) {
@@ -434,6 +497,48 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                         </FormControl>
                                     </Grid>
                                     <Grid item xs={12}>
+                                        <Typography variant="subtitle1">Foto de Perfil</Typography>
+
+                                        {/* Vista previa de la imagen */}
+                                        {userSelectedFile && (
+                                            <Box sx={{ textAlign: 'center', mb: 2 }}>
+                                                <img
+                                                    src={URL.createObjectURL(userSelectedFile)}
+                                                    alt="Vista previa"
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '200px',
+                                                        objectFit: 'contain',
+                                                        borderRadius: '4px'
+                                                    }}
+                                                />
+                                            </Box>
+                                        )}
+
+                                        {/* Selector de archivo */}
+                                        <input
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id="user-image-upload"
+                                            type="file"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setUserSelectedFile(file);
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor="user-image-upload">
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                fullWidth
+                                            >
+                                                Seleccionar Imagen de Perfil
+                                            </Button>
+                                        </label>
+                                    </Grid>
+                                    <Grid item xs={12}>
                                         <FormControl fullWidth required error={!!userErrors.role}>
                                             <InputLabel>Rol</InputLabel>
                                             <Select
@@ -517,7 +622,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                             id="eventDate"
                                             label="Fecha y Hora"
                                             name="eventDate"
-                                            type="datetime-local"
+                                            type="date"
                                             InputLabelProps={{ shrink: true }}
                                             value={eventForm.eventDate}
                                             onChange={handleEventInputChange}
@@ -579,7 +684,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                             )}
                                         />
                                     </Grid>
-                                    <Grid item xs={12}>
+                                    {/* <Grid item xs={12}>
                                         <TextField
                                             fullWidth
                                             id="image"
@@ -588,6 +693,48 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                             value={eventForm.image}
                                             onChange={handleEventInputChange}
                                         />
+                                    </Grid> */}
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle1">Imagen del Evento</Typography>
+
+                                        {/* Vista previa de la imagen */}
+                                        {eventSelectedFile && (
+                                            <Box sx={{ textAlign: 'center', mb: 2 }}>
+                                                <img
+                                                    src={URL.createObjectURL(eventSelectedFile)}
+                                                    alt="Vista previa"
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '200px',
+                                                        objectFit: 'contain',
+                                                        borderRadius: '4px'
+                                                    }}
+                                                />
+                                            </Box>
+                                        )}
+
+                                        {/* Selector de archivo */}
+                                        <input
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id="event-image-upload"
+                                            type="file"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setEventSelectedFile(file);
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor="event-image-upload">
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                fullWidth
+                                            >
+                                                Seleccionar Imagen del Evento
+                                            </Button>
+                                        </label>
                                     </Grid>
                                 </Grid>
                                 <Button
