@@ -19,6 +19,7 @@ import ReviewForm from './ReviewForm';
 import ReviewItem from './ReviewItem';
 
 const ReviewList = ({ eventVehicleId }) => {
+
   const [reviews, setReviews] = useState([]);
   const [listModalOpen, setListModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -153,6 +154,7 @@ const ReviewList = ({ eventVehicleId }) => {
         </DialogActions>
       </Dialog>
     </Box>
+  
   );
 };
 

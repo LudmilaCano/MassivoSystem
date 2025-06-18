@@ -9,32 +9,32 @@ import 'leaflet/dist/leaflet.css';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { getEventVehicleById } from '../api/EventEndpoints';
 import { getCoordinatesByCityName, getCoordinatesByCityId } from '../api/EventEndpoints';
-import  ReviewList  from './ReviewList';
+import ReviewList from './ReviewList';
 import { useSelector } from 'react-redux';
 
-import  fetchRoute  from '../api/OpenRouteService';
+import fetchRoute from '../api/OpenRouteService';
 
 
-    
+
 
 
 
 const TripDetail = () => {
-  const { tripId } = useParams(); // tripId = eventVehicleId
+    const { tripId } = useParams(); // tripId = eventVehicleId
 
-  const location = useLocation();
-  const destination = location.state?.destination;
-  const [eventVehicle, setEventVehicle] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [coordsFrom, setCoordsFrom] = useState(null);
-  const [coordsTo, setCoordsTo] = useState(null);
-  const [coordsLoading, setCoordsLoading] = useState(true);
-  const [openDescription, setOpenDescription] = useState(false);
-  const [route, setRoute] = useState([]);
+    const location = useLocation();
+    const destination = location.state?.destination;
+    const [eventVehicle, setEventVehicle] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [coordsFrom, setCoordsFrom] = useState(null);
+    const [coordsTo, setCoordsTo] = useState(null);
+    const [coordsLoading, setCoordsLoading] = useState(true);
+    const [openDescription, setOpenDescription] = useState(false);
+    const [route, setRoute] = useState([]);
 
 
-    
-  const navigate = useNavigate();
+
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -50,22 +50,22 @@ const TripDetail = () => {
         fetchEventVehicle();
     }, [tripId]);
 
-  const userId = useSelector((state) => state.auth.userId);
+    const userId = useSelector((state) => state.auth.userId);
 
 
-  useEffect(() => {
-    const fetchEventVehicle = async () => {
-      try {
-        const data = await getEventVehicleById(tripId);
-        setEventVehicle(data);
+    useEffect(() => {
+        const fetchEventVehicle = async () => {
+            try {
+                const data = await getEventVehicleById(tripId);
+                setEventVehicle(data);
 
-      } catch (error) {
-        setEventVehicle(null);
-      }
-      setLoading(false);
-    };
-    fetchEventVehicle();
-  }, [tripId]);
+            } catch (error) {
+                setEventVehicle(null);
+            }
+            setLoading(false);
+        };
+        fetchEventVehicle();
+    }, [tripId]);
 
 
     useEffect(() => {
@@ -129,9 +129,9 @@ const TripDetail = () => {
     if (loading) return <Typography>Cargando...</Typography>;
     if (!eventVehicle) return <Typography>No se encontró el viaje.</Typography>;
 
-  const handleReservar = () => {
-    navigate('/booking', {state: {eventVehicle, destination }});
-  }
+    const handleReservar = () => {
+        navigate('/booking', { state: { eventVehicle, destination } });
+    }
 
 
     const bounds = [coordsFrom, coordsTo];
@@ -181,7 +181,10 @@ const TripDetail = () => {
                             }}
                         />
                         <Typography variant="h6" sx={{ mt: 1, fontWeight: 'bold', textAlign: 'center' }}>{eventVehicle.name}</Typography>
-                        <Rating name="read-only" value={5} readOnly size="small" sx={{ mt: 1 }} />
+                        <Box sx={{ mt: 4 }}>
+                            <Typography variant="h6" sx={{ mb: 2 }}>Reseñas del viaje</Typography>
+                            <ReviewList eventVehicleId={tripId} />
+                        </Box>
                         <Chip
                             label={eventVehicle.available < 2 ? `${eventVehicle.available} lugar disponible` : `${eventVehicle.vehicle.available} lugares disponibles`}
                             color={eventVehicle.available < 2 ? "error" : "success"}
@@ -269,7 +272,7 @@ const TripDetail = () => {
                             </Popup>
                         </Marker>
                         {route.length > 0 && <Polyline positions={route} color="blue" />}
-                    {/*    <Polyline positions={[coordsFrom, coordsTo]} color="blue" />*/}
+                        {/*    <Polyline positions={[coordsFrom, coordsTo]} color="blue" />*/}
                     </MapContainer>
 
                 </Box>
@@ -296,9 +299,9 @@ const TripDetail = () => {
         </Box>
     );
 
-                
 
-      
+
+
 
 };
 
