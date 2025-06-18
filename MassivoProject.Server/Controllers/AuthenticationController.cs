@@ -28,10 +28,15 @@ namespace MassivoProject.Server.Controllers
         [HttpPost("authenticate")]
         public IActionResult Authentication([FromBody] UserLoginRequest userLoginRequest)
         {
+            var result = _authenticationService.Authenticate(userLoginRequest);
 
-            var token = _authenticationService.Authenticate(userLoginRequest);
-            return Ok(token);
+            if (string.IsNullOrEmpty(result.Token))
+            {
+                return Unauthorized(new { error = result.Message });
+            }
+            return Ok(result);
         }
+
 
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)

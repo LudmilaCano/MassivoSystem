@@ -257,5 +257,21 @@ namespace Application.Services
             // Finalmente, cambiar el estado del usuario
             return await _userRepository.ToggleStatusAsync(userId);
         }
+
+        public async Task<bool> UpdateOwnProfileAsync(int userId, UpdateOwnUserDto request)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.IdentificationNumber = request.IdentificationNumber;
+            user.Email = request.Email;
+
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
     }
 }

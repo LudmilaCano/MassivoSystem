@@ -22,5 +22,6 @@ namespace Application.Interfaces
         Task<bool> GenerateRecoveryCodeAndSendEmailAsync(string email);
         Task<bool> ResetPasswordWithRecoveryCodeAsync(string email, string recoveryCode, string newPassword);
         Task<bool> ActivateAccountAsync(string email, string code);
+        Task<bool> UpdateOwnProfileAsync(int userId, UpdateOwnUserDto request);
     }
 }
