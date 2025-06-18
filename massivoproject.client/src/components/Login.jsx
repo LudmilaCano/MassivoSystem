@@ -21,7 +21,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { AuthenticationService } from '../api/AuthenticationEndPoints';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setToken } from '../redux/AuthSlice';
+import { setToken, initializeAuth } from '../redux/AuthSlice';
 
 import useSwalAlert from '../hooks/useSwalAlert';
 
@@ -40,7 +40,7 @@ const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { showAlert } = useSwalAlert();
-
+    
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             handleLogin(e);
@@ -80,6 +80,7 @@ const Login = () => {
             const token = await AuthenticationService(dniOrEmail, password);
             if (token) {
                 dispatch(setToken(token));
+                dispatch(initializeAuth(token)); 
                 navigate('/');
                 showAlert('Bienvenido', 'success');
             }

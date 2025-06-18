@@ -30,11 +30,11 @@ namespace Application.Services
                 throw new KeyNotFoundException($"Usuario con ID {request.UserId} no encontrado.");
             }
 
-            var canReview = await CanUserReviewEventVehicleAsync(request.UserId, request.EventVehicleId);
-            if (!canReview)
-            {
-                throw new InvalidOperationException("No puedes hacer una reseña sin haber completado una reserva para este evento-vehículo.");
-            }
+            //var canReview = await CanUserReviewEventVehicleAsync(request.UserId, request.EventVehicleId);
+            //if (!canReview)
+            //{
+                //throw new InvalidOperationException("No puedes hacer una reseña sin haber completado una reserva para este evento-vehículo.");
+            //}
 
             var existingReview = await _reviewRepository.GetReviewByUserAndEventVehicleAsync(
                 request.UserId, request.EventVehicleId);

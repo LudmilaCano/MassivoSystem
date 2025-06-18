@@ -8,7 +8,9 @@ import { getVehicleTypeImage } from '../constants/vehicleType';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
+
 const VehicleList = () => {
+
 
     const [search, setSearch] = useState('');
     const [vehicles, setVehicles] = useState([]);
@@ -30,6 +32,7 @@ const VehicleList = () => {
             setLoadingEvent(true);
             try {
                 const data = await getEventById(eventId);
+
                 setEvent(data);
             } catch (error) {
                 setEvent(null);
@@ -55,8 +58,13 @@ const VehicleList = () => {
         const fetchVehicles = async () => {
             try {
                 const data = await getVehiclesByEvent(eventId);
+
+                console.log("Vehículos recibidos:", data);
+
                 setVehicles(data);
                 setFilteredVehicles(data); // si quieres filtrar sobre estos datos
+
+
             } catch (error) {
                 setVehicles([]);
                 setFilteredVehicles([]);
@@ -244,7 +252,6 @@ const VehicleList = () => {
                                     <Typography variant="h6" fontWeight="bold">
                                         {item.vehicle.name}
                                     </Typography>
-
                                     <Typography variant="body2" mt={1}>
                                         👥 {item.vehicle.capacity} Personas máximo
                                     </Typography>
@@ -266,7 +273,7 @@ const VehicleList = () => {
                                     />
                                     <Typography variant="body2">
                                         Salida: <strong>{item.vehicle.from}</strong><br />
-                                        {new Date(item.date).toLocaleDateString()} - {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
+                                        {new Date(item.date).toLocaleDateString()} - {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}hs
                                     </Typography>
                                     <Typography variant="h6" color="primary">
                                         ${item.price}
@@ -285,15 +292,20 @@ const VehicleList = () => {
                             </Button>
                         </Paper>
                     ))
+
                 ) : (
                     <Typography variant="h5" fontWeight="bold" mb={3}>
                         No hay vehículos que coincidan con la búsqueda
                     </Typography>
                 )}
 
+
+
+
             </Box>
         </Box>
     );
-}
+};
+
 
 export default VehicleList

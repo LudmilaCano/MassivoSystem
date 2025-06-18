@@ -21,6 +21,7 @@ namespace MassivoProject.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateReview([FromBody] CreateReviewRequest request)
         {
+            // Valida primero el modelo (sin UserId)
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -28,10 +29,18 @@ namespace MassivoProject.Server.Controllers
 
             try
             {
-                var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "");
+                // Obtener UserId desde el token
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new { Message = "Usuario no autorizado o token inválido." });
+                }
+
+                // Asignar UserId que viene del token
                 request.UserId = userId;
 
                 var review = await _reviewService.CreateReviewAsync(request);
+
                 return CreatedAtAction(nameof(GetReviewById), new { id = review.ReviewId }, review);
             }
             catch (KeyNotFoundException ex)
@@ -47,8 +56,9 @@ namespace MassivoProject.Server.Controllers
                 return StatusCode(500, new { Message = "Error interno del servidor.", Details = ex.Message });
             }
         }
+    
 
-        [HttpPut("{id}")]
+    [HttpPut("{id}")]
         public async Task<IActionResult> UpdateReview(int id, [FromBody] UpdateReviewRequest request)
         {
             if (!ModelState.IsValid)

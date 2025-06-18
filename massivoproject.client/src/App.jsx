@@ -28,6 +28,7 @@ import ActivateAccount from "./components/ActivateAccount.jsx";
 import BookingList from "./components/BookingList.jsx";
 import BookingDetail from "./components/BookingDetail.jsx";
 
+
 function App() {
   const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.auth);
@@ -70,9 +71,9 @@ function App() {
       path: "/profile",
       element: (
         <ProtectedRoute allowedRoles={["Admin", "Prestador", "User"]}>
-          <MainLayout>
-            <CustomerProfile />
-          </MainLayout>
+        <MainLayout>
+          <CustomerProfile />
+        </MainLayout>
         </ProtectedRoute>
       ),
     },
@@ -96,9 +97,9 @@ function App() {
       path: "/add-vehicle",
       element: (
         <ProtectedRoute allowedRoles={["Admin", "Prestador", "User"]}>
-          <MainLayout>
-            <AddVehicle />
-          </MainLayout>
+        <MainLayout>
+          <AddVehicle />
+        </MainLayout>
         </ProtectedRoute>
       ),
     },
@@ -165,6 +166,7 @@ function App() {
         </MainLayout>
       ),
     },
+
     {
       path: "/admin-dashboard",
       element: (
@@ -201,6 +203,7 @@ function App() {
         </MainLayout>
       ),
     },
+
   ]);
 
   return (

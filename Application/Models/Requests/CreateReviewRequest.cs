@@ -4,7 +4,7 @@ namespace Application.Models.Requests
 {
     public class CreateReviewRequest
     {
-        [Required(ErrorMessage = "El ID del usuario es requerido.")]
+        
         public int UserId { get; set; }
 
         [Required(ErrorMessage = "El ID del evento-vehículo es requerido.")]

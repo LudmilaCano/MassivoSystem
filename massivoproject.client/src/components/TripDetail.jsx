@@ -9,22 +9,33 @@ import 'leaflet/dist/leaflet.css';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { getEventVehicleById } from '../api/EventEndpoints';
 import { getCoordinatesByCityName, getCoordinatesByCityId } from '../api/EventEndpoints';
+import  ReviewList  from './ReviewList';
+import { useSelector } from 'react-redux';
+
 import  fetchRoute  from '../api/OpenRouteService';
 
+
+    
+
+
+
 const TripDetail = () => {
-    const { tripId } = useParams(); // tripId = eventVehicleId
-    const location = useLocation();
-    const destination = location.state?.destination;
-    const [eventVehicle, setEventVehicle] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [coordsFrom, setCoordsFrom] = useState(null);
-    const [coordsTo, setCoordsTo] = useState(null);
-    const [coordsLoading, setCoordsLoading] = useState(true);
-    const [openDescription, setOpenDescription] = useState(false);
-    const [route, setRoute] = useState([]);
+  const { tripId } = useParams(); // tripId = eventVehicleId
+
+  const location = useLocation();
+  const destination = location.state?.destination;
+  const [eventVehicle, setEventVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [coordsFrom, setCoordsFrom] = useState(null);
+  const [coordsTo, setCoordsTo] = useState(null);
+  const [coordsLoading, setCoordsLoading] = useState(true);
+  const [openDescription, setOpenDescription] = useState(false);
+  const [route, setRoute] = useState([]);
+
 
     
   const navigate = useNavigate();
+
 
     useEffect(() => {
         const fetchEventVehicle = async () => {
@@ -38,6 +49,24 @@ const TripDetail = () => {
         };
         fetchEventVehicle();
     }, [tripId]);
+
+  const userId = useSelector((state) => state.auth.userId);
+
+
+  useEffect(() => {
+    const fetchEventVehicle = async () => {
+      try {
+        const data = await getEventVehicleById(tripId);
+        setEventVehicle(data);
+
+      } catch (error) {
+        setEventVehicle(null);
+      }
+      setLoading(false);
+    };
+    fetchEventVehicle();
+  }, [tripId]);
+
 
     useEffect(() => {
         const fetchCoords = async () => {
@@ -120,6 +149,7 @@ const TripDetail = () => {
             <Paper elevation={6} sx={{
                 maxWidth: 900,
                 width: '100%',
+
                 p: { xs: 1, sm: 2, md: 3 },
                 borderRadius: 4,
                 boxSizing: 'border-box'
@@ -265,6 +295,13 @@ const TripDetail = () => {
             </Dialog>
         </Box>
     );
+
+                
+
+      
+
 };
+
+
 
 export default TripDetail;
