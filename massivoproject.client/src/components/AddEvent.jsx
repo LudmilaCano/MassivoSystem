@@ -5,6 +5,9 @@ import { EVENT_TYPE_ENUM, getEventTypeIcon, EVENT_TYPE_LABELS } from '../constan
 import useProvinceCitySelector from '../hooks/useProvinceCitySelector';
 import { useSelector } from 'react-redux';
 import useSwalAlert from '../hooks/useSwalAlert';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { uploadFile } from '../api/FileEndpoints';
+
 
 
 const AddEvent = () => {
@@ -17,6 +20,9 @@ const AddEvent = () => {
         loadingCities,
         handleProvinceChange
     } = useProvinceCitySelector();
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [error, setError] = useState(null);
+    
 
     const [form, setForm] = useState({
         name: '',
@@ -27,7 +33,7 @@ const AddEvent = () => {
         locationId: '',
         image: ''
     });
-
+    const [preview, setPreview] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const handleChange = e => {
@@ -41,10 +47,39 @@ const AddEvent = () => {
         handleProvinceChange(provinceId);
     };
 
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validar tipo de archivo
+        if (!file.type.match('image.*')) {
+            setError('Por favor selecciona una imagen válida');
+            return;
+        }
+
+        setError(null);
+        setSelectedFile(file);
+
+        // Crear preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleSubmit = async e => {
         e.preventDefault();
         setLoading(true);
         try {
+
+            let eventImageUrl = null;
+
+            // Si hay un archivo seleccionado, súbelo primero
+            if (selectedFile) {
+                const data = await uploadFile(selectedFile, 'event');
+                eventImageUrl = data.url;
+            }
             const payload = {
                 userId: Number(userId),
                 locationId: Number(form.locationId),
@@ -52,9 +87,9 @@ const AddEvent = () => {
                 description: form.description,
                 eventDate: form.eventDate,
                 type: Number(form.type),
-                image: form.image || "https://picsum.photos/200/300" //esto es un placeholder, revisar dps como se van a manejar las imagenes.
+                image: eventImageUrl || "https://picsum.photos/200/300" //esto es un placeholder, revisar dps como se van a manejar las imagenes.
             };
-
+            console.log('Payload:', payload);
             await createEvent(payload);
             showAlert('Evento creado correctamente', 'success');
             setForm({
@@ -66,7 +101,7 @@ const AddEvent = () => {
                 locationId: '',
                 image: ''
             });
-        } catch (err) {            
+        } catch (err) {
             showAlert('Error al crear evento', 'error');
         }
         setLoading(false);
@@ -131,7 +166,7 @@ const AddEvent = () => {
                             <TextField
                                 label="Fecha"
                                 name="eventDate"
-                                type="date"
+                                type="datetime-local"
                                 value={form.eventDate}
                                 onChange={handleChange}
                                 fullWidth
@@ -158,7 +193,7 @@ const AddEvent = () => {
                                 ))}
                             </TextField>
                         </Grid>
-                       
+
                         <Grid item xs={12}>
                             <TextField
                                 label="Descripción"
@@ -170,6 +205,40 @@ const AddEvent = () => {
                                 minRows={2}
                                 variant="outlined"
                             />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle1">Foto de Evento</Typography>
+                            {preview && (
+                                <Box sx={{ mb: 2, textAlign: 'center' }}>
+                                    <img
+                                        src={preview}
+                                        alt="Preview"
+                                        style={{
+                                            maxWidth: '100%',
+                                            maxHeight: '200px',
+                                            objectFit: 'contain',
+                                            borderRadius: '4px'
+                                        }}
+                                    />
+                                </Box>
+                            )}
+                            <input
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                id="contained-button-file"
+                                type="file"
+                                onChange={handleFileChange}
+                            />
+                            <label htmlFor="contained-button-file">
+                                <Button
+                                    variant="outlined"
+                                    component="span"
+                                    startIcon={<CloudUploadIcon />}
+                                    fullWidth
+                                >
+                                    Seleccionar Imagen
+                                </Button>
+                            </label>
                         </Grid>
                         <Grid item xs={12}>
                             <Button

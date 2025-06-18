@@ -220,6 +220,7 @@ const Register = () => {
                 profileImage: profileImageUrl
             };
 
+            console.log(formattedData)
             try {
                 await createUser(formattedData);
 
