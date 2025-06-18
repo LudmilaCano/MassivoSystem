@@ -16,6 +16,5 @@ namespace Application.Interfaces
         Task<List<BookingDto>> GetBookingByUserAsync(int userId);
         Task<List<BookingDto>> GetBookingsAsync();
         Task CompleteBookingAsync(int bookingId);
-
     }
 }
