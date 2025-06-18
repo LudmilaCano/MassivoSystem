@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Application.Models.Responses;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Interfaces;
@@ -16,10 +17,12 @@ namespace Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
-        public UserService(IUserRepository userRepository, IEmailService emailService)
+        private readonly INotificationService _notificationService;
+        public UserService(IUserRepository userRepository, IEmailService emailService, INotificationService notificationService)
         {
             _userRepository = userRepository;
             _emailService = emailService;
+            _notificationService = notificationService;
 
         }
 
@@ -106,16 +109,23 @@ namespace Application.Services
             _userRepository.UpdateAsync(user).Wait();
         }
 
-        public void ChangeUserRole(RoleChangeRequest roleChangeRequest)
+        public async Task ChangeUserRole(RoleChangeRequest roleChangeRequest)
         {
-            User? user = _userRepository.GetByIdAsync(roleChangeRequest.UserId).Result;
+            var user = await _userRepository.GetByIdAsync(roleChangeRequest.UserId);
             if (user == null)
             {
                 throw new ArgumentNullException("User not found");
             }
 
             user.Role = roleChangeRequest.NewRole;
-            _userRepository.UpdateAsync(user).Wait();
+            await _userRepository.UpdateAsync(user);
+
+            var userDto = UserNotificationDto.Create(user);
+            await _notificationService.SendNotificationEmail(
+                user.Email,
+                NotificationType.CambioRol,
+                userDto
+            );
         }
 
         public void DesactiveUser(int idUser)

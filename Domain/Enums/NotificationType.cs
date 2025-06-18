@@ -15,6 +15,7 @@ namespace Domain.Enums
         ReservaCreadaUser,
         ReservaProxima,
         PagoConfirmado,
-        NuevaResena 
+        NuevaResena,
+        CambioRol
     }
 }

@@ -10,7 +10,7 @@ namespace Application.Interfaces
 {
     public interface IUserService
     {
-        void ChangeUserRole(RoleChangeRequest roleChangeRequest);
+        Task ChangeUserRole(RoleChangeRequest roleChangeRequest);
         void DesactiveUser(int idUser);
         User? GetUserById(int idUser);
         List<User> GetUsers();

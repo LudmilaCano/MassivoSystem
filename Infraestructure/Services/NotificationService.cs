@@ -1,5 +1,7 @@
 ﻿using Application.Interfaces;
+using Application.Models.Requests;
 using Application.Models.Responses;
+using Domain.Entities;
 using Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -80,6 +82,18 @@ namespace Infraestructure.Services
                             <p>Asientos reservados: {recordatorio.SeatNumber}</p>
                             <b>Monto abonado:</b> {recordatorio.Payment.Amount:N2}
                             <p>¡Te esperamos!</p>";
+                        break;
+                    case NotificationType.CambioRol:
+                        var user = data as UserNotificationDto;
+                        subject = "🔄 Cambio de Rol en Massivo App";
+                        body = $@"
+                            <p>Hola {user.FirstName},</p>
+                            <p>Te informamos que tu rol dentro de la plataforma ha sido actualizado a:</p>
+                            <p style='font-size: 18px; font-weight: bold;'>{user.Role}</p>
+                            <p>Si queres cobrar tus reservas a través Mercado Pago,</p>
+                            <p>por favor comunicate con el equipo de soporte, respondiendo este correo.</p>
+                            <br/>
+                            <p>El equipo de soporte de Massivo App.</p>";
                         break;
 
 

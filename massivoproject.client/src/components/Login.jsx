@@ -175,7 +175,7 @@ const Login = () => {
                         />
 
                         <Box sx={{ width: { xs: '50vw', md: '20vw' }, display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                            <Link href="#" variant="body2" sx={{ color: '#139AA0' }}>
+                            <Link href="/forgot-password" variant="body2" sx={{ color: '#139AA0' }}>
                                 Olvidé mi contraseña
                             </Link>
                         </Box>
@@ -191,6 +191,10 @@ const Login = () => {
 
                         <Typography variant="body2" sx={{ mt: 2 }}>
                             No tenés una cuenta? <Link href="/register" sx={{ color: '#139AA0' }}>REGISTRARME</Link>
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ mt: 2 }}>
+                            <Link href="/activate-account" sx={{ color: '#139AA0' }}>ACTIVAR CUENTA</Link>
                         </Typography>
 
                         <Divider sx={{ width: '100%', my: 2, borderColor: (theme) => theme.palette.grey[500] }}></Divider>

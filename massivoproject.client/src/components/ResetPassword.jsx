@@ -11,6 +11,7 @@ import Colors from "../layout/Colors";
 import Logo2 from "../images/logo2.png";
 import loginIllustration from "../images/register.svg";
 import useSwalAlert from "../hooks/useSwalAlert";
+import { ResetPasswordService } from "../api/AuthenticationEndPoints";
 
 const ResetPasswordWithCode = () => {
   const { showAlert } = useSwalAlert();
@@ -21,29 +22,21 @@ const ResetPasswordWithCode = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+
     try {
-      const res = await fetch(
-        "https://localhost:7089/api/authentication/reset-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, recoveryCode, newPassword }),
-        }
-      );
-
-      if (res.ok) {
-        showAlert("Contraseña actualizada correctamente", "success");
+        await ResetPasswordService(email, recoveryCode, newPassword);
+    
+        showAlert(
+          "Contraseña actualizada correctamente.",
+          "success"
+        );
         setEmail("");
-        setRecoveryCode("");
-        setNewPassword("");
-      } else {
-        showAlert("Error al cambiar la contraseña", "error");
+      } catch (error) {
+        showAlert("Error al cambiar la contraseña.", "error");
       }
-    } catch (err) {
-      showAlert("Error de conexión", "error");
-    }
-  };
+       };
 
+       
   return (
     <div
       style={{

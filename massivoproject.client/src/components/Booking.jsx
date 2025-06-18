@@ -122,8 +122,18 @@ const Booking = () => {
           navigate("/");
         }
       } catch (err) {
-        console.log("Error: ", err);
-        showAlert("Error al crear la reserva", "error");
+        let errorMsg = "Error al crear la reserva.";
+
+  if (err.response && err.response.data) {
+    // Caso específico para estructura esperada del backend
+    if (typeof err.response.data === "string") {
+      errorMsg = err.response.data;
+    } else if (err.response.data.error) {
+      errorMsg = err.response.data.error;
+    }
+  }
+
+  showAlert(errorMsg, "error");
       }
       setLoading(false);
     }

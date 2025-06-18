@@ -96,21 +96,26 @@ namespace Application.Services
             var ownerUser = await _userRepository.GetByIdAsync(vehicle.UserId.Value)
                 ?? throw new KeyNotFoundException($"El vehículo {vehicle.LicensePlate} no tiene un usuario asignado.");
 
-            if (string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken)) 
-                throw new InvalidOperationException("El usuario dueño del vehículo no tiene un token de MercadoPago configurado.");
+            if (addBookingRequest.Payment == null)
+                throw new ArgumentNullException(nameof(addBookingRequest.Payment), "El pago no puede ser nulo.");
+
+            if (addBookingRequest.Payment.PaymentMethod == PaymentMethod.MercadoPago && string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken))
+                throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago");
+
+            //if (string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken)) 
+                //throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago");
 
             if (addBookingRequest.SeatNumber + vehicle.Available > vehicle.Capacity)
                 throw new InvalidOperationException($"La suma del número de asientos '{addBookingRequest.SeatNumber + vehicle.Available}' y la disponibilidad '{vehicle.Capacity}' no debe exceder la capacidad del vehículo.");
 
-            if (addBookingRequest.Payment == null)
-                throw new ArgumentNullException(nameof(addBookingRequest.Payment), "El pago no puede ser nulo.");
+            
 
             Payment payment;
 
             if ((PaymentMethod)addBookingRequest.Payment.PaymentMethod == PaymentMethod.MercadoPago)
             {
                 if (string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken))
-                    throw new InvalidOperationException("El usuario dueño del vehículo no tiene un token de MercadoPago configurado.");
+                    throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago.");
 
                 string paymentUrl = await _paymentService.CrearPreferenciaPagoAsync(
                 accessToken: ownerUser.MercadoPagoAccessToken, 
