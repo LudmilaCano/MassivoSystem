@@ -18,6 +18,10 @@ namespace Application.Services
             _vehicleRepository = vehicleRepository;
             _eventRepository = eventRepository;
         }
+        public async Task<IEnumerable<EventVehicle>> GetEventVehiclesByUserIdAsync(int userId)
+        {
+            return await _eventVehicleRepository.GetEventVehiclesByUserIdAsync(userId);
+        }
 
         public async Task<EventVehicleDto> AddAsync(AddEventVehicleRequest request)
         {
@@ -43,7 +47,8 @@ namespace Application.Services
                 LicensePlate = request.LicensePlate,
                 Date = request.Date,
                 Occupation = 0,
-                Price = request.Price
+                Price = request.Price,
+                Description = request.Description
             };
 
             // Guardar en base de datos
@@ -56,10 +61,41 @@ namespace Application.Services
                 LicensePlate = eventVehicle.LicensePlate,
                 Date = eventVehicle.Date,
                 Occupation = eventVehicle.Occupation,
-                Price = eventVehicle.Price
+                Price = eventVehicle.Price,
+                Description = eventVehicle.Description
             };
 
             return dto;
+        }
+        public async Task<EventVehicle> GetByIdAsync(int id)
+        {
+            return await _eventVehicleRepository.GetByIdAsync(id);
+        }
+
+        public async Task<EventVehicle> UpdateEventVehicleAsync(UpdateEventVehicleRequest request, int userId)
+        {
+            // Verificar que el EventVehicle pertenece al usuario
+            bool belongsToUser = await _eventVehicleRepository.BelongsToUserAsync(request.EventVehicleId, userId);
+            if (!belongsToUser)
+            {
+                throw new UnauthorizedAccessException("No tienes permiso para editar este viaje");
+            }
+
+            // Obtener el EventVehicle actual
+            var eventVehicle = await _eventVehicleRepository.GetByIdAsync(request.EventVehicleId);
+            if (eventVehicle == null)
+            {
+                throw new KeyNotFoundException($"No se encontró el viaje con ID {request.EventVehicleId}");
+            }
+
+            // Actualizar solo los campos permitidos
+            eventVehicle.Price = request.Price;
+            eventVehicle.Date = request.Date;
+            eventVehicle.Description = request.Description;
+            
+
+            // Guardar los cambios
+            return await _eventVehicleRepository.UpdateEventVehicle(eventVehicle);
         }
 
         public async Task<IEnumerable<EventVehicleDto>> GetAllAsync()
@@ -104,6 +140,11 @@ namespace Application.Services
                 throw new KeyNotFoundException($"EventVehicle with ID {eventVehicleId} not found.");
                 
             return EventVehicleDto.Create(entity);
+        }
+
+        public async Task<bool> ToggleStatusAsync(int eventVehicleId)
+        {
+            return await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
         }
     }
 }

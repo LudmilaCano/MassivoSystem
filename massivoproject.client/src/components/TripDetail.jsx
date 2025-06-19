@@ -27,24 +27,29 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DriveEtaIcon from "@mui/icons-material/DriveEta";
 import "leaflet/dist/leaflet.css";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { getEventVehicleById } from "../api/EventEndpoints";
 import {
+  getEventVehicleById,
   getCoordinatesByCityName,
-  getCoordinatesByCityId,
 } from "../api/EventEndpoints";
+import ReviewList from "./ReviewList";
+import { useSelector } from "react-redux";
+import fetchRoute from "../api/OpenRouteService";
 
 const TripDetail = () => {
-  const { tripId } = useParams(); // tripId = eventVehicleId
+  const { tripId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
+
   const destination = location.state?.destination;
+  const userId = useSelector((state) => state.auth.userId);
+
   const [eventVehicle, setEventVehicle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [coordsFrom, setCoordsFrom] = useState(null);
   const [coordsTo, setCoordsTo] = useState(null);
   const [coordsLoading, setCoordsLoading] = useState(true);
   const [openDescription, setOpenDescription] = useState(false);
-
-  const navigate = useNavigate();
+  const [route, setRoute] = useState([]);
 
   useEffect(() => {
     const fetchEventVehicle = async () => {
@@ -85,7 +90,31 @@ const TripDetail = () => {
     fetchCoords();
   }, [eventVehicle, destination]);
 
-  // Loader mientras carga todo
+  useEffect(() => {
+    const getCachedRouteKey = (from, to) =>
+      `route_${from.join(",")}_${to.join(",")}`;
+
+    const getRouteWithCache = async (from, to) => {
+      const key = getCachedRouteKey(from, to);
+      const cached = sessionStorage.getItem(key);
+      if (cached) {
+        setRoute(JSON.parse(cached));
+      } else {
+        const data = await fetchRoute(from, to);
+        setRoute(data);
+        sessionStorage.setItem(key, JSON.stringify(data));
+      }
+    };
+
+    if (coordsFrom && coordsTo) {
+      getRouteWithCache(coordsFrom, coordsTo);
+    }
+  }, [coordsFrom, coordsTo]);
+
+  const handleReservar = () => {
+    navigate("/booking", { state: { eventVehicle, destination } });
+  };
+
   if (loading || coordsLoading || !coordsFrom || !coordsTo) {
     return (
       <Backdrop open={true} sx={{ color: "#fff", zIndex: 9999 }}>
@@ -94,12 +123,7 @@ const TripDetail = () => {
     );
   }
 
-  if (loading) return <Typography>Cargando...</Typography>;
   if (!eventVehicle) return <Typography>No se encontró el viaje.</Typography>;
-
-  const handleReservar = () => {
-    navigate("/booking", { state: { eventVehicle, destination } });
-  };
 
   const bounds = [coordsFrom, coordsTo];
 
@@ -133,7 +157,6 @@ const TripDetail = () => {
             alignItems: { xs: "center", sm: "flex-start" },
           }}
         >
-          {/* Imagen del vehículo */}
           <Box
             sx={{
               minWidth: { xs: "100%", sm: 160 },
@@ -161,24 +184,22 @@ const TripDetail = () => {
             >
               {eventVehicle.name}
             </Typography>
-            <Rating
-              name="read-only"
-              value={5}
-              readOnly
-              size="small"
-              sx={{ mt: 1 }}
-            />
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Reseñas del viaje
+              </Typography>
+              <ReviewList eventVehicleId={tripId} />
+            </Box>
             <Chip
               label={
                 eventVehicle.available < 2
                   ? `${eventVehicle.available} lugar disponible`
-                  : `${eventVehicle.available} lugares disponibles`
+                  : `${eventVehicle.vehicle.available} lugares disponibles`
               }
               color={eventVehicle.available < 2 ? "error" : "success"}
               sx={{ mt: 1 }}
             />
           </Box>
-          {/* Detalles a la derecha */}
           <Box
             sx={{
               flex: 1,
@@ -213,7 +234,7 @@ const TripDetail = () => {
                   sx={{ ml: 2, mb: 1 }}
                 />
                 <Chip
-                  label={`Capacidad: ${eventVehicle.capacity}`}
+                  label={`Capacidad máxima: ${eventVehicle.vehicle.capacity}`}
                   color="info"
                   sx={{ ml: 1, mb: 1 }}
                 />
@@ -266,7 +287,7 @@ const TripDetail = () => {
               </Typography>
             </Box>
             <Button
-              onClick={() => handleReservar()}
+              onClick={handleReservar}
               variant="contained"
               color="warning"
               sx={{
@@ -279,7 +300,7 @@ const TripDetail = () => {
             </Button>
           </Box>
         </Box>
-        {/* Mapa debajo de la card */}
+
         <Box sx={{ mt: 4 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
             Recorrido
@@ -298,7 +319,7 @@ const TripDetail = () => {
             <Marker position={coordsTo}>
               <Popup>Llegada: {destination || "Destino"}</Popup>
             </Marker>
-            <Polyline positions={[coordsFrom, coordsTo]} color="blue" />
+            {route.length > 0 && <Polyline positions={route} color="blue" />}
           </MapContainer>
         </Box>
       </Paper>
@@ -312,7 +333,7 @@ const TripDetail = () => {
         <DialogTitle>Descripción del Viaje</DialogTitle>
         <DialogContent>
           <Typography
-            variant="body"
+            variant="body2"
             sx={{ whiteSpace: "pre-line" }}
             color="text.secondary"
           >

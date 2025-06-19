@@ -8,6 +8,10 @@ import {
   Modal,
   Box,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -18,12 +22,14 @@ import {
   getUserById,
   updateUser,
 } from "../../api/UserEndpoints";
-import { createVehicle } from "../../api/VehicleEndpoints";
-import axios from "axios";
 import { useNavigate } from "react-router";
 import useSwalAlert from "../../hooks/useSwalAlert";
+
 import { getVehiclesByUserId } from "../../api/VehicleEndpoints";
 import useChangeRol from "../../hooks/useChangeRol";
+
+import useProvinceCitySelector from "../../hooks/useProvinceCitySelector";
+
 
 const modalStyle = {
   position: "absolute",
@@ -40,8 +46,6 @@ const modalStyle = {
   gap: 2,
 };
 
-// ...imports (sin cambios)
-
 const CustomerProfile = () => {
   const { userId } = useSelector((state) => state.auth);
   const [userData, setUserData] = useState(null);
@@ -54,77 +58,139 @@ const CustomerProfile = () => {
   const { handleChangeRol } = useChangeRol(setUserData);
   const userIdFromState = useSelector((state) => state.auth.userId);
 
+
+  
+  const {
+    provinces,
+    cities,
+    loadingProvinces,
+    loadingCities,
+    handleProvinceChange,
+  } = useProvinceCitySelector();
+
+  // Control para setear ciudad inicial solo una vez cuando cargan las ciudades
+  const [initialCitySet, setInitialCitySet] = useState(false);
+
+  const handleCambiarRol = async () => {
+    try {
+      showAlert("¡Tu rol ha sido actualizado a Prestador!", "success");
+      await cambiarRolAPrestador();
+      const updatedUser = await getUserById(userId);
+      setUserData(updatedUser);
+      navigate("/add-vehicle");
+    } catch (error) {
+      console.error("Error al cambiar el rol:", error);
+      alert("Ocurrió un error al cambiar el rol.");
+    }
+  };
+
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const data = await getUserById(userId);
+
+        const provinceId = data.province?.toString() || "";
+        const cityId = data.city?.toString() || "";
+
         setUserData({
           ...data,
-          dniNumber: data.identificationNumber || "", // 👈 TAMBIÉN ACÁ
+          dniNumber: data.identificationNumber || "",
         });
+
         setEditData({
           userId: data.userId,
           firstName: data.firstName || "",
           lastName: data.lastName || "",
           email: data.email || "",
-          dniNumber: data.identificationNumber || "", // ✅ cambiamos a dniNumber
+          dniNumber: data.identificationNumber || "",
           profilePic: data.profilePic || "",
           password: "",
           birthDate: data.birthDate || "",
           phone: data.phone || "",
-          province: data.province || "",
-          city: data.city || "",
+          province: data.provinceId,
+          city: data.cityId ,
           role: data.role || "User",
           isActive: data.isActive ?? 1,
         });
 
-        if (data.profilePic) {
-          setProfilePic(data.profilePic);
+        if (provinceId) {
+          await handleProvinceChange(provinceId); // 👈 Esto carga las ciudades correspondientes
         }
+
+        if (data.profilePic) setProfilePic(data.profilePic);
       } catch (error) {
         console.error("Error cargando datos del usuario:", error);
       }
     };
+
     if (userId) fetchUser();
   }, [userId]);
+  // Cuando abrís el modal y editData.province tiene valor, cargamos ciudades y reseteamos el flag
+  useEffect(() => {
+    if (open && editData.province) {
+      handleProvinceChange(editData.province);
+    }
+  }, [open, editData.province]);
+
+  // Cuando cambian las ciudades y no setearon la ciudad inicial, la seteamos
+  useEffect(() => {
+    if (
+      open &&
+      cities.length > 0 &&
+      editData.city &&
+      !initialCitySet
+    ) {
+      // Confirmamos que la ciudad esté en la lista actual
+      const cityExists = cities.find((c) => c.id === editData.city);
+      if (cityExists) {
+        setEditData((prev) => ({ ...prev, city: cityExists.id }));
+      } else {
+        // Si no está, la reseteamos
+        setEditData((prev) => ({ ...prev, city: "" }));
+      }
+      setInitialCitySet(true);
+    }
+  }, [cities, open, editData.city, initialCitySet]);
 
   const handleSave = async () => {
-    try {
-      const payload = {
-        UserId: userId,
-        FirstName: editData.firstName,
-        LastName: editData.lastName,
-        DniNumber: editData.dniNumber, // ✅ este campo con mayúsculas exactas
-        Email: editData.email,
-        Password: editData.password || null,
-        City: editData.city || "",
-        Province: editData.province || "",
-      };
+  try {
+    const payload = {
+      UserId: userId,
+      FirstName: editData.firstName,
+      LastName: editData.lastName,
+      DniNumber: editData.dniNumber,
+      Email: editData.email,
+      Password: editData.password || null,
+      City: parseInt(editData.city),
+      Province: parseInt(editData.province),
+    };
 
-      await updateUser(userId, payload);
+    await updateUser(userId, payload);
 
-      setUserData({
-        ...userData,
-        firstName: editData.firstName,
-        lastName: editData.lastName,
-        dniNumber: editData.dniNumber,
-        email: editData.email,
-        city: editData.city,
-        province: editData.province,
-        profilePic: editData.profilePic || userData.profilePic,
-      });
+    setUserData({
+      ...userData,
+      firstName: editData.firstName,
+      lastName: editData.lastName,
+      dniNumber: editData.dniNumber,
+      email: editData.email,
+      city: editData.city,
+      province: editData.province,
+      profilePic: editData.profilePic || userData.profilePic,
+    });
 
-      setOpen(false);
-      setGuardado(true);
-      setTimeout(() => setGuardado(false), 1500);
-    } catch (error) {
-      if (error.response) {
-        console.error("Error al actualizar usuario:", error.response.data);
-      } else {
-        console.error("Error al actualizar usuario:", error.message);
-      }
+    setOpen(false);
+    showAlert("¡Datos guardados correctamente!", "success"); // Aquí la alerta SweetAlert
+  } catch (error) {
+    showAlert("Error al guardar los datos", "error"); // Alerta error
+    if (error.response) {
+      console.error("Error al actualizar usuario:", error.response.data);
+    } else {
+      console.error("Error al actualizar usuario:", error.message);
     }
-  };
+  }
+};
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -159,7 +225,7 @@ const CustomerProfile = () => {
         </div>
         <div className="form-group">
           <label>DNI</label>
-          <input type="text" value={userData.dniNumber} disabled /> {/* ✅ */}
+          <input type="text" value={userData.dniNumber} disabled />
         </div>
         <div className="form-group">
           <label>Mail</label>
@@ -221,10 +287,7 @@ const CustomerProfile = () => {
             }}
           >
             <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
-            <Alert
-              severity="success"
-              sx={{ width: "100%", textAlign: "center" }}
-            >
+            <Alert severity="success" sx={{ width: "100%", textAlign: "center" }}>
               ¡Datos guardados correctamente!
             </Alert>
           </Box>
@@ -262,7 +325,7 @@ const CustomerProfile = () => {
           />
           <TextField
             label="DNI"
-            value={editData.dniNumber} // ✅ corregido aquí
+            value={editData.dniNumber}
             onChange={(e) =>
               setEditData({ ...editData, dniNumber: e.target.value })
             }
@@ -271,11 +334,43 @@ const CustomerProfile = () => {
           <TextField
             label="Email"
             value={editData.email}
-            onChange={(e) =>
-              setEditData({ ...editData, email: e.target.value })
-            }
+            onChange={(e) => setEditData({ ...editData, email: e.target.value })}
             fullWidth
           />
+
+          <FormControl fullWidth>
+            <InputLabel>Provincia</InputLabel>
+            <Select
+              value={editData.province}
+              onChange={(e) => {
+                const provinceId = e.target.value;
+                setEditData({ ...editData, province: provinceId, city: "" }); // Resetea ciudad
+                handleProvinceChange(provinceId);
+                setInitialCitySet(true); // para evitar que se sobreescriba ciudad inicial
+              }}
+            >
+              {provinces.map((prov) => (
+                <MenuItem key={prov.id} value={prov.id}>
+                  {prov.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel>Ciudad</InputLabel>
+            <Select
+              value={editData.city}
+              onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+              disabled={!editData.province || loadingCities}
+            >
+              {cities.map((city) => (
+                <MenuItem key={city.id} value={city.id}>
+                  {city.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <Button
             variant="contained"
@@ -284,7 +379,7 @@ const CustomerProfile = () => {
               backgroundColor: Colors.celeste,
               color: "white",
               borderRadius: 3,
-              mt: 1,
+              mt: 2,
               "&:hover": {
                 backgroundColor: "#0ea5e9",
               },

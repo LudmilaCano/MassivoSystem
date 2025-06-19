@@ -18,6 +18,7 @@ namespace Application.Interfaces
         Task<List<BookingDto>> GetBookingsAsync();
         Task NotificarReservasProximasAsync();
 
+        Task CompleteBookingAsync(int bookingId);
 
     }
 }

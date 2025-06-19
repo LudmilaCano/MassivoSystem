@@ -16,30 +16,43 @@ namespace Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IVehicleRepository _vehicleRepository;
+        private readonly IEventRepository _eventRepository;
+        private readonly IEventVehicleRepository _eventVehicleRepository;
+
         private readonly IEmailService _emailService;
         private readonly INotificationService _notificationService;
-        public UserService(IUserRepository userRepository, IEmailService emailService, INotificationService notificationService)
+
+        public UserService(
+        IUserRepository userRepository,
+        IVehicleRepository vehicleRepository,
+        IEventRepository eventRepository,
+        IEventVehicleRepository eventVehicleRepository, 
+        IEmailService emailService,
+        INotificationService notificationService)
         {
             _userRepository = userRepository;
+            _vehicleRepository = vehicleRepository;
+            _eventRepository = eventRepository;
+            _eventVehicleRepository = eventVehicleRepository;
             _emailService = emailService;
             _notificationService = notificationService;
 
         }
 
-        public List<User> GetUsers()
+        public async Task<List<User>> GetUsers()
         {
-            return _userRepository.ListAsync().Result ?? new List<User>();
+            return await _userRepository.ListAsync() ?? new List<User>();
         }
 
-        public User? GetUserById(int idUser)
+        public async Task<User?> GetUserById(int idUser)
         {
-            return _userRepository.GetByIdAsync(idUser).Result;
+            return await _userRepository.GetByIdAsync(idUser);
         }
 
         public async Task SignUpUser(UserSignUpRequest userSignUpRequest)
         {
             var recoveryCode = GenerateRecoveryCode();
-
             var user = new User
             {
                 FirstName = userSignUpRequest.FirstName,
@@ -53,8 +66,6 @@ namespace Application.Services
                 IsActive = EntityState.Inactive,
                 RecoveryCode = recoveryCode
             };
-
-
             await _userRepository.AddAsync(user);
 
             await _emailService.SendEmailAsync(
@@ -68,7 +79,6 @@ namespace Application.Services
             <br/>
             <p>El equipo de soporte de Massivo App.</p>"
             );
-
         }
 
         public async Task<bool> ActivateAccountAsync(string email, string code)
@@ -85,11 +95,9 @@ namespace Application.Services
             await _userRepository.UpdateAsync(user);
             return true;
         }
-
-
-        public void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser)
+        public async Task UpdateUser(UserUpdateRequest userUpdateRequest, int idUser)
         {
-            User? user = _userRepository.GetByIdAsync(idUser).Result;
+            User? user = await _userRepository.GetByIdAsync(idUser);
             if (user == null)
             {
                 throw new ArgumentNullException("User not found");
@@ -106,7 +114,7 @@ namespace Application.Services
             user.CityId = userUpdateRequest.City;
             user.ProvinceId = userUpdateRequest.Province;
 
-            _userRepository.UpdateAsync(user).Wait();
+            await _userRepository.UpdateAsync(user);
         }
 
         public async Task ChangeUserRole(RoleChangeRequest roleChangeRequest)
@@ -128,16 +136,42 @@ namespace Application.Services
             );
         }
 
-        public void DesactiveUser(int idUser)
+        public async Task DesactiveUser(int idUser)
         {
-            User? user = _userRepository.GetByIdAsync(idUser).Result;
+            User? user = await _userRepository.GetByIdAsync(idUser);
             if (user == null)
             {
                 throw new ArgumentNullException("User not found");
             }
+
             user.IsActive = Domain.Enums.EntityState.Inactive;
-            _userRepository.UpdateAsync(user).Wait();
+            await _userRepository.UpdateAsync(user);
         }
+
+        public async Task<bool> AdminUpdateUserAsync(int userId, AdminUserUpdateRequest request)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.BirthDate = request.BirthDate;
+            user.IdentificationNumber = request.IdentificationNumber;
+            user.Email = request.Email;
+            user.CityId = request.CityId;
+            user.ProvinceId = request.ProvinceId;
+            user.Role = request.Role;
+
+            /*if (!string.IsNullOrEmpty(request.Password))
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            }*/
+
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
         public async Task UpdateUser(User user)
         {
             await _userRepository.UpdateAsync(user);
@@ -188,6 +222,65 @@ namespace Application.Services
             user.Password = newPassword;
             user.RecoveryCode = null;
             user.MustChangePassword = false;
+
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
+        public async Task<bool> ToggleStatusAsync(int userId)
+        {
+            // Verificar el estado actual del usuario
+            var currentState = await _userRepository.GetUserEntityStateAsync(userId);
+            bool isDeactivating = currentState == EntityState.Active;
+
+            // Si estamos desactivando, desactivar recursos relacionados
+            if (isDeactivating)
+            {
+                // Desactivar vehículos del usuario
+                var licensePlates = await _userRepository.GetUserVehicleLicensePlatesAsync(userId);
+                foreach (var licensePlate in licensePlates)
+                {
+                    // Desactivar EventVehicles asociados al vehículo
+                    var eventVehicleIds = await _vehicleRepository.GetVehicleEventVehicleIdsAsync(licensePlate);
+                    foreach (var eventVehicleId in eventVehicleIds)
+                    {
+                        await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+                    }
+
+                    // Desactivar el vehículo
+                    await _vehicleRepository.ToggleStatusAsync(licensePlate);
+                }
+
+                // Desactivar eventos del usuario
+                var eventIds = await _userRepository.GetUserEventIdsAsync(userId);
+                foreach (var eventId in eventIds)
+                {
+                    // Desactivar EventVehicles asociados al evento
+                    var eventVehicleIds = await _eventRepository.GetEventEventVehicleIdsAsync(eventId);
+                    foreach (var eventVehicleId in eventVehicleIds)
+                    {
+                        await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+                    }
+
+                    // Desactivar el evento
+                    await _eventRepository.ToggleStatusAsync(eventId);
+                }
+            }
+
+            // Finalmente, cambiar el estado del usuario
+            return await _userRepository.ToggleStatusAsync(userId);
+        }
+
+        public async Task<bool> UpdateOwnProfileAsync(int userId, UpdateOwnUserDto request)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.IdentificationNumber = request.IdentificationNumber;
+            user.Email = request.Email;
 
             await _userRepository.UpdateAsync(user);
             return true;

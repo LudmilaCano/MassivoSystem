@@ -50,12 +50,9 @@ namespace Infraestructure.Services
         {
             try
             {
-                var idTask = IsIdentificationNumberUnique(identificationNumber);
-                var emailTask = IsEmailUnique(email);
-
-                await Task.WhenAll(idTask, emailTask);
-
-                return (await idTask, await emailTask);
+                var isIdUnique = await IsIdentificationNumberUnique(identificationNumber);
+                var isEmailUnique = await IsEmailUnique(email);
+                return (isIdUnique, isEmailUnique);
             }
             catch (Exception ex)
             {

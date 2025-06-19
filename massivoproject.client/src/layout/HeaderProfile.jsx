@@ -99,7 +99,7 @@ const HeaderPerfil = () => {
               </ListItem>
 
               {role === "Admin" && (
-                <ListItem button onClick={() => handleNavigate("/admin")}>
+                <ListItem button onClick={() => handleNavigate("/admin-dashboard")}>
                   <ListItemText primary="Panel Admin" />
                 </ListItem>
               )}

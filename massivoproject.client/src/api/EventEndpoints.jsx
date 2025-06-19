@@ -20,6 +20,11 @@ export const updateEvent = async (eventId, eventData) => {
     return response.data;
 };
 
+export const adminUpdateEvent = async (eventId, eventData) => {
+  const response = await api.put(`Event/admin/${eventId}`, eventData);
+  return response.data;
+};
+
 export const deleteEvent = async (eventId) => {
     const response = await api.delete(`/Event/${eventId}`);
     return response.data;
@@ -49,10 +54,7 @@ export const filterEvents = async (name, date) => {
     return response.data;
 };
 
-export const getEventVehicleById = async (eventVehicleId) => {
-    const response = await api.get(`/EventVehicle/${eventVehicleId}`);
-    return response.data;
-};
+
 
 export const getVehiclesByEvent = async (eventId) => {
     const response = await api.get(`/EventVehicle/GetVehiclesByEvent/${eventId}`);
@@ -68,4 +70,38 @@ export const getCoordinatesByCityName = async (cityName) => {
 export const getCoordinatesByCityId = async (cityId) => {
     const response = await api.get(`/City/GetCoordinatesById/${cityId}`);
     return response.data;
+};
+
+
+
+export const getEventsByUserId = async (userId) => {
+    const response = await api.get(`/Event/user/${userId}`);
+    return response.data;
+};
+
+
+
+export const getEventVehiclesByUserId = async (userId) => {
+  const response = await api.get(`/EventVehicle/user/${userId}`);
+  return response.data;
+};
+
+export const getEventVehicleById = async (id) => {
+  const response = await api.get(`/EventVehicle/${id}`);
+  return response.data;
+};
+
+export const updateEventVehicle = async (id, eventVehicleData) => {
+  const response = await api.put(`/EventVehicle/${id}`, eventVehicleData);
+  return response.data;
+};
+
+export const toggleEventStatus = async (eventId) => {
+  const response = await api.put(`/Event/toggle-status/${eventId}`);
+  return response.data;
+};
+
+export const toggleEventVehicleStatus = async (eventVehicleId) => {
+  const response = await api.put(`/EventVehicle/toggle-status/${eventVehicleId}`);
+  return response.data;
 };

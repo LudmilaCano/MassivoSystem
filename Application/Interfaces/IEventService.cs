@@ -16,6 +16,10 @@ namespace Application.Interfaces
         Task DeleteVehicleFromEventAsync(DeleteEventVehicleRequest request);
         Task<List<EventDto>> GetRandomEventsAsync(int count);
         Task<List<EventDto>> FilterEventsAsync(string? name, DateTime? date);
+        Task<bool> AdminUpdateEventAsync(int eventId, AdminEventUpdateRequest request);
+        Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId);
+        Task<bool> ToggleStatusAsync(int eventId);
+
 
     }
 }

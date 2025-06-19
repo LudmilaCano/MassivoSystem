@@ -12,14 +12,24 @@ namespace Application.Services
         private readonly IEventRepository _eventRepository;
         private readonly IUserRepository _userRepository;
         private readonly IVehicleRepository _vehicleRepository;
+        private readonly IEventVehicleRepository _eventVehicleRepository;
+
         private readonly INotificationService _notificationService;
 
-        public EventService(IEventRepository eventRepository, IUserRepository userRepository, IVehicleRepository vehicleRepository, INotificationService notificationService)
+
+
+        public EventService(IEventRepository eventRepository, IUserRepository userRepository, IVehicleRepository vehicleRepository, INotificationService notificationService, IEventVehicleRepository eventVehicleRepository)
         {
             _eventRepository = eventRepository;
             _userRepository = userRepository;
             _vehicleRepository = vehicleRepository;
+            _eventVehicleRepository = eventVehicleRepository;
             _notificationService = notificationService;
+        }
+
+        public async Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId)
+        {
+            return await _eventRepository.GetEventsByUserIdAsync(userId);
         }
 
         public async Task<List<EventDto>> GetAllEventsAsync()
@@ -157,6 +167,24 @@ namespace Application.Services
             await _eventRepository.UpdateAsync(eventEntity);
         }
 
+        public async Task<bool> AdminUpdateEventAsync(int eventId, AdminEventUpdateRequest request)
+        {
+            var eventEntity = await _eventRepository.GetByIdAsync(eventId);
+            if (eventEntity == null)
+                return false;
+
+            eventEntity.Name = request.Name;
+            eventEntity.Description = request.Description;
+            eventEntity.EventDate = request.EventDate;
+            eventEntity.Type = request.Type;
+            eventEntity.Image = request.Image;
+            eventEntity.LocationId = request.LocationId;
+            eventEntity.UserId = request.UserId;
+
+            await _eventRepository.UpdateAsync(eventEntity);
+            return true;
+        }
+
         public async Task DeleteVehicleFromEventAsync(DeleteEventVehicleRequest request)
         {
             var eventEntity = await _eventRepository.GetEventByIdWithVehiclesIncludedAsync(request.EventId);
@@ -191,6 +219,27 @@ namespace Application.Services
             }
 
             return EventDto.Create(eventEntity);
+        }
+
+        public async Task<bool> ToggleStatusAsync(int eventId)
+        {
+            // Verificar el estado actual del evento
+            var currentState = await _eventRepository.GetEventEntityStateAsync(eventId);
+            bool isDeactivating = currentState == EntityState.Active;
+
+            // Si estamos desactivando, desactivar recursos relacionados
+            if (isDeactivating)
+            {
+                // Desactivar EventVehicles asociados al evento
+                var eventVehicleIds = await _eventRepository.GetEventEventVehicleIdsAsync(eventId);
+                foreach (var eventVehicleId in eventVehicleIds)
+                {
+                    await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+                }
+            }
+
+            // Finalmente, cambiar el estado del evento
+            return await _eventRepository.ToggleStatusAsync(eventId);
         }
     }
 }

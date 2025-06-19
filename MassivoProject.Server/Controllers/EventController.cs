@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -17,6 +18,14 @@ namespace MassivoProject.Server.Controllers
         public EventController(IEventService eventService)
         {
             _eventService = eventService;
+        }
+
+
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<Event>>> GetEventsByUserId(int userId)
+        {
+            var events = await _eventService.GetEventsByUserIdAsync(userId);
+            return Ok(events);
         }
 
         [HttpGet]
@@ -67,6 +76,27 @@ namespace MassivoProject.Server.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPut("admin/{id}")]
+        public async Task<IActionResult> AdminUpdateEvent(int id, [FromBody] AdminEventUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var result = await _eventService.AdminUpdateEventAsync(id, request);
+                if (!result)
+                    return NotFound(new { Message = "Evento no encontrado." });
+
+                return Ok(new { Message = "Evento actualizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"Error al actualizar el evento: {ex.Message}" });
+            }
+        }
+
         [HttpPost("add-vehicle")]
         public async Task<IActionResult> AddVehicleToEvent(AddEventVehicleRequest request)
         {
@@ -89,6 +119,17 @@ namespace MassivoProject.Server.Controllers
         {
             var events = await _eventService.FilterEventsAsync(name, date);
             return Ok(events);
+        }
+
+        [HttpPut("toggle-status/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            var result = await _eventService.ToggleStatusAsync(id);
+            if (!result)
+                return NotFound($"Evento con ID {id} no encontrado");
+
+            return Ok(new { message = "Estado del evento actualizado correctamente" });
         }
     }       
 }

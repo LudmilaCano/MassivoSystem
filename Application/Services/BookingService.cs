@@ -95,6 +95,10 @@ namespace Application.Services
 
             var ownerUser = await _userRepository.GetByIdAsync(vehicle.UserId.Value)
                 ?? throw new KeyNotFoundException($"El vehículo {vehicle.LicensePlate} no tiene un usuario asignado.");
+            if (vehicle.Available < addBookingRequest.SeatNumber)
+            {
+                throw new InvalidOperationException("No hay suficientes asientos disponibles para esta reserva.");
+            }
 
             if (addBookingRequest.Payment == null)
                 throw new ArgumentNullException(nameof(addBookingRequest.Payment), "El pago no puede ser nulo.");
@@ -160,8 +164,8 @@ namespace Application.Services
             };
 
             var bookingSaved = await _bookingRepository.AddAsync(booking);
-
-            vehicle.Available += booking.SeatNumber;
+            //vehicle.Available += booking.SeatNumber;
+            vehicle.Available -= booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
 
             bookingSaved.Payment = paymentSaved;
@@ -236,12 +240,31 @@ namespace Application.Services
             await _bookingRepository.UpdateAsync(booking);
 
             // Se libera los espacio del vehiculo
-            vehicle.Available -= booking.SeatNumber;
+            //vehicle.Available -= booking.SeatNumber;
+            vehicle.Available += booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
 
             // Se realiza el reembolso del pago
             payment.PaymentStatus = PaymentStatus.Refunded;
             await _paymentRepository.UpdateAsync(payment);
+        }
+
+        public async Task CompleteBookingAsync(int bookingId)
+        {
+            var booking = await _bookingRepository.GetBookingWithEventVehicleIdAsync(bookingId)
+                ?? throw new KeyNotFoundException($"Reserva con ID {bookingId} no fue encontrada.");
+
+            if (booking.BookingStatus == BookingStatus.Completed)
+            {
+                throw new InvalidOperationException("La reserva ya fue confirmada anteriormente.");
+            }
+            if (booking.BookingStatus == BookingStatus.Cancelled)
+            {
+                throw new InvalidOperationException("La reserva que intenta confirmar fue cancelada.");
+            }
+
+            booking.BookingStatus = BookingStatus.Completed;
+            await _bookingRepository.UpdateAsync(booking);
         }
     }
 }

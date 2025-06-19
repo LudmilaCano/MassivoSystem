@@ -8,19 +8,23 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+
 namespace Application.Services
 {
     public class VehicleService : IVehicleService
     {
         private readonly IVehicleRepository _vehicleRepository;
+        private readonly IEventVehicleRepository _eventVehicleRepository;
+
         private readonly IUserRepository _userRepository;
         private readonly INotificationService _notificationService;
 
-        public VehicleService(IVehicleRepository vehicleRepository, IUserRepository userRepository, INotificationService notificationService)
+        public VehicleService(IVehicleRepository vehicleRepository, IUserRepository userRepository, INotificationService notificationService, IEventVehicleRepository eventVehicleRepository )
         {
             _vehicleRepository = vehicleRepository;
             _userRepository = userRepository;
             _notificationService = notificationService;
+            _eventVehicleRepository = eventVehicleRepository;
         }
 
         public async Task<List<VehicleDto>> GetAllVehiclesAsync()
@@ -38,6 +42,7 @@ namespace Application.Services
                 Available = v.Available,
                 //From = v.From,
                 DriverName = v.DriverName,
+                IsActive = v.IsActive
             }).ToList();
         }
 
@@ -161,27 +166,48 @@ namespace Application.Services
             await _vehicleRepository.UpdateAsync(vehicle);
         }
 
-        public async Task DeactivateVehicleAsync(string licensePlate)
+        // Application/Services/VehicleService.cs
+        // Añade este método a la clase existente
+        public async Task<bool> AdminUpdateVehicleAsync(string licensePlate, AdminVehicleUpdateRequest request)
         {
-            var vehicle = await _vehicleRepository.GetByIdAsync(licensePlate);
+            var vehicle = await _vehicleRepository.GetByLicensePlateAsync(licensePlate);
             if (vehicle == null)
-            {
-                throw new ArgumentNullException(nameof(vehicle), "Vehículo no encontrado");
-            }
+                return false;
 
-            vehicle.IsActive = EntityState.Inactive;
+            vehicle.Name = request.Name;
+            vehicle.Description = request.Description;
+            vehicle.Capacity = request.Capacity;
+            vehicle.Type = request.Type;
+            vehicle.DriverName = request.DriverName;
+            vehicle.YearModel = request.YearModel;
+            vehicle.ImagePath = request.ImagePath;
+            vehicle.Available = request.Available;
+            // No actualizamos LicensePlate ya que es la clave primaria
+
             await _vehicleRepository.UpdateAsync(vehicle);
+            return true;
         }
 
-        public async Task DeleteVehicleAsync(string licensePlate)
+        public async Task<bool> ToggleStatusAsync(string licensePlate)
         {
-            var vehicle = await _vehicleRepository.GetByIdAsync(licensePlate);
-            if (vehicle == null)
+            // Verificar el estado actual del vehículo
+            var currentState = await _vehicleRepository.GetVehicleEntityStateAsync(licensePlate);
+            bool isDeactivating = currentState == EntityState.Active;
+
+            // Si estamos desactivando, desactivar recursos relacionados
+            if (isDeactivating)
             {
-                throw new ArgumentNullException(nameof(vehicle), "Vehículo no encontrado");
+                // Desactivar EventVehicles asociados al vehículo
+                var eventVehicleIds = await _vehicleRepository.GetVehicleEventVehicleIdsAsync(licensePlate);
+                foreach (var eventVehicleId in eventVehicleIds)
+                {
+                    await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
+                }
             }
 
-            await _vehicleRepository.DeleteAsync(vehicle);
+            // Finalmente, cambiar el estado del vehículo
+            return await _vehicleRepository.ToggleStatusAsync(licensePlate);
         }
+
     }
 }

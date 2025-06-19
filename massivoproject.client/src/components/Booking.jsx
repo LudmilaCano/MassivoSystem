@@ -19,6 +19,7 @@ import {
   PAYMENT_TYPE_LABELS,
   PAYMENT_TYPE_ICONS,
 } from "../constants/paymentsTypes";
+import { BOOKING_TYPE, BOOKING_LABEL } from "../constants/bookingStatus";
 import { useSelector } from "react-redux";
 
 const Booking = () => {
@@ -72,7 +73,6 @@ const Booking = () => {
     if (!travelers) {
       newErrors.travelers = "Debe indicar cuántas personas viajan.";
     } else if (isNaN(travelers) || travelers < 1) {
-      //|| travelers > vehicle.seats
       newErrors.travelers = `No puede excederse la capacidad máxima.`;
     }
 
@@ -104,9 +104,11 @@ const Booking = () => {
 
         const response = await createBooking(payload);
 
-        const paymentLink = response?.data?.payment?.details;
+        console.log("RESPONSE COMPLETA:", response);
+        //const paymentLink = response?.data?.payment?.details;
+        const paymentLink = response?.payment?.details;
 
-        if (Number(formData.paymentMethod) == 4) {
+        if (Number(formData.paymentMethod) === 4) {
           if (paymentLink && paymentLink.includes("https://www.mercadopago")) {
             showAlert("Redirigiendo a Mercado Pago...", "success");
             window.location.href = paymentLink;
@@ -115,7 +117,7 @@ const Booking = () => {
               "Reserva creada, pero no se pudo obtener el link de pago.",
               "warning"
             );
-            navigate("/"); // ver
+            navigate("/");
           }
         } else {
           showAlert("Reserva creada correctamente.", "success");
@@ -124,16 +126,15 @@ const Booking = () => {
       } catch (err) {
         let errorMsg = "Error al crear la reserva.";
 
-  if (err.response && err.response.data) {
-    // Caso específico para estructura esperada del backend
-    if (typeof err.response.data === "string") {
-      errorMsg = err.response.data;
-    } else if (err.response.data.error) {
-      errorMsg = err.response.data.error;
-    }
-  }
+        if (err.response && err.response.data) {
+          if (typeof err.response.data === "string") {
+            errorMsg = err.response.data;
+          } else if (err.response.data.error) {
+            errorMsg = err.response.data.error;
+          }
+        }
 
-  showAlert(errorMsg, "error");
+        showAlert(errorMsg, "error");
       }
       setLoading(false);
     }
@@ -209,7 +210,7 @@ const Booking = () => {
               {eventVehicle.available && (
                 <Typography variant="subtitle1">
                   <strong>Capacidad máxima:</strong> {eventVehicle.available}{" "}
-                  {eventVehicle.available == 1 ? "persona" : "personas"}
+                  {eventVehicle.available === 1 ? "persona" : "personas"}
                 </Typography>
               )}
             </Box>
