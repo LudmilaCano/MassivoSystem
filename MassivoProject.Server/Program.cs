@@ -111,7 +111,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IPaymentService, MercadoPagoService>();
-builder.Services.AddSingleton<IHashingService, Pbkdf2HashingService>();
+ //builder.Services.AddSingleton<IHashingService, Pbkdf2HashingService>();
 
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
