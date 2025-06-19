@@ -84,10 +84,15 @@ namespace Application.Services
                ?? throw new KeyNotFoundException($"El vehículo con matrícula {addBookingRequest.LicensePlate} no se asignó a este evento.");
             var vehicle = await _vehicleRepository.GetByIdAsync(addBookingRequest.LicensePlate)
                ?? throw new KeyNotFoundException($"Vehículo con matrícula {addBookingRequest.LicensePlate} no fue encontrado.");
-            if (addBookingRequest.SeatNumber + vehicle.Available > vehicle.Capacity)
+            //if (addBookingRequest.SeatNumber + vehicle.Available > vehicle.Capacity)
+            //{
+            //    throw new InvalidOperationException("La suma del número de asientos y la disponibilidad no debe exceder la capacidad del vehículo.");
+            //}
+            if (vehicle.Available < addBookingRequest.SeatNumber)
             {
-                throw new InvalidOperationException("La suma del número de asientos y la disponibilidad no debe exceder la capacidad del vehículo.");
+                throw new InvalidOperationException("No hay suficientes asientos disponibles para esta reserva.");
             }
+
             if (addBookingRequest.Payment == null)
             {
                 throw new ArgumentNullException(nameof(addBookingRequest.Payment), "El pago no puede ser nulo.");
@@ -112,7 +117,8 @@ namespace Application.Services
             var paymentSaved = await _paymentRepository.AddAsync(payment);
             booking.PaymentId = paymentSaved.Id;
             var bookingSaved = await _bookingRepository.AddAsync(booking);
-            vehicle.Available += booking.SeatNumber;
+            //vehicle.Available += booking.SeatNumber;
+            vehicle.Available -= booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
             bookingSaved.Payment = paymentSaved;
 
@@ -140,7 +146,8 @@ namespace Application.Services
             await _bookingRepository.UpdateAsync(booking);
 
             // Se libera los espacio del vehiculo
-            vehicle.Available -= booking.SeatNumber;
+            //vehicle.Available -= booking.SeatNumber;
+            vehicle.Available += booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
 
             // Se realiza el reembolso del pago

@@ -54,7 +54,7 @@ const AddEvent = () => {
                 type: Number(form.type),
                 image: form.image || "https://picsum.photos/200/300" //esto es un placeholder, revisar dps como se van a manejar las imagenes.
             };
-
+            console.log('Payload evento: ', payload);
             await createEvent(payload);
             showAlert('Evento creado correctamente', 'success');
             setForm({
@@ -66,8 +66,10 @@ const AddEvent = () => {
                 locationId: '',
                 image: ''
             });
-        } catch (err) {            
-            showAlert('Error al crear evento', 'error');
+        } catch (err) {
+            console.error('ERROR:', err); 
+            const errorMsg = err?.response?.data?.error || err?.response?.data?.message || 'Error al crear evento';
+            showAlert(errorMsg, 'error');
         }
         setLoading(false);
     };
