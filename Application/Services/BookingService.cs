@@ -109,8 +109,8 @@ namespace Application.Services
             //if (string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken)) 
                 //throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago");
 
-            if (addBookingRequest.SeatNumber + vehicle.Available > vehicle.Capacity)
-                throw new InvalidOperationException($"La suma del número de asientos '{addBookingRequest.SeatNumber + vehicle.Available}' y la disponibilidad '{vehicle.Capacity}' no debe exceder la capacidad del vehículo.");
+            //if (addBookingRequest.SeatNumber + vehicle.Available > vehicle.Capacity)
+            //    throw new InvalidOperationException($"La suma del número de asientos '{addBookingRequest.SeatNumber + vehicle.Available}' y la disponibilidad '{vehicle.Capacity}' no debe exceder la capacidad del vehículo.");
 
             
 
