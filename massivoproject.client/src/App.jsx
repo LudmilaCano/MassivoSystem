@@ -27,6 +27,7 @@ import AdminDashboard from "./components/AdminDashboard/AdminDashboard.jsx";
 import ActivateAccount from "./components/ActivateAccount.jsx";
 import BookingList from "./components/BookingList.jsx";
 import BookingDetail from "./components/BookingDetail.jsx";
+import NotFound from "./layout/NotFound.jsx";
 
 
 function App() {
@@ -71,9 +72,9 @@ function App() {
       path: "/profile",
       element: (
         <ProtectedRoute allowedRoles={["Admin", "Prestador", "User"]}>
-        <MainLayout>
-          <CustomerProfile />
-        </MainLayout>
+          <MainLayout>
+            <CustomerProfile />
+          </MainLayout>
         </ProtectedRoute>
       ),
     },
@@ -97,9 +98,9 @@ function App() {
       path: "/add-vehicle",
       element: (
         <ProtectedRoute allowedRoles={["Admin", "Prestador", "User"]}>
-        <MainLayout>
-          <AddVehicle />
-        </MainLayout>
+          <MainLayout>
+            <AddVehicle />
+          </MainLayout>
         </ProtectedRoute>
       ),
     },
@@ -180,7 +181,7 @@ function App() {
     {
       path: "/provider-dashboard",
       element: (
-        <ProtectedRoute allowedRoles={["Prestador","Admin"]}>
+        <ProtectedRoute allowedRoles={["Prestador", "Admin"]}>
           <MainLayout>
             <ProviderDashboard />
           </MainLayout>
@@ -195,13 +196,24 @@ function App() {
         </MainLayout>
       ),
     },
-        {
+    {
       path: "/booking/:bookingId",
       element: (
         <MainLayout>
           <BookingDetail />
         </MainLayout>
       ),
+    },
+
+
+
+    {
+      path: "*",
+      element: (
+        <MainLayout>
+          <NotFound />
+        </MainLayout>
+      )
     },
 
   ]);
