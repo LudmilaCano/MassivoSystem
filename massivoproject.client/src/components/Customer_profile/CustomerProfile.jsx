@@ -1,75 +1,162 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from "react";
+import "./CustomerProfile.css";
 import {
-  Container, Box, Typography, TextField, Button, Paper,
-  Grid, Avatar, CircularProgress, Alert, Divider, Dialog,
-  DialogTitle, DialogContent, DialogActions
-} from '@mui/material';
-import { useSelector } from 'react-redux';
-import { getUserById, updateUser, cambiarRolAPrestador } from '../../api/UserEndpoints';
-import FileUploader from '../FileUploader/FileUploader';
-import PersonIcon from '@mui/icons-material/Person';
-import SaveIcon from '@mui/icons-material/Save';
-import EditIcon from '@mui/icons-material/Edit';
-import Colors from '../../layout/Colors';
-import Swal from 'sweetalert2';
-import useSwalAlert from '../../hooks/useSwalAlert';
-import { useNavigate } from 'react-router';
+  Button,
+  Typography,
+  TextField,
+  Avatar,
+  Modal,
+  Box,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import Colors from "../../layout/Colors";
+import { useSelector } from "react-redux";
+import {
+  cambiarRolAPrestador,
+  getUserById,
+  updateUser,
+} from "../../api/UserEndpoints";
+import { useNavigate } from "react-router";
+import useSwalAlert from "../../hooks/useSwalAlert";
+
+import { getVehiclesByUserId } from "../../api/VehicleEndpoints";
+import useChangeRol from "../../hooks/useChangeRol";
+
+import useProvinceCitySelector from "../../hooks/useProvinceCitySelector";
+
+
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  borderRadius: "10px",
+  boxShadow: 24,
+  p: 4,
+  display: "flex",
+  flexDirection: "column",
+  gap: 2,
+};
 
 const CustomerProfile = () => {
   const { userId } = useSelector((state) => state.auth);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [editData, setEditData] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const { showAlert } = useSwalAlert();
+  const [userData, setUserData] = useState(null);
+  const [editData, setEditData] = useState({});
+  const [profilePic, setProfilePic] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [guardado, setGuardado] = useState(false);
   const navigate = useNavigate();
+  const { showAlert } = useSwalAlert();
+  const { handleChangeRol } = useChangeRol(setUserData);
+  const userIdFromState = useSelector((state) => state.auth.userId);
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  // Cargar perfil del usuario
+
+  
+  const {
+    provinces,
+    cities,
+    loadingProvinces,
+    loadingCities,
+    handleProvinceChange,
+  } = useProvinceCitySelector();
+
+  // Control para setear ciudad inicial solo una vez cuando cargan las ciudades
+  const [initialCitySet, setInitialCitySet] = useState(false);
+
+  const handleCambiarRol = async () => {
+    try {
+      showAlert("¡Tu rol ha sido actualizado a Prestador!", "success");
+      await cambiarRolAPrestador();
+      const updatedUser = await getUserById(userId);
+      setUserData(updatedUser);
+      navigate("/add-vehicle");
+    } catch (error) {
+      console.error("Error al cambiar el rol:", error);
+      alert("Ocurrió un error al cambiar el rol.");
+    }
+  };
+
+
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchUser = async () => {
       try {
-        setLoading(true);
         const data = await getUserById(userId);
-        setProfile(data);
+        console.log(data);
+        const provinceId = data.province?.toString() || "";
+        const cityId = data.city?.toString() || "";
+
+        setUserData({
+          ...data,
+          dniNumber: data.identificationNumber || "",
+        });
+
         setEditData({
           userId: data.userId,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          identificationNumber: data.identificationNumber,
-          profileImage: data.profileImage
+          firstName: data.firstName || "",
+          lastName: data.lastName || "",
+          email: data.email || "",
+          dniNumber: data.identificationNumber || "",
+          profilePic: data.profilePic || "",
+          password: "",
+          birthDate: data.birthDate || "",
+          phone: data.phone || "",
+          province: data.provinceId,
+          city: data.cityId ,
+          role: data.role || "User",
+          isActive: data.isActive ?? 1,
         });
+
+        if (provinceId) {
+          await handleProvinceChange(provinceId); // 👈 Esto carga las ciudades correspondientes
+        }
+
+        if (data.profilePic) setProfilePic(data.profilePic);
       } catch (error) {
-        navigate('/login');
-        setError('No se pudo cargar el perfil del usuario');
-      } finally {
-        setLoading(false);
+        console.error("Error cargando datos del usuario:", error);
       }
     };
 
-    if (userId) {
-      fetchProfile();
-    }
+    if (userId) fetchUser();
   }, [userId]);
+  // Cuando abrís el modal y editData.province tiene valor, cargamos ciudades y reseteamos el flag
+  useEffect(() => {
+    if (open && editData.province) {
+      handleProvinceChange(editData.province);
+    }
+  }, [open, editData.province]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  // Cuando cambian las ciudades y no setearon la ciudad inicial, la seteamos
+  useEffect(() => {
+    if (
+      open &&
+      cities.length > 0 &&
+      editData.city &&
+      !initialCitySet
+    ) {
+      // Confirmamos que la ciudad esté en la lista actual
+      const cityExists = cities.find((c) => c.id === editData.city);
+      if (cityExists) {
+        setEditData((prev) => ({ ...prev, city: cityExists.id }));
+      } else {
+        // Si no está, la reseteamos
+        setEditData((prev) => ({ ...prev, city: "" }));
+      }
+      setInitialCitySet(true);
+    }
+  }, [cities, open, editData.city, initialCitySet]);
 
   const handleSave = async () => {
   try {
-    setSaving(true);
-
-    let profileImageUrl = editData.profileImage;
-
-    // Si hay un archivo seleccionado, súbelo primero
+    let profileImageUrl = editData.profilePic;
     if (selectedFile) {
       const formData = new FormData();
       formData.append('file', selectedFile);
@@ -86,208 +173,274 @@ const CustomerProfile = () => {
       const data = await response.json();
       profileImageUrl = data.url;
     }
-
-    // Asegúrate de incluir todos los campos necesarios, especialmente las claves foráneas
-    const userData = {
-      UserId: editData.userId,
+    const payload = {
+      UserId: userId,
       FirstName: editData.firstName,
       LastName: editData.lastName,
+      DniNumber: editData.dniNumber,
       Email: editData.email,
-      DniNumber: editData.identificationNumber,
-      profileImage: profileImageUrl,
+      Password: editData.password || null,
+      City: parseInt(editData.city),
+      Province: parseInt(editData.province),
+      ProfileImage: profileImageUrl
     };
 
-    await updateUser(editData.userId, userData);
-    
-    // Actualiza el perfil local con los nuevos datos
-    setProfile({
-      ...profile,
+    await updateUser(userId, payload);
+
+    setUserData({
+      ...userData,
       firstName: editData.firstName,
       lastName: editData.lastName,
+      dniNumber: editData.dniNumber,
       email: editData.email,
-      identificationNumber: editData.identificationNumber,
-      profileImage: profileImageUrl
+      city: editData.city,
+      province: editData.province,
+      profilePic: editData.profilePic || userData.profilePic,
     });
 
-  
-    showAlert('success', 'Perfil actualizado correctamente');
-     // Refrescar el perfil después de la actualización
-    setOpenDialog(false);
-    setSelectedFile(null); // Limpiar el archivo seleccionado
-    navigate('/');
-  } catch (err) {
-  
-    showAlert('error', 'Error al actualizar el perfil: ' + (err.message || 'Error desconocido'));
-  } finally {
-    setSaving(false);
+    setOpen(false);
+    showAlert("¡Datos guardados correctamente!", "success"); // Aquí la alerta SweetAlert
+  } catch (error) {
+    showAlert("Error al guardar los datos", "error"); // Alerta error
+    if (error.response) {
+      console.error("Error al actualizar usuario:", error.response.data);
+    } else {
+      console.error("Error al actualizar usuario:", error.message);
+    }
   }
 };
 
-  const handleChangeRol = async () => {
-    try {
-      await cambiarRolAPrestador(userId);
-      const updatedProfile = await getUserById(userId);
-      setProfile(updatedProfile);
-      showAlert('success', 'Rol actualizado a Prestador correctamente');
-    } catch (error) {
-     
-      showAlert('error', 'Error al cambiar el rol: ' + (error.message || 'Error desconocido'));
+  const handleFileUploaded = (fileUrl) => {
+  setProfilePic(fileUrl);
+  setEditData({ ...editData, profilePic: fileUrl });
+};
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePic(reader.result);
+        setEditData({ ...editData, profilePic: reader.result });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  if (loading) {
-    return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
+  if (!userData) return <div>Cargando datos del perfil...</div>;
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1">Mi Perfil</Typography>
+    <div className="container">
+      <div className="profile-section">
+        <div className="profile-pic-placeholder">
+          <Avatar profileImage
+    src={userData.profileImage || "/path/to/default-avatar.png"} 
+    sx={{ width: 120, height: 120 }}
+  >
+    {!userData.profilePic && `${userData.firstName?.[0] || ''}${userData.lastName?.[0] || ''}`}
+  </Avatar>
+        </div>
+
+        <h2>Datos personales</h2>
+
+        <div className="form-group">
+          <label>Nombre</label>
+          <input type="text" value={userData.firstName} disabled />
+        </div>
+        <div className="form-group">
+          <label>Apellido</label>
+          <input type="text" value={userData.lastName} disabled />
+        </div>
+        <div className="form-group">
+          <label>DNI</label>
+          <input type="text" value={userData.dniNumber} disabled />
+        </div>
+        <div className="form-group">
+          <label>Mail</label>
+          <input type="email" value={userData.email} disabled />
+        </div>
+
+        <Button
+          variant="contained"
+          startIcon={<EditIcon />}
+          onClick={() => setOpen(true)}
+          sx={{
+            backgroundColor: Colors.celeste,
+            color: "white",
+            borderRadius: 3,
+            mt: 1,
+            "&:hover": {
+              backgroundColor: "#0ea5e9",
+            },
+          }}
+        >
+          Editar perfil
+        </Button>
+
+        {userData.role !== "Prestador" && (
           <Button
-            variant="contained"
-            startIcon={<EditIcon />}
-            onClick={() => setOpenDialog(true)}
+            variant="outlined"
+            onClick={handleChangeRol}
             sx={{
-              backgroundColor: Colors.celeste,
-              '&:hover': { backgroundColor: '#0ea5e9' }
+              mt: 2,
+              borderRadius: 3,
+              borderColor: Colors.celeste,
+              color: Colors.celeste,
+              "&:hover": {
+                backgroundColor: "#e0f7ff",
+                borderColor: Colors.celeste,
+              },
             }}
           >
-            Editar Perfil
+            Cambiar a Prestador
+          </Button>
+        )}
+
+        <Modal open={guardado} onClose={() => setGuardado(false)}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "30%",
+              left: "50%",
+              transform: "translate(-50%, -30%)",
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 3,
+              borderRadius: 2,
+              minWidth: 300,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
+            <Alert severity="success" sx={{ width: "100%", textAlign: "center" }}>
+              ¡Datos guardados correctamente!
+            </Alert>
+          </Box>
+        </Modal>
+      </div>
+
+      {/* MODAL EDICIÓN */}
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <Box sx={modalStyle}>
+          <Typography variant="h6" mb={1}>
+            Editar perfil
+          </Typography>
+
+          <Avatar
+  src={selectedFile ? URL.createObjectURL(selectedFile) : profilePic || "/path/to/default-avatar.png"}
+  sx={{ width: 80, height: 80, alignSelf: "center", mb: 2 }}
+>
+  {!profilePic && !selectedFile && `${editData.firstName?.[0] || ''}${editData.lastName?.[0] || ''}`}
+</Avatar>
+
+<input
+  accept="image/*"
+  style={{ display: 'none' }}
+  id="profile-image-upload"
+  type="file"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  }}
+/>
+<label htmlFor="profile-image-upload">
+  <Button
+    variant="outlined"
+    component="span"
+    fullWidth
+    sx={{ mb: 2 }}
+  >
+    Seleccionar Imagen
+  </Button>
+</label>
+          <TextField
+            label="Nombre"
+            value={editData.firstName}
+            onChange={(e) =>
+              setEditData({ ...editData, firstName: e.target.value })
+            }
+            fullWidth
+          />
+          <TextField
+            label="Apellido"
+            value={editData.lastName}
+            onChange={(e) =>
+              setEditData({ ...editData, lastName: e.target.value })
+            }
+            fullWidth
+          />
+          <TextField
+            label="DNI"
+            value={editData.dniNumber}
+            onChange={(e) =>
+              setEditData({ ...editData, dniNumber: e.target.value })
+            }
+            fullWidth
+          />
+          <TextField
+            label="Email"
+            value={editData.email}
+            onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+            fullWidth
+          />
+
+          <FormControl fullWidth>
+            <InputLabel>Provincia</InputLabel>
+            <Select
+              value={editData.province}
+              onChange={(e) => {
+                const provinceId = e.target.value;
+                setEditData({ ...editData, province: provinceId, city: "" }); // Resetea ciudad
+                handleProvinceChange(provinceId);
+                setInitialCitySet(true); // para evitar que se sobreescriba ciudad inicial
+              }}
+            >
+              {provinces.map((prov) => (
+                <MenuItem key={prov.id} value={prov.id}>
+                  {prov.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel>Ciudad</InputLabel>
+            <Select
+              value={editData.city}
+              onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+              disabled={!editData.province || loadingCities}
+            >
+              {cities.map((city) => (
+                <MenuItem key={city.id} value={city.id}>
+                  {city.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            sx={{
+              backgroundColor: Colors.celeste,
+              color: "white",
+              borderRadius: 3,
+              mt: 2,
+              "&:hover": {
+                backgroundColor: "#0ea5e9",
+              },
+            }}
+          >
+            Guardar cambios
           </Button>
         </Box>
-
-        <Divider sx={{ mb: 4 }} />
-
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
-            {(editData.profileImage || selectedFile) && (
-              <Box sx={{ textAlign: 'center', mb: 2 }}>
-                <Avatar
-                  src={selectedFile ? URL.createObjectURL(selectedFile) : editData.profileImage}
-                  sx={{ width: 150, height: 150, margin: 'auto' }}
-                />
-              </Box>
-            )}
-          </Grid>
-
-          <Grid item xs={12} md={8}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography><strong>Nombre:</strong> {profile?.firstName}</Typography>
-              <Typography><strong>Apellido:</strong> {profile?.lastName}</Typography>
-              <Typography><strong>Email:</strong> {profile?.email}</Typography>
-              <Typography><strong>DNI:</strong> {profile?.identificationNumber}</Typography>
-              <Typography><strong>Rol:</strong> {profile?.role}</Typography>
-
-              {profile?.role !== "Prestador" && (
-                <Button
-                  variant="outlined"
-                  onClick={handleChangeRol}
-                  sx={{
-                    mt: 2,
-                    borderRadius: 3,
-                    borderColor: Colors.celeste,
-                    color: Colors.celeste,
-                    "&:hover": {
-                      backgroundColor: "#e0f7ff",
-                      borderColor: Colors.celeste,
-                    },
-                  }}
-                >
-                  Cambiar a Prestador
-                </Button>
-              )}
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Diálogo de edición */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Editar Perfil</DialogTitle>
-        <DialogContent>
-          {editData && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-              {/* <FileUploader
-                onFileUploaded={handleFileUploaded}
-                initialImage={editData.profileImage}
-                entityType="user"
-              /> */}
-              <input
-                accept="image/*"
-                style={{ display: 'none' }}
-                id="contained-button-file"
-                type="file"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    setSelectedFile(file);
-                  }
-                }}
-              />
-              <label htmlFor="contained-button-file">
-                <Button
-                  variant="outlined"
-                  component="span"
-                  fullWidth
-                >
-                  Seleccionar Imagen
-                </Button>
-              </label>
-
-              <TextField
-                label="Nombre"
-                name="firstName"
-                value={editData.firstName}
-                onChange={handleInputChange}
-                fullWidth
-              />
-
-              <TextField
-                label="Apellido"
-                name="lastName"
-                value={editData.lastName}
-                onChange={handleInputChange}
-                fullWidth
-              />
-
-              <TextField
-                label="Email"
-                name="email"
-                value={editData.email}
-                onChange={handleInputChange}
-                fullWidth
-              />
-
-              <TextField
-                label="DNI"
-                name="identificationNumber"
-                value={editData.identificationNumber}
-                onChange={handleInputChange}
-                fullWidth
-              />
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
-          <Button
-            onClick={handleSave}
-            variant="contained"
-            disabled={saving}
-            startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-          >
-            {saving ? 'Guardando...' : 'Guardar Cambios'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+      </Modal>
+    </div>
   );
 };
 

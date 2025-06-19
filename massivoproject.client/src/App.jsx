@@ -26,6 +26,8 @@ import AboutUs from "./components/AboutUs.jsx";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard.jsx";
 import ActivateAccount from "./components/ActivateAccount.jsx";
 import BookingList from "./components/BookingList.jsx";
+import BookingDetail from "./components/BookingDetail.jsx";
+import NotFound from "./layout/NotFound.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -125,7 +127,7 @@ function App() {
     {
       path: "/booking",
       element: (
-        <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
+        <ProtectedRoute allowedRoles={["Admin", "User"]}>
           <MainLayout>
             <Booking />
           </MainLayout>
@@ -164,6 +166,7 @@ function App() {
         </MainLayout>
       ),
     },
+
     {
       path: "/admin-dashboard",
       element: (
@@ -177,7 +180,7 @@ function App() {
     {
       path: "/provider-dashboard",
       element: (
-        <ProtectedRoute allowedRoles={["Prestador","Admin"]}>
+        <ProtectedRoute allowedRoles={["Prestador", "Admin"]}>
           <MainLayout>
             <ProviderDashboard />
           </MainLayout>
@@ -189,6 +192,23 @@ function App() {
       element: (
         <MainLayout>
           <BookingList />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/booking/:bookingId",
+      element: (
+        <MainLayout>
+          <BookingDetail />
+        </MainLayout>
+      ),
+    },
+
+    {
+      path: "*",
+      element: (
+        <MainLayout>
+          <NotFound />
         </MainLayout>
       ),
     },

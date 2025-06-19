@@ -32,7 +32,6 @@ namespace MassivoApp.Server.Controllers
         }
 
         // Regitrar nuevo usuario
-
         [HttpPost("signup")]
         public async Task<IActionResult> SignUp([FromBody] UserSignUpRequest request)
         {
@@ -57,17 +56,16 @@ namespace MassivoApp.Server.Controllers
         }
 
         // Actualizar datos de un usuario existente
-
         [Authorize]
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] UserUpdateRequest request)
+        public async Task<IActionResult> Update(int id, [FromBody] UserUpdateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             try
             {
-                _userService.UpdateUser(request, id);
+                await _userService.UpdateUser(request, id);
                 return NoContent();
             }
             catch (ArgumentNullException)
@@ -77,17 +75,16 @@ namespace MassivoApp.Server.Controllers
         }
 
         // Cambiar el rol de un usuario (Admin)
-
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}/role")]
-        public IActionResult ChangeRole(int id, [FromBody] RoleChangeRequest request)
+        public async Task<IActionResult> ChangeRole(int id, [FromBody] RoleChangeRequest request)
         {
             if (id != request.UserId)
                 return BadRequest(new { Message = "El id de ruta y el cuerpo deben coincidir." });
 
             try
             {
-                _userService.ChangeUserRole(request);
+                await _userService.ChangeUserRole(request);
                 return NoContent();
             }
             catch (ArgumentNullException)
@@ -96,16 +93,14 @@ namespace MassivoApp.Server.Controllers
             }
         }
 
-
         // Inactivar un usuario (Admin) 
-
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public IActionResult Deactivate(int id)
+        public async Task<IActionResult> Deactivate(int id)
         {
             try
             {
-                _userService.DesactiveUser(id);
+                await _userService.DesactiveUser(id);
                 return NoContent();
             }
             catch (ArgumentNullException)
@@ -115,7 +110,6 @@ namespace MassivoApp.Server.Controllers
         }
 
         // Eliminar un usuario (Admin)
-
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}/hard")]
         public async Task<IActionResult> HardDelete(int id)
@@ -128,19 +122,16 @@ namespace MassivoApp.Server.Controllers
             return NoContent();
         }
 
-
         // Listar todos los usuarios (Admin)
-
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var users = _userService.GetUsers();
+            var users = await _userService.GetUsers();
             return Ok(users);
         }
 
         // Traer datos de un usuario por su ID
-
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -154,7 +145,7 @@ namespace MassivoApp.Server.Controllers
 
         [Authorize]
         [HttpPatch("cambiar-prestador")]
-        public IActionResult CambiarRolAPrestador()
+        public async Task<IActionResult> CambiarRolAPrestador()
         {
             var idClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (idClaim == null)
@@ -170,7 +161,7 @@ namespace MassivoApp.Server.Controllers
 
             try
             {
-                _userService.ChangeUserRole(request);
+                await _userService.ChangeUserRole(request);
                 return Ok(new { Message = "El rol fue actualizado a Prestador." });
             }
             catch (ArgumentNullException)
@@ -186,7 +177,6 @@ namespace MassivoApp.Server.Controllers
             var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
             return Ok(claims);
         }
-
         [Authorize(Roles = "Admin")]
         [HttpPut("admin/{id}")]
         public async Task<IActionResult> AdminUpdateUser(int id, [FromBody] AdminUserUpdateRequest request)
@@ -218,6 +208,20 @@ namespace MassivoApp.Server.Controllers
 
             return Ok(new { message = "Estado del usuario actualizado correctamente" });
         }
+
+        [Authorize]
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateOwnUser([FromBody] UpdateOwnUserDto dto)
+        {
+            var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "");
+            var response = await _userService.UpdateOwnProfileAsync(userId, dto);
+
+            if (!response)
+                return NotFound("No se encontró el usuario o no se pudo actualizar");
+
+            return Ok("Perfil actualizado correctamente");
+        }
+
 
     }
 }

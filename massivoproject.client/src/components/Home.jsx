@@ -3,6 +3,7 @@ import { Box, Button, Grid, Typography, TextField, Paper } from "@mui/material";
 
 import imagenEjemplo from "../images/logo2.png";
 import { getRandomEvents, filterEvents } from "../api/EventEndpoints";
+
 import { getEventTypeLabel } from "../constants/eventCategories";
 import { useBusyDialog } from "../hooks/useBusyDialog";
 import { useNavigate } from "react-router-dom";

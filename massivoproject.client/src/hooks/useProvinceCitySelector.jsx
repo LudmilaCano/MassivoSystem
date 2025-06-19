@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getAllProvince } from "../api/ProvinceEndpoints";
 import { getCitiesByProvince } from "../api/CityEndpoints";
 
+
 const useProvinceCitySelector = () => {
     //Esto lo pueden usar para traerse en otros componentes la lista de provincias, o la lista de ciudades para una provincia determinada.
     //No hay cambios en los repo de provincias y ciudades, esto solo evita tener que repetir el fetch 
@@ -15,7 +16,7 @@ const useProvinceCitySelector = () => {
         const fetchProvinces = async () => {
             try {
                 const response = await getAllProvince();
-                setProvinces(response.result);
+                setProvinces(response);
             } catch (err) {
                 console.error("Error fetching provinces:", err.message);
             } finally {

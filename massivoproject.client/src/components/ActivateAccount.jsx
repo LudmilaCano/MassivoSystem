@@ -4,7 +4,7 @@ import Colors from "../layout/Colors";
 import Logo2 from "../images/logo2.png";
 import loginIllustration from "../images/login.svg";
 import useSwalAlert from "../hooks/useSwalAlert";
-
+import { ActivateAccountService } from "../api/AuthenticationEndPoints";
 const ActivateAccount = () => {
   const [email, setEmail] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
@@ -13,29 +13,20 @@ const ActivateAccount = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await fetch(
-        "https://localhost:7089/api/Authentication/activate",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, recoveryCode }),
-        }
-      );
 
-      if (response.ok) {
-        showAlert("Cuenta activada correctamente ✅", "success");
-        setEmail("");
-        setRecoveryCode("");
-      } else {
-        showAlert("Código inválido o usuario no encontrado ❌", "error");
-      }
-    } catch (error) {
-      showAlert("Error de conexión con el servidor", "error");
-    }
-  };
+  
+      try {
+          await ActivateAccountService(email, recoveryCode);
+      
+          showAlert(
+            "Cuenta activada correctamente ✅",
+            "success"
+          );
+          setEmail("");
+        } catch (error) {
+          showAlert("Código inválido o usuario no encontrado ❌", "error");
+        }
+         };
 
   return (
     <div

@@ -55,7 +55,10 @@ builder.Services.AddSwaggerGen(setupAction =>
 
 #region ContextDatabase
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseMySql(
+    builder.Configuration.GetConnectionString("DefaultConnection"),
+    new MySqlServerVersion(new Version(8, 0, 32))
+));
 #endregion
 
 #region JWT
@@ -104,6 +107,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IPaymentService, MercadoPagoService>();
+
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 //validador unicidad DNI y Email

@@ -11,6 +11,7 @@ namespace Domain.Enums
         Cash,
         CreditCard,
         DebitCard,
-        BankTransfer
+        BankTransfer,
+        MercadoPago
     }
 }

@@ -13,5 +13,7 @@ namespace Domain.Interfaces
         Task<List<Booking>> GetBookingWithEventVehicleAsync();
         Task<Booking?> GetBookingWithEventVehicleByUserIdAsync(int userId);
         Task<Booking?> GetBookingWithEventVehicleIdAsync(int id);
+        Task<List<Booking>> GetConfirmedBookingsForTomorrowAsync();
+
     }
 }

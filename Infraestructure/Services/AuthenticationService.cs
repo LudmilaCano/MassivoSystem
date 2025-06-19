@@ -2,6 +2,7 @@
 using Application.Models.Requests;
 using Application.Models.Responses;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -39,7 +40,16 @@ namespace Infraestructure.Services
                     Message = "Credenciales inválidas."
                 };
             }
-
+            //verificar que el usuario este activo
+            if (user.IsActive != Domain.Enums.EntityState.Active)
+            {
+                return new AuthenticationResult
+                {
+                    Token = string.Empty,
+                    RecoveryMode = false,
+                    Message = "Su cuenta está inactiva. Por favor, active su cuenta para poder ingresar."
+                };
+            }
             // Verificamos si el usuario debe cambiar la contraseña (modo recuperación)
             bool recoveryMode = user.MustChangePassword;
 

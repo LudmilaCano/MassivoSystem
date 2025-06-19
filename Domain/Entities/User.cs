@@ -33,6 +33,8 @@ namespace Domain.Entities
         public ICollection<Event> Events { get; set; }
         public string? RecoveryCode { get; set; }
         public bool MustChangePassword { get; set; } = false;
+        public string? MercadoPagoAccessToken { get; set; }
+
 
 
 
