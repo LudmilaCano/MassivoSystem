@@ -59,9 +59,6 @@ const Booking = () => {
       newErrors.travelers = `No puede excederse la capacidad máxima.`;
     }
 
-    if (!paymentMethod) {
-      newErrors.paymentMethod = 'Debe seleccionar un método de pago.';
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
