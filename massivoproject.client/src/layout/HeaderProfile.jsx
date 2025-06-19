@@ -62,7 +62,7 @@ const HeaderPerfil = () => {
           style={{ width: "auto", height: "7vh", marginLeft: 10 }}
         />
       </div>
-
+      
       <div>
         <Button
           onClick={handleLogout}
