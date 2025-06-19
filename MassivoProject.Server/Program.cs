@@ -13,8 +13,11 @@ using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using MassivoProject.Application.Interfaces;
+using MassivoProject.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 
@@ -108,6 +111,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IPaymentService, MercadoPagoService>();
+builder.Services.AddSingleton<IHashingService, Pbkdf2HashingService>();
 
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
@@ -129,6 +133,7 @@ builder.Services.AddCors(options =>
 #endregion
 
 var app = builder.Build();
+
 
 app.UseDefaultFiles();
 // Asegurarse de que exista la carpeta wwwroot
