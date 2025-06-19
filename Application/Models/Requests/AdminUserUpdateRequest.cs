@@ -16,5 +16,6 @@ namespace Application.Models.Requests
         public int? CityId { get; set; }
         public int? ProvinceId { get; set; }
         public string Role { get; set; }
+        public string? ProfileImage { get; set; }
     }
 }

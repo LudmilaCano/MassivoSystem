@@ -14,7 +14,8 @@ import useSwalAlert from '../hooks/useSwalAlert';
 
 import { getAllProvince } from '../api/ProvinceEndpoints';
 import { getCitiesByProvince } from '../api/CityEndpoints';
-
+import { uploadFile } from '../api/FileEndpoints';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 
 
@@ -27,8 +28,8 @@ const Register = () => {
         email: '',
         password: '',
         repeatPassword: '',
-        provincia: null, 
-        ciudad: null,    
+        provincia: null,
+        ciudad: null,
         dob: null,
     });
     const navigate = useNavigate();
@@ -43,12 +44,17 @@ const Register = () => {
 
     const [sortedProvinces, setSortedProvinces] = useState([]);
     const [sortedCities, setSortedCities] = useState([]);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [preview, setPreview] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
 
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                const data = await getAllProvince();               
-                setProvinces(data);
+                const data = await getAllProvince();
+                setProvinces(data.result);
             } catch (error) {
                 console.error("Error al obtener provincias:", error);
             }
@@ -66,7 +72,7 @@ const Register = () => {
 
     useEffect(() => {
         const fetchCities = async () => {
-            if (formData.provincia) { 
+            if (formData.provincia) {
                 try {
                     const data = await getCitiesByProvince(formData.provincia);
                     setCities(data);
@@ -74,15 +80,15 @@ const Register = () => {
                     console.error("Error al obtener ciudades:", error);
                 }
             } else {
-                setCities([]); 
+                setCities([]);
                 setFormData((prev) => ({
                     ...prev,
-                    ciudad: null, 
+                    ciudad: null,
                 }));
             }
         };
         fetchCities();
-    }, [formData.provincia, provinces]); 
+    }, [formData.provincia, provinces]);
 
 
     const handleChange = (e) => {
@@ -165,12 +171,42 @@ const Register = () => {
         }
 
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0; 
+        return Object.keys(newErrors).length === 0;
+    };
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validar tipo de archivo
+        if (!file.type.match('image.*')) {
+            setError('Por favor selecciona una imagen válida');
+            return;
+        }
+
+        setError(null);
+        setSelectedFile(file);
+
+        // Crear preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+    };
     const handleSubmit = async () => {
 
-    
+        let profileImageUrl = null;
+
+        // Si hay un archivo seleccionado, súbelo primero
+        if (selectedFile) {
+            const data = await uploadFile(selectedFile, 'user');
+            profileImageUrl = data.url;
+        }
         if (validateForm()) {
             const formattedData = {
                 firstName: formData.nombre,
@@ -178,26 +214,29 @@ const Register = () => {
                 dniNumber: formData.dni,
                 email: formData.email,
                 password: formData.password,
-                province: formData.provincia, 
-                city: formData.ciudad,        
-                birthDate: formData.dob.toISOString().split('T')[0]
+                province: formData.provincia,
+                city: formData.ciudad,
+                birthDate: formData.dob.toISOString().split('T')[0],
+                profileImage: profileImageUrl
             };
 
+            console.log(formattedData)
             try {
                 await createUser(formattedData);
 
                 showAlert('¡Registro Exitoso!', 'success')
-                        setFormData({ 
-                            nombre: '',
-                            apellido: '',
-                            dni: '',
-                            email: '',
-                            password: '',
-                            repeatPassword: '',
-                            provincia: null, 
-                            ciudad: null,    
-                            dob: null,
-                        });
+                setFormData({
+                    nombre: '',
+                    apellido: '',
+                    dni: '',
+                    email: '',
+                    password: '',
+                    repeatPassword: '',
+                    provincia: null,
+                    ciudad: null,
+                    dob: null,
+                    profileImage: null
+                });
 
                 navigate('/');
 
@@ -217,7 +256,7 @@ const Register = () => {
         <div style={{ backgroundColor: Colors.azul, width: '100%', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Grid container sx={{ maxHeight: '90vh', maxWidth: '70vw' }}>
                 <Grid
-                    onClick={() =>  navigate('/')}
+                    onClick={() => navigate('/')}
                     item
                     xs={false}
                     md={5}
@@ -344,7 +383,7 @@ const Register = () => {
                                 name="ciudad"
                                 select
                                 label="Ciudad"
-                                value={formData.ciudad || ''} 
+                                value={formData.ciudad || ''}
                                 onChange={handleChange}
                                 disabled={!formData.provincia}
                                 size="small"
@@ -358,8 +397,43 @@ const Register = () => {
                                         {city.name}
                                     </MenuItem>
                                 ))}
-                             </TextField>
+                            </TextField>
                         </Box>
+
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle1">Foto de Perfil</Typography>
+                            {preview && (
+                                <Box sx={{ mb: 2, textAlign: 'center' }}>
+                                    <img
+                                        src={preview}
+                                        alt="Preview"
+                                        style={{
+                                            maxWidth: '100%',
+                                            maxHeight: '200px',
+                                            objectFit: 'contain',
+                                            borderRadius: '4px'
+                                        }}
+                                    />
+                                </Box>
+                            )}
+                            <input
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                id="contained-button-file"
+                                type="file"
+                                onChange={handleFileChange}
+                            />
+                            <label htmlFor="contained-button-file">
+                                <Button
+                                    variant="outlined"
+                                    component="span"
+                                    startIcon={<CloudUploadIcon />}
+                                    fullWidth
+                                >
+                                    Seleccionar Imagen
+                                </Button>
+                            </label>
+                        </Grid>
 
                         {/* Fecha de nacimiento */}
                         <LocalizationProvider dateAdapter={AdapterDateFns}>

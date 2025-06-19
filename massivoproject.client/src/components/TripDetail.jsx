@@ -33,7 +33,7 @@ import {
 } from "../api/EventEndpoints";
 import ReviewList from "./ReviewList";
 import { useSelector } from "react-redux";
-import fetchRoute from "../api/OpenRouteService";
+import {fetchRoute} from "../api/OpenRouteService";
 
 const TripDetail = () => {
   const { tripId } = useParams();

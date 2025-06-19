@@ -1,9 +1,9 @@
 // ProviderVehicle.jsx
 import React, { useState, useEffect } from 'react';
-import { 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, FormControl, InputLabel, Select, MenuItem, Box
+  TextField, FormControl, InputLabel, Select, MenuItem, Box, Grid,Typography, CircularProgress
 } from '@mui/material';
 import { getVehiclesByUserId } from '../../api/VehicleEndpoints';
 import { adminUpdateVehicle } from '../../api/VehicleEndpoints';
@@ -16,8 +16,9 @@ const ProviderVehicle = ({ userId }) => {
   const [errors, setErrors] = useState({});
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [vehicleSelectedFile, setVehicleSelectedFile] = useState(null);
   const { showAlert } = useSwalAlert();
-  
+
 
   useEffect(() => {
     fetchVehicles();
@@ -37,7 +38,7 @@ const ProviderVehicle = ({ userId }) => {
   };
 
   const handleEditVehicle = (vehicle) => {
-    setSelectedVehicle({...vehicle});
+    setSelectedVehicle({ ...vehicle });
     setErrors({});
     setOpenDialog(true);
   };
@@ -53,7 +54,7 @@ const ProviderVehicle = ({ userId }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!selectedVehicle.name) newErrors.name = "El nombre es obligatorio";
     if (!selectedVehicle.description) newErrors.description = "La descripción es obligatoria";
     if (!selectedVehicle.capacity) newErrors.capacity = "La capacidad es obligatoria";
@@ -62,7 +63,7 @@ const ProviderVehicle = ({ userId }) => {
     if (!selectedVehicle.yearModel) newErrors.yearModel = "El año del modelo es obligatorio";
     if (!selectedVehicle.imagePath) newErrors.imagePath = "La URL de imagen es obligatoria";
     if (selectedVehicle.available === undefined || selectedVehicle.available === null) newErrors.available = "La disponibilidad es obligatoria";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -74,6 +75,25 @@ const ProviderVehicle = ({ userId }) => {
     }
 
     try {
+      let imageUrl = selectedVehicle.image;
+
+      // Si hay un archivo seleccionado, súbelo primero
+      if (vehicleSelectedFile) {
+        const formData = new FormData();
+        formData.append('file', vehicleSelectedFile);
+
+        const response = await fetch('https://localhost:7089/api/File/upload/vehicle', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al subir la imagen');
+        }
+
+        const data = await response.json();
+        imageUrl = data.url;
+      }
       // Crear objeto con la estructura esperada por el backend
       const vehicleData = {
         licensePlate: selectedVehicle.licensePlate,
@@ -83,7 +103,7 @@ const ProviderVehicle = ({ userId }) => {
         type: parseInt(selectedVehicle.type),
         driverName: selectedVehicle.driverName,
         yearModel: parseInt(selectedVehicle.yearModel),
-        imagePath: selectedVehicle.imagePath
+        imagePath: imageUrl
       };
 
       await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
@@ -109,7 +129,7 @@ const ProviderVehicle = ({ userId }) => {
         <p><strong>Año:</strong> ${vehicle.yearModel || ''}</p>        
       </div>
     `;
-    
+
     Swal.fire({
       title: 'Detalles de Vehículo',
       html: content,
@@ -156,17 +176,17 @@ const ProviderVehicle = ({ userId }) => {
                 <TableCell>{vehicle.capacity}</TableCell>
                 <TableCell>{vehicle.driverName}</TableCell>
                 <TableCell>
-                  <Button 
-                    size="small" 
+                  <Button
+                    size="small"
                     variant="outlined"
                     onClick={() => handleEditVehicle(vehicle)}
                     sx={{ mr: 1 }}
                   >
                     Editar
                   </Button>
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
+                  <Button
+                    size="small"
+                    variant="outlined"
                     color="info"
                     onClick={() => handleViewVehicleDetails(vehicle)}
                   >
@@ -254,7 +274,49 @@ const ProviderVehicle = ({ userId }) => {
                 error={!!errors.yearModel}
                 helperText={errors.yearModel}
               />
-              <TextField
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Foto de vehículo</Typography>
+
+                {/* Vista previa de la imagen */}
+                {vehicleSelectedFile && (
+                  <Box sx={{ textAlign: 'center', mb: 2 }}>
+                    <img
+                      src={URL.createObjectURL(vehicleSelectedFile)}
+                      alt="Vista previa"
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '200px',
+                        objectFit: 'contain',
+                        borderRadius: '4px'
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {/* Selector de archivo */}
+                <input
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  id="vehicle-image-upload"
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setVehicleSelectedFile(file);
+                    }
+                  }}
+                />
+                <label htmlFor="vehicle-image-upload">
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    fullWidth
+                  >
+                    Seleccionar Imagen de vehículo
+                  </Button>
+                </label>
+              </Grid>
+              {/* <TextField
                 label="URL de imagen *"
                 name="imagePath"
                 value={selectedVehicle.imagePath || ''}
@@ -263,7 +325,7 @@ const ProviderVehicle = ({ userId }) => {
                 required
                 error={!!errors.imagePath}
                 helperText={errors.imagePath}
-              />
+              /> */}
               {/* <FormControl fullWidth required error={!!errors.available}>
                 <InputLabel>Disponible *</InputLabel>
                 <Select

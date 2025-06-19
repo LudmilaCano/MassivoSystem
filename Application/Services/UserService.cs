@@ -64,6 +64,7 @@ namespace Application.Services
                 CityId = userSignUpRequest.City,
                 ProvinceId = userSignUpRequest.Province,
                 IsActive = EntityState.Inactive,
+                ProfileImage = userSignUpRequest.ProfileImage,
                 RecoveryCode = recoveryCode
             };
             await _userRepository.AddAsync(user);
@@ -107,12 +108,13 @@ namespace Application.Services
             user.LastName = userUpdateRequest.LastName;
             user.IdentificationNumber = userUpdateRequest.DniNumber;
             user.Email = userUpdateRequest.Email ?? user.Email;
-            if (!string.IsNullOrEmpty(userUpdateRequest.Password))
+            user.ProfileImage = userUpdateRequest.ProfileImage ?? user.ProfileImage;
+            /*if (!string.IsNullOrEmpty(userUpdateRequest.Password))
             {
                 user.Password = userUpdateRequest.Password;
             }
             user.CityId = userUpdateRequest.City;
-            user.ProvinceId = userUpdateRequest.Province;
+            user.ProvinceId = userUpdateRequest.Province;*/
 
             await _userRepository.UpdateAsync(user);
         }
@@ -162,7 +164,7 @@ namespace Application.Services
             user.CityId = request.CityId;
             user.ProvinceId = request.ProvinceId;
             user.Role = request.Role;
-
+            user.ProfileImage = request.ProfileImage;
             /*if (!string.IsNullOrEmpty(request.Password))
             {
                 user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);

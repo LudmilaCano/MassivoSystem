@@ -1,12 +1,12 @@
 // src/components/AdminEventPanel.jsx
 import React, { useState, useEffect } from 'react';
-import { 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, FormControl, InputLabel, Select, MenuItem, Box,
-  Autocomplete
+  Autocomplete,Typography,CircularProgress
 } from '@mui/material';
-import { adminUpdateEvent, toggleEventStatus} from '../../api/EventEndpoints';
+import { adminUpdateEvent, toggleEventStatus } from '../../api/EventEndpoints';
 import { getAllCities } from '../../api/CityEndpoints';
 import Swal from 'sweetalert2';
 
@@ -16,6 +16,7 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -35,7 +36,7 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
   }, []);
 
   const handleEditEvent = (event) => {
-    setSelectedEvent({...event});
+    setSelectedEvent({ ...event });
     setErrors({});
     setOpenDialog(true);
   };
@@ -63,19 +64,19 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!selectedEvent.name) newErrors.name = "El nombre es obligatorio";
     if (!selectedEvent.description) newErrors.description = "La descripción es obligatoria";
     if (!selectedEvent.eventDate) newErrors.eventDate = "La fecha es obligatoria";
     if (selectedEvent.type === undefined || selectedEvent.type === null) newErrors.type = "El tipo es obligatorio";
     if (!selectedEvent.locationId) newErrors.locationId = "La ciudad es obligatoria";
     if (!selectedEvent.image) newErrors.image = "La imagen es obligatoria";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSaveEvent = async () => {
+  /* const handleSaveEvent = async () => {
     if (!validateForm()) {
       showErrorAlert("Por favor complete todos los campos obligatorios");
       return;
@@ -101,6 +102,60 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
       console.error("Error updating event:", error);
       showErrorAlert(`Error al actualizar evento: ${error.message}`);
     }
+  }; */
+
+  const handleSaveEvent = async () => {
+    if (!validateForm()) {
+      showErrorAlert("Por favor complete todos los campos obligatorios");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      let imageUrl = selectedEvent.image;
+
+      // Si hay un archivo seleccionado, súbelo primero
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        const response = await fetch('https://localhost:7089/api/File/upload/event', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al subir la imagen');
+        }
+
+        const data = await response.json();
+        imageUrl = data.url;
+      }
+
+      // Crear objeto con todos los datos, incluyendo la URL de la imagen
+      const eventData = {
+        eventId: selectedEvent.eventId,
+        name: selectedEvent.name,
+        description: selectedEvent.description,
+        eventDate: selectedEvent.eventDate,
+        type: parseInt(selectedEvent.type),
+        locationId: parseInt(selectedEvent.locationId),
+        image: imageUrl,
+        userId: selectedEvent.userId
+      };
+
+      await adminUpdateEvent(selectedEvent.eventId, eventData);
+      showSuccessAlert("Evento actualizado correctamente");
+      onRefresh();
+      handleCloseDialog();
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Error updating event:", error);
+      showErrorAlert(`Error al actualizar evento: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleViewEventDetails = (event) => {
@@ -116,7 +171,7 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
         <p><strong>Imagen:</strong> ${event.image ? 'Sí' : 'No'}</p>
       </div>
     `;
-    
+
     Swal.fire({
       title: 'Detalles de Evento',
       html: content,
@@ -141,7 +196,7 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
     setErrors({});
   };
 
-   const handleToggleStatus = async (eventId) => {
+  const handleToggleStatus = async (eventId) => {
     try {
       await toggleEventStatus(eventId);
       showSuccessAlert("Estado del evento actualizado correctamente");
@@ -175,23 +230,23 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
                 <TableCell>{new Date(event.eventDate).toLocaleDateString()}</TableCell>
                 <TableCell>{getEventTypeName(event.type)}</TableCell>
                 <TableCell>
-                  <Button 
-                    size="small" 
+                  <Button
+                    size="small"
                     variant="outlined"
                     onClick={() => handleEditEvent(event)}
                     sx={{ mr: 1 }}
                   >
                     Editar
                   </Button>
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
+                  <Button
+                    size="small"
+                    variant="outlined"
                     color="info"
                     onClick={() => handleViewEventDetails(event)}
                   >
                     Detalles
                   </Button>
-                   <Button
+                  <Button
                     variant="contained"
                     size="small"
                     onClick={() => handleToggleStatus(event.eventId)}
@@ -262,7 +317,50 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
                 </Select>
                 {errors.type && <FormHelperText>{errors.type}</FormHelperText>}
               </FormControl>
-              <TextField
+
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1">Imagen del Evento</Typography>
+
+                {/* Vista previa de la imagen */}
+                {(selectedEvent.image || selectedFile) && (
+                  <Box sx={{ textAlign: 'center', mb: 2 }}>
+                    <img
+                      src={selectedFile ? URL.createObjectURL(selectedFile) : selectedEvent.image}
+                      alt="Vista previa"
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '200px',
+                        objectFit: 'contain',
+                        borderRadius: '4px'
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {/* Selector de archivo */}
+                <input
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  id="event-image-upload"
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setSelectedFile(file);
+                    }
+                  }}
+                />
+                <label htmlFor="event-image-upload">
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    fullWidth
+                  >
+                    Seleccionar Imagen
+                  </Button>
+                </label>
+              </Box>
+              {/*  <TextField
                 label="URL de imagen *"
                 name="image"
                 value={selectedEvent.image || ''}
@@ -271,7 +369,7 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
                 required
                 error={!!errors.image}
                 helperText={errors.image}
-              />
+              /> */}
               <Autocomplete
                 options={cities}
                 getOptionLabel={(option) => option.name || ''}

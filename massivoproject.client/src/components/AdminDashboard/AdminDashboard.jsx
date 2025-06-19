@@ -15,6 +15,7 @@ import AdminVehiclePanel from './AdminVehiclePanel';
 import AdminEventPanel from './AdminEventPanel';
 import AdminCreatePanel from './AdminCreatePanel';
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -32,6 +33,8 @@ const AdminDashboard = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openCreatePanel, setOpenCreatePanel] = useState(false);
+  const navigate = useNavigate();
+  
   // Alert functions
   const showSuccessAlert = (message) => {
     Swal.fire({
@@ -68,8 +71,8 @@ const AdminDashboard = () => {
       console.log(eventsData)
       setEvents(eventsData);
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
       showErrorAlert("Error al cargar los datos");
+      navigate("/");
     } finally {
       setLoading(false);
     }

@@ -301,6 +301,10 @@ namespace Infraestructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("ProfileImage")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("ProvinceId")
                         .HasColumnType("int");
 

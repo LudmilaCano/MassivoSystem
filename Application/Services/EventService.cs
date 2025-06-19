@@ -83,7 +83,7 @@ namespace Application.Services
 
             await _eventRepository.AddAsync(newEvent);
 
-            var user = await _userRepository.GetByIdAsync(request.UserId);
+            /*var user = await _userRepository.GetByIdAsync(request.UserId);
             if (user != null && !string.IsNullOrEmpty(user.Email))
             {
                 await _notificationService.SendNotificationEmail(
@@ -91,7 +91,7 @@ namespace Application.Services
                     NotificationType.EventoCreado,
                     EventDto.Create(newEvent)
                 );
-            }
+            }*/
 
             return EventDto.Create(newEvent);
 

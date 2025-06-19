@@ -57,6 +57,7 @@ const CustomerProfile = () => {
   const { showAlert } = useSwalAlert();
   const { handleChangeRol } = useChangeRol(setUserData);
   const userIdFromState = useSelector((state) => state.auth.userId);
+  const [selectedFile, setSelectedFile] = useState(null);
 
 
   
@@ -89,7 +90,7 @@ const CustomerProfile = () => {
     const fetchUser = async () => {
       try {
         const data = await getUserById(userId);
-
+        console.log(data);
         const provinceId = data.province?.toString() || "";
         const cityId = data.city?.toString() || "";
 
@@ -155,6 +156,23 @@ const CustomerProfile = () => {
 
   const handleSave = async () => {
   try {
+    let profileImageUrl = editData.profilePic;
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const response = await fetch('https://localhost:7089/api/File/upload/user', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al subir la imagen');
+      }
+
+      const data = await response.json();
+      profileImageUrl = data.url;
+    }
     const payload = {
       UserId: userId,
       FirstName: editData.firstName,
@@ -164,6 +182,7 @@ const CustomerProfile = () => {
       Password: editData.password || null,
       City: parseInt(editData.city),
       Province: parseInt(editData.province),
+      ProfileImage: profileImageUrl
     };
 
     await updateUser(userId, payload);
@@ -191,6 +210,10 @@ const CustomerProfile = () => {
   }
 };
 
+  const handleFileUploaded = (fileUrl) => {
+  setProfilePic(fileUrl);
+  setEditData({ ...editData, profilePic: fileUrl });
+};
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -210,7 +233,12 @@ const CustomerProfile = () => {
     <div className="container">
       <div className="profile-section">
         <div className="profile-pic-placeholder">
-          <Avatar src={profilePic} sx={{ width: 120, height: 120 }} />
+          <Avatar profileImage
+    src={userData.profileImage || "/path/to/default-avatar.png"} 
+    sx={{ width: 120, height: 120 }}
+  >
+    {!userData.profilePic && `${userData.firstName?.[0] || ''}${userData.lastName?.[0] || ''}`}
+  </Avatar>
         </div>
 
         <h2>Datos personales</h2>
@@ -302,11 +330,34 @@ const CustomerProfile = () => {
           </Typography>
 
           <Avatar
-            src={profilePic}
-            sx={{ width: 80, height: 80, alignSelf: "center" }}
-          />
-          <input type="file" accept="image/*" onChange={handleImageChange} />
+  src={selectedFile ? URL.createObjectURL(selectedFile) : profilePic || "/path/to/default-avatar.png"}
+  sx={{ width: 80, height: 80, alignSelf: "center", mb: 2 }}
+>
+  {!profilePic && !selectedFile && `${editData.firstName?.[0] || ''}${editData.lastName?.[0] || ''}`}
+</Avatar>
 
+<input
+  accept="image/*"
+  style={{ display: 'none' }}
+  id="profile-image-upload"
+  type="file"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  }}
+/>
+<label htmlFor="profile-image-upload">
+  <Button
+    variant="outlined"
+    component="span"
+    fullWidth
+    sx={{ mb: 2 }}
+  >
+    Seleccionar Imagen
+  </Button>
+</label>
           <TextField
             label="Nombre"
             value={editData.firstName}
