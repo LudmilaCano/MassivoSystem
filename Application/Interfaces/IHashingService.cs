@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace MassivoProject.Application.Interfaces
 {
     /// <summary>
-    /// Servicio para generar y verificar hashes (p.ej. de contraseñas).
+    /// Servicio para generar y verificar hashes.
     /// </summary>
     public interface IHashingService
     {
@@ -19,7 +19,7 @@ namespace MassivoProject.Application.Interfaces
         (string Hash, string Salt) CreateHash(string plainText, string Salt, string Hash);
 
         /// <summary>
-        /// Verifica que el texto plano, al hashearse con el mismo salt, coincida con el hash dado.
+        /// Verificar que el texto plano, al hashearse con el mismo salt, coincida con el hash.
         /// </summary>
         /// <param name="plainText">Texto claro a verificar.</param>
         /// <param name="hash">Hash almacenado (Base64).</param>
