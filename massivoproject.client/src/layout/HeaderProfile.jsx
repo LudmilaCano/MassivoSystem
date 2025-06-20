@@ -128,7 +128,7 @@ const HeaderPerfil = () => {
             </Button>
           </Box>
         )}
-        <Button
+        {token && <Button
           onClick={handleLogout}
           variant="outlined"
           sx={{
@@ -140,7 +140,7 @@ const HeaderPerfil = () => {
           }}
         >
           Logout
-        </Button>
+        </Button>}
       </div>
 
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
