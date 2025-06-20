@@ -123,6 +123,7 @@ const ReviewList = ({ eventVehicleId }) => {
                   review={r}
                   onDelete={handleDelete}
                   onEdit={handleEdit}
+                  showDetails={false}  
                 />
               ))
             )}
@@ -154,7 +155,7 @@ const ReviewList = ({ eventVehicleId }) => {
         </DialogActions>
       </Dialog>
     </Box>
-  
+
   );
 };
 

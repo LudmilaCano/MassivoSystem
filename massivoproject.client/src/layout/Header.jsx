@@ -19,7 +19,9 @@ import { logout } from "../redux/AuthSlice";
 import Colors from "./Colors.jsx";
 import logo from "../Images/logo2.png";
 import useChangeRol from "../hooks/useChangeRol.jsx";
-import { sendUpcomingBookingNotifications } from "../api/BookingEndpoints.jsx";
+import { sendUpcomingBookingNotifications } from "../api/BookingEndpoints.jsx"; 
+
+
 
 const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -146,12 +148,14 @@ const Header = () => {
               </ListItem>
             )}
 
+
             <ListItem
               button
               onClick={() =>
                 window.scrollTo({
                   top: document.body.scrollHeight,
                   behavior: "smooth",
+
                 })
               }
             >
@@ -181,6 +185,24 @@ const Header = () => {
                   <ListItem button onClick={handleChangeRol} sx={{ pl: 4 }}>
                     <ListItemText primary="Quiero ser Prestador" />
                   </ListItem>
+                )}
+                {role === "User" && (
+                  <>
+                    <ListItem
+                      button
+                      onClick={() => handleNavigate("/my-bookings")}
+                      sx={{ pl: 4 }}
+                    >
+                      <ListItemText primary="Mis Reservas" />
+                    </ListItem>
+                    <ListItem
+                      button
+                      onClick={() => handleNavigate("/my-reviews")}
+                      sx={{ pl: 4 }}
+                    >
+                      <ListItemText primary="Mis Reseñas" />
+                    </ListItem>
+                  </>
                 )}
                 {role === "Admin" && (
                   <ListItem button onClick={handleSendReminders} sx={{ pl: 4 }}>

@@ -28,6 +28,8 @@ import ActivateAccount from "./components/ActivateAccount.jsx";
 import BookingList from "./components/BookingList.jsx";
 import BookingDetail from "./components/BookingDetail.jsx";
 import NotFound from "./layout/NotFound.jsx";
+import MyReviews from "./components/MyReviews.jsx";
+import MyBookings from "./components/MyBookings.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -130,6 +132,26 @@ function App() {
         <ProtectedRoute allowedRoles={["Admin", "User"]}>
           <MainLayout>
             <Booking />
+          </MainLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/my-reviews",
+      element: (
+        <ProtectedRoute allowedRoles={["User", "Admin"]}>
+          <MainLayout>
+            <MyReviews />
+          </MainLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/my-bookings",
+      element: (
+        <ProtectedRoute allowedRoles={["User", "Admin"]}>
+          <MainLayout>
+            <MyBookings />
           </MainLayout>
         </ProtectedRoute>
       ),
