@@ -148,7 +148,7 @@ namespace MassivoProject.Server.Controllers
         public async Task<IActionResult> GetActiveEvents()
         {
             var events = await _eventService.GetAllActiveEventsWithVehiclesIncludedAsync();
-            return Ok();
+            return Ok(events);
         }
 
     }
