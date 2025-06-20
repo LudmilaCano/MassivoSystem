@@ -7,7 +7,7 @@ import {
 import Carousel from 'react-material-ui-carousel';
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { getRandomEvents, filterEvents } from "../api/EventEndpoints";
+import { getRandomEvents, filterEvents, getAllEvents } from "../api/EventEndpoints";
 import { getEventTypeLabel } from "../constants/eventCategories";
 import { useBusyDialog } from "../hooks/useBusyDialog";
 import { setShowInNavbar, setEvents } from "../redux/SearchSlice";
@@ -29,51 +29,8 @@ const Home = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [page, setPage] = useState(1);
   const [eventsPerPage] = useState(3);
-
-  // Activar el buscador en el navbar cuando estamos en Home
-  useEffect(() => {
-    dispatch(setShowInNavbar(true));
-    return () => dispatch(setShowInNavbar(false));
-  }, [dispatch]);
-
-  const handlePageChange = (event, value) => {
-    setPage(value);
-    // Opcional: hacer scroll hacia arriba cuando cambia la página
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  const indexOfLastEvent = page * eventsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
-
-  console.log(events  );  
-  // Calcular el número total de páginas
-  const totalPages = Math.ceil(events.length / eventsPerPage);
-
-  function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  }
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setBusy(true);
-      try {
-        const data = await getRandomEvents(4);
-        dispatch(setEvents(data));
-      } catch (error) {
-        console.error("Error fetching random events:", error);
-      }
-      setBusy(false);
-    };
-    fetchEvents();
-  }, [dispatch]);
-
-  // Definición de los slides para el carrusel
-  const carouselItems = [
+  const [randomEvents, setRandomEvents] = useState([]);
+  const [combinedCarouselItems, setCombinedCarouselItems] = useState([
     {
       image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
       title: "Hacete prestador",
@@ -90,13 +47,6 @@ const Home = () => {
     },
     {
       image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
-      title: "¡Viajá al recital de Coldplay en River!",
-      subtitle: "Reservá tu vehículo y asegurá tu lugar.",
-      buttonText: "Ver eventos",
-      buttonAction: () => navigate("/events")
-    },
-    {
-      image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
       title: "Seguridad ante todo",
       subtitle: "Validamos cada viaje con QR único.",
       buttonText: "Cómo funciona",
@@ -109,7 +59,81 @@ const Home = () => {
       buttonText: "Ir al perfil",
       buttonAction: () => navigate("/profile")
     }
-  ];
+  ]);
+
+  // Activar el buscador en el navbar cuando estamos en Home
+  useEffect(() => {
+    dispatch(setShowInNavbar(true));
+    return () => dispatch(setShowInNavbar(false));
+  }, [dispatch]);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    // Opcional: hacer scroll hacia arriba cuando cambia la página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const indexOfLastEvent = page * eventsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+  const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
+
+  console.log(events);
+  // Calcular el número total de páginas
+  const totalPages = Math.ceil(events.length / eventsPerPage);
+
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  }
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setBusy(true);
+      try {
+        // Obtener todos los eventos para la lista principal
+        const data = await getAllEvents();
+        dispatch(setEvents(data));
+
+        // Obtener eventos aleatorios para el carrusel
+        const randomEventsData = await getRandomEvents(4);
+        setRandomEvents(randomEventsData);
+
+        const randomSlides = randomEventsData.map(event => ({
+  image: event.image || "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
+  title: event.name || "Evento destacado",
+  subtitle: event.description || "Únete a este increíble evento",
+  buttonText: "Ver detalles",
+  buttonAction: () => navigate(`/vehicle-list/${event.eventId}`),
+  isEvent: true,
+  eventId: event.eventId,
+  eventDate: event.eventDate,
+  location: event.location
+}));
+
+        // Agregar los nuevos slides al final del array
+        setCombinedCarouselItems(prevItems => {
+          // Mantener solo los slides informativos originales (los primeros 5)
+          const infoSlides = prevItems.slice(0, 5);
+          return [...infoSlides, ...randomSlides];
+        });
+
+        console.log(combinedCarouselItems);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+      setBusy(false);
+    };
+    fetchEvents();
+  }, [dispatch, auth.token, navigate]);
+
+
+
+
+  // Definición de los slides para el carrusel
+
 
   return (
     <>
@@ -122,7 +146,8 @@ const Home = () => {
               animation="slide"
               navButtonsAlwaysVisible
               autoPlay
-              interval={5000}
+              interval={2000}
+              indicatorIcon={combinedCarouselItems}
               indicators={true}
               navButtonsProps={{
                 style: {
@@ -132,7 +157,7 @@ const Home = () => {
                 }
               }}
             >
-              {carouselItems.map((item, index) => (
+              {combinedCarouselItems.map((item, index) => (
                 <Paper
                   key={index}
                   sx={{
@@ -151,19 +176,49 @@ const Home = () => {
                     borderRadius: 4
                   }}
                 >
+                  {item.isEvent && (
+                    <Chip
+                      label="Evento destacado"
+                      color="primary"
+                      sx={{
+                        position: 'absolute',
+                        top: 16,
+                        right: 16,
+                        backgroundColor: '#ff9800',
+                        fontWeight: 'bold'
+                      }}
+                    />
+                  )}
                   <Typography variant={isMobile ? "h4" : "h2"} component="h2" sx={{ mb: 2, fontWeight: 'bold' }}>
                     {item.title}
                   </Typography>
                   <Typography variant={isMobile ? "body1" : "h6"} sx={{ mb: 4 }}>
                     {item.subtitle}
                   </Typography>
+
+                  {/* Mostrar información adicional solo para eventos */}
+                  {item.isEvent && (
+                    <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                      <Chip
+                        icon={<CalendarTodayIcon />}
+                        label={formatDate(randomEvents.find(e => e.eventId === item.eventId)?.eventDate) || "Fecha próxima"}
+                        sx={{ color: 'white', backgroundColor: 'rgba(255,255,255,0.2)' }}
+                      />
+                      <Chip
+                        icon={<LocationOnIcon />}
+                        label={randomEvents.find(e => e.eventId === item.eventId)?.location || "Ver ubicación"}
+                        sx={{ color: 'white', backgroundColor: 'rgba(255,255,255,0.2)' }}
+                      />
+                    </Box>
+                  )}
+
                   <Button
                     variant="contained"
                     size="large"
                     onClick={item.buttonAction}
                     sx={{
-                      backgroundColor: '#139AA0',
-                      '&:hover': { backgroundColor: '#0d7e82' },
+                      backgroundColor: item.isEvent ? '#ff9800' : '#139AA0',
+                      '&:hover': { backgroundColor: item.isEvent ? '#f57c00' : '#0d7e82' },
                       px: 4,
                       py: 1.5,
                       borderRadius: 8,
@@ -207,7 +262,7 @@ const Home = () => {
           {currentEvents.map((event, index) => (
             <Card
               key={index}
-              
+
               sx={{
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
@@ -276,19 +331,19 @@ const Home = () => {
                         </Typography>
                       </Box>
                     </Grid>
-                    
+
                   </Grid>
 
-               
+
                   <Typography variant="h6" color="primary" fontWeight="bold">
-                    {event.isActive === 0 && "No Disponible" }
+                    {event.isActive === 0 && "No Disponible"}
                   </Typography>
                 </CardContent>
 
                 <Divider sx={{ my: 1 }} />
 
                 <CardActions sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}>
-               
+
 
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <IconButton size="small">

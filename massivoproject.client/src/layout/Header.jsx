@@ -97,53 +97,7 @@ const Header = () => {
       </div>
       
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        {/* Mostrar el buscador solo en la página de inicio */}
-        {isHomePage && (
-          <Box sx={{ 
-            display: "flex", 
-            alignItems: "center", 
-            backgroundColor: "white", 
-            borderRadius: "20px", 
-            padding: "0 10px",
-            marginRight: "10px"
-          }}>
-            <TextField
-              placeholder="Buscar evento..."
-              variant="standard"
-              value={searchName}
-              onChange={(e) => dispatch(setSearchName(e.target.value))}
-              InputProps={{
-                disableUnderline: true,
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ width: "200px" }}
-            />
-            <TextField
-              type="date"
-              variant="standard"
-              value={searchDate}
-              onChange={(e) => dispatch(setSearchDate(e.target.value))}
-              InputProps={{
-                disableUnderline: true,
-              }}
-              sx={{ width: "130px" }}
-            />
-            <Button 
-              onClick={handleSearch}
-              sx={{ 
-                minWidth: "40px", 
-                color: Colors.azul,
-                '&:hover': { backgroundColor: 'transparent' }
-              }}
-            >
-              Ir
-            </Button>
-          </Box>
-        )}
+       
         
         {!logueado ? (
           <>

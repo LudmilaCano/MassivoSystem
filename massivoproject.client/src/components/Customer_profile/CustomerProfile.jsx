@@ -99,6 +99,8 @@ const CustomerProfile = () => {
           dniNumber: data.identificationNumber || "",
         });
 
+        console.log("Datos del usuario:", data);
+
         setEditData({
           userId: data.userId,
           firstName: data.firstName || "",
@@ -200,6 +202,7 @@ const CustomerProfile = () => {
 
     setOpen(false);
     showAlert("¡Datos guardados correctamente!", "success"); // Aquí la alerta SweetAlert
+    navigate("/"); // Redirigir al perfil o a la página deseada
   } catch (error) {
     showAlert("Error al guardar los datos", "error"); // Alerta error
     if (error.response) {
@@ -330,7 +333,7 @@ const CustomerProfile = () => {
           </Typography>
 
           <Avatar
-  src={selectedFile ? URL.createObjectURL(selectedFile) : profilePic || "/path/to/default-avatar.png"}
+  src={selectedFile ? URL.createObjectURL(selectedFile) : profilePic || userData.profileImage}
   sx={{ width: 80, height: 80, alignSelf: "center", mb: 2 }}
 >
   {!profilePic && !selectedFile && `${editData.firstName?.[0] || ''}${editData.lastName?.[0] || ''}`}

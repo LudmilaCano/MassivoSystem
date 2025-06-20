@@ -10,8 +10,14 @@ import {
   ListItemText,
   Divider,
   Button,
+  TextField,
+  Box,
+  InputAdornment
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import SearchIcon from "@mui/icons-material/Search";
+import { setSearchName, setSearchDate, filterEventsThunk } from "../redux/SearchSlice"; // Importa las acciones de búsqueda
+
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import { logout } from "../redux/AuthSlice";
@@ -22,6 +28,13 @@ const HeaderPerfil = () => {
   const { fullName, role, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+   // Obtener el estado de búsqueda de Redux
+    const { searchName, searchDate } = useSelector(state => state.search);
+    
+    // Determinar si estamos en la página de inicio
+    const isHomePage = location.pathname === '/';
+  
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -38,6 +51,10 @@ const HeaderPerfil = () => {
     dispatch(logout());
     navigate("/");
     setDrawerOpen(false);
+  };
+
+  const handleSearch = () => {
+    dispatch(filterEventsThunk());
   };
 
   return (
@@ -62,8 +79,55 @@ const HeaderPerfil = () => {
           style={{ width: "auto", height: "7vh", marginLeft: 10 }}
         />
       </div>
-      
-      <div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "140px" }}>
+        {/* Mostrar el buscador solo en la página de inicio */}
+        {isHomePage && (
+          <Box sx={{ 
+            display: "flex", 
+            alignItems: "center", 
+            backgroundColor: "white", 
+            borderRadius: "20px", 
+            padding: "0 10px",
+            marginRight: "10px"
+          }}>
+            <TextField
+              placeholder="Buscar evento..."
+              variant="standard"
+              value={searchName}
+              onChange={(e) => dispatch(setSearchName(e.target.value))}
+              InputProps={{
+                disableUnderline: true,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ width: "200px" }}
+            />
+            <TextField
+              type="date"
+              variant="standard"
+              value={searchDate}
+              onChange={(e) => dispatch(setSearchDate(e.target.value))}
+              InputProps={{
+                disableUnderline: true,
+              }}
+              sx={{ width: "130px" }}
+            />
+            <Button 
+              onClick={handleSearch}
+              sx={{ 
+                minWidth: "40px", 
+                color: Colors.azul,
+                '&:hover': { backgroundColor: 'transparent' }
+              }}
+            >
+              Ir
+            </Button>
+          </Box>
+        )}
         <Button
           onClick={handleLogout}
           variant="outlined"
@@ -96,6 +160,14 @@ const HeaderPerfil = () => {
             <>
               <ListItem button onClick={handleLogout}>
                 <ListItemText primary="Logout" />
+              </ListItem>
+
+              <ListItem button onClick={handleLogout}>
+                <ListItemText primary="Nosotros" />
+              </ListItem>
+
+               <ListItem button onClick={handleLogout}>
+                <ListItemText primary="Contacto" />
               </ListItem>
 
               {role === "Admin" && (

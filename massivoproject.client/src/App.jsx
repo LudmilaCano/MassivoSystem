@@ -28,6 +28,8 @@ import ActivateAccount from "./components/ActivateAccount.jsx";
 import BookingList from "./components/BookingList.jsx";
 import BookingDetail from "./components/BookingDetail.jsx";
 import NotFound from "./layout/NotFound.jsx";
+import Contact from "./components/Contact.jsx";
+import Instructive from "./components/Instructive.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -203,7 +205,30 @@ function App() {
         </MainLayout>
       ),
     },
-
+     {
+      path: "/contact",
+      element: (
+        
+        
+          <MainLayout>
+            <Contact />
+          </MainLayout>
+        
+        
+      ),
+    },
+    {
+      path: "/instructivo",
+      element: (
+        
+        
+          <MainLayout>
+            <Instructive  />
+          </MainLayout>
+        
+        
+      ),
+    },
     {
       path: "*",
       element: (
