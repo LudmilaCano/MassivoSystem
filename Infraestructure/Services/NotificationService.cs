@@ -76,7 +76,7 @@ namespace Infraestructure.Services
                             <b>Monto abonado:</b> {reservaUsuario.Payment.Amount:N2}
                             <p>Mostrá el código QR para abordar el vehículo.</p>
                             <br/>
-                            {qrImageHtml}
+                            {qrBase64}
                             <br/>
                             <p>¡Gracias por usar Massivo App!</p>";
                         }

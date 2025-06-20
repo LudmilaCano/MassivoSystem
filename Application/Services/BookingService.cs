@@ -186,22 +186,22 @@ namespace Application.Services
             );
 
             var user = await _userRepository.GetByIdAsync(addBookingRequest.UserId);
-            string qrPayload = $"BookingId:{bookingSaved.Id};UserId:{user.UserId};Event:{eventEntity.Name};Date:{bookingSaved.Date}";
+            string qrPayload = $"BookingId:{bookingSaved.Id};UserId:{user.UserId};Event:{eventEntity.Name};Date:{bookingSaved.Date};Estado:{bookingSaved.BookingStatus}";
             byte[] qrCodeBytes = GenerateQrCode(qrPayload);
-            
+
             if (user != null)
             {
-                await _notificationService.SendNotificationEmail(
+                /*await _notificationService.SendNotificationEmail(
                     user.Email,
                     NotificationType.ReservaCreadaUser,
                     bookingDto,
                     qrCodeBytes
             );
-            }
-            /*await _emailService.SendEmailAsync(
-                user.Email,
-                "🎟 Confirmación de tu reserva en Massivo App",
-                $@"
+            }*/
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "🎟 Confirmación de tu reserva en Massivo App",
+                    $@"
             <p>¡Hola {user.FirstName}!</p>
             <p>Tu reserva para <strong>{eventEntity.Name}</strong> ha sido confirmada.</p>
             <p>Adjuntamos tu código QR que usarás para'0 abordar el vehículo.</p>
@@ -213,8 +213,9 @@ namespace Application.Services
             </ul>
             <br/>
             <p>¡Gracias por usar Massivo App!</p>",
-                qrCodeBytes
-            );*/
+                    qrCodeBytes
+                );
+            }
 
 
             return bookingDto;
