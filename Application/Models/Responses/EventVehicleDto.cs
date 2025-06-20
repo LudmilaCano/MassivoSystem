@@ -20,8 +20,6 @@ namespace Application.Models.Responses
         public string VehicleType { get; set; }
         public string? From { get; set; }
         public VehicleDto Vehicle { get; set; }
-        public EntityState IsActive { get; set; }
-
 
         public static EventVehicleDto Create(EventVehicle eventVehicleEntity)
         {
@@ -37,8 +35,6 @@ namespace Application.Models.Responses
                 VehicleType = eventVehicleEntity.Vehicle?.Type.ToString(),
                 From = eventVehicleEntity.Vehicle?.User?.City?.Name,
                 Vehicle = eventVehicleEntity.Vehicle != null ? VehicleDto.Create(eventVehicleEntity.Vehicle) : null,
-                IsActive = eventVehicleEntity.IsActive
-
             };
         }
     }

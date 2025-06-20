@@ -16,6 +16,7 @@ namespace Application.Interfaces
         Task<bool> AdminUpdateVehicleAsync(string licensePlate, AdminVehicleUpdateRequest request);
 
         Task<bool> ToggleStatusAsync(string licensePlate);
+        Task<List<Vehicle>> GetAllActiveVehiclesAsync();
 
 
     }
