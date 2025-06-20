@@ -198,6 +198,23 @@ namespace Application.Services
                     qrCodeBytes
             );
             }
+            /*await _emailService.SendEmailAsync(
+                user.Email,
+                "🎟 Confirmación de tu reserva en Massivo App",
+                $@"
+            <p>¡Hola {user.FirstName}!</p>
+            <p>Tu reserva para <strong>{eventEntity.Name}</strong> ha sido confirmada.</p>
+            <p>Adjuntamos tu código QR que usarás para'0 abordar el vehículo.</p>
+            <p>Detalles:</p>
+            <ul>
+                <li>Vehículo: {vehicle.Name} ({vehicle.LicensePlate})</li>
+                <li>Asientos reservados: {booking.SeatNumber}</li>
+                <li>Fecha de reserva: {booking.Date:dd/MM/yyyy HH:mm}</li>
+            </ul>
+            <br/>
+            <p>¡Gracias por usar Massivo App!</p>",
+                qrCodeBytes
+            );*/
 
 
             return bookingDto;
