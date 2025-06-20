@@ -22,29 +22,22 @@ namespace Application.Services
         private readonly IEventRepository _eventRepository;
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IPaymentRepository _paymentRepository;
-<<<<<<< HEAD
+
         private readonly IPaymentService _paymentService;
         private readonly IUserRepository _userRepository;
         private readonly INotificationService _notificationService;
-        public BookingService(INotificationService notificationService,IUserRepository userRepository, IPaymentService paymentService, IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository)
-=======
         private readonly IEmailService _emailService;
-        private readonly IUserRepository _userRepository;
-        public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository, IEmailService emailService, IUserRepository userRepository)
->>>>>>> PPF-147-Logica-de-QR
+        public BookingService(INotificationService notificationService,IUserRepository userRepository, IPaymentService paymentService, IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository, IEmailService emailService)
+
         {
             _bookingRepository = bookingRepository;
             _eventRepository = eventRepository;
             _vehicleRepository = vehicleRepository;
             _paymentRepository = paymentRepository;
-<<<<<<< HEAD
             _paymentService = paymentService;
             _userRepository = userRepository;
             _notificationService = notificationService;
-=======
             _emailService = emailService;   
-            _userRepository = userRepository;
->>>>>>> PPF-147-Logica-de-QR
         }
 
         public async Task<List<BookingDto>> GetBookingsAsync()
@@ -184,30 +177,6 @@ namespace Application.Services
 
             bookingSaved.Payment = paymentSaved;
 
-            var user = await _userRepository.GetByIdAsync(addBookingRequest.UserId)
-                ?? throw new KeyNotFoundException($"Usuario con ID {addBookingRequest.UserId} no fue encontrado.");
-
-            string qrPayload = $"BookingId:{bookingSaved.Id};UserId:{user.UserId};Event:{eventEntity.Name};Date:{bookingSaved.Date}";
-            byte[] qrCodeBytes = GenerateQrCode(qrPayload);
-
-            await _emailService.SendEmailAsync(
-                user.Email,
-                "🎟️ Confirmación de tu reserva en Massivo App",
-                $@"
-            <p>¡Hola {user.FirstName}!</p>
-            <p>Tu reserva para <strong>{eventEntity.Name}</strong> ha sido confirmada.</p>
-            <p>Adjuntamos tu código QR que usarás para'0 abordar el vehículo.</p>
-            <p>Detalles:</p>
-            <ul>
-                <li>Vehículo: {vehicle.Name} ({vehicle.LicensePlate})</li>
-                <li>Asientos reservados: {booking.SeatNumber}</li>
-                <li>Fecha de reserva: {booking.Date:dd/MM/yyyy HH:mm}</li>
-            </ul>
-            <br/>
-            <p>¡Gracias por usar Massivo App!</p>",
-                qrCodeBytes
-            );
-
             var bookingDto = BookingDto.Create(bookingSaved, eventEntity, vehicle);
             // Email al prestador
             await _notificationService.SendNotificationEmail(
@@ -226,11 +195,6 @@ namespace Application.Services
             );
             }
 
-
-
-            var user = await _userRepository.GetByIdAsync(addBookingRequest.UserId)
-                ?? throw new KeyNotFoundException($"Usuario con ID {addBookingRequest.UserId} no fue encontrado.");
-
             string qrPayload = $"BookingId:{bookingSaved.Id};UserId:{user.UserId};Event:{eventEntity.Name};Date:{bookingSaved.Date}";
             byte[] qrCodeBytes = GenerateQrCode(qrPayload);
 
@@ -251,7 +215,11 @@ namespace Application.Services
             <p>¡Gracias por usar Massivo App!</p>",
                 qrCodeBytes
             );
-            return bookingDto;return BookingDto.Create(bookingSaved, eventEntity, vehicle);
+
+           
+
+
+            return bookingDto;
 
         }
 
