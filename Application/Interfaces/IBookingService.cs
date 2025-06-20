@@ -19,6 +19,5 @@ namespace Application.Interfaces
         Task NotificarReservasProximasAsync();
 
         Task CompleteBookingAsync(int bookingId);
-
     }
 }
