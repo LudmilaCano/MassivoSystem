@@ -13,6 +13,8 @@ namespace Domain.Interfaces
         Task<bool> ToggleStatusAsync(string licensePlate);
         Task<List<int>> GetVehicleEventVehicleIdsAsync(string licensePlate);
         Task<EntityState> GetVehicleEntityStateAsync(string licensePlate);
+        Task<List<Vehicle>> GetAllActiveVehiclesAsync();
+
 
     }
 }

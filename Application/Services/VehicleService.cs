@@ -19,7 +19,7 @@ namespace Application.Services
         private readonly IUserRepository _userRepository;
         private readonly INotificationService _notificationService;
 
-        public VehicleService(IVehicleRepository vehicleRepository, IUserRepository userRepository, INotificationService notificationService, IEventVehicleRepository eventVehicleRepository )
+        public VehicleService(IVehicleRepository vehicleRepository, IUserRepository userRepository, INotificationService notificationService, IEventVehicleRepository eventVehicleRepository)
         {
             _vehicleRepository = vehicleRepository;
             _userRepository = userRepository;
@@ -90,7 +90,7 @@ namespace Application.Services
             bool exists = await _vehicleRepository.ExistsByLicensePlateAsync(request.LicensePlate);
             if (exists)
                 throw new InvalidOperationException("Ya existe un vehículo con esa patente.");
-            
+
 
             var vehicle = new Vehicle
             {
@@ -208,6 +208,14 @@ namespace Application.Services
             // Finalmente, cambiar el estado del vehículo
             return await _vehicleRepository.ToggleStatusAsync(licensePlate);
         }
-
+        public async Task<List<Vehicle>> GetAllActiveVehiclesAsync()
+        {
+            var response = await _vehicleRepository.GetAllActiveVehiclesAsync();
+            if (response == null)
+            {
+                throw new KeyNotFoundException("No se encontro la lista de vehiculos...");
+            }
+            return response;
+        }
     }
 }

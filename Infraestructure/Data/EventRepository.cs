@@ -44,6 +44,7 @@ namespace Infraestructure.Data
                     .ThenInclude(ev => ev.Vehicle)
                 .ToListAsync();
         }
+
         public async Task<List<Event>> GetAllActiveEventsWithVehiclesIncludedAsync()
         {
             return await _context.Events

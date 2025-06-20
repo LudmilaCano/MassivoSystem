@@ -33,7 +33,7 @@ namespace Infraestructure.Data
                 .ToListAsync();
         }
 
-        public async Task<List<EventVehicle>> GetActiveVehiclesByEventAsync(int eventId)
+        public async Task<List<EventVehicle>> GetAllActiveVehiclesByEventAsync(int eventId)
         {
             return await _context.EventsVehicles
                 .Include(ev => ev.Vehicle)
