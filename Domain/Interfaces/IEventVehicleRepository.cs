@@ -16,6 +16,8 @@ namespace Domain.Interfaces
         Task<EventVehicle> UpdateEventVehicle(EventVehicle eventVehicle);
         Task<bool> BelongsToUserAsync(int eventVehicleId, int userId);
         Task<bool> ToggleStatusAsync(int eventVehicleId);
+        Task<List<EventVehicle>> GetAllActiveVehiclesByEventAsync(int eventId);
+
 
     }
 }

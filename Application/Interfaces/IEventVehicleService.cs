@@ -20,5 +20,7 @@ namespace Application.Interfaces
         Task<EventVehicle> GetByIdAsync(int id);
         Task<EventVehicle> UpdateEventVehicleAsync(UpdateEventVehicleRequest eventVehicle, int userId);
         Task<bool> ToggleStatusAsync(int eventVehicleId);
+        Task<List<EventVehicleDto>> GetAllEventVehiclesActiveByEventAsync(int eventId);
+
     }
 }

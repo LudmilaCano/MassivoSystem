@@ -112,6 +112,13 @@ namespace MassivoProject.Server.Controllers
             return Ok(new { message = "Estado del viaje actualizado correctamente" });
         }
 
+        [HttpGet("Activos")]
+        public async Task<IActionResult> GetAllEventVehiclesActiveByEvent(int eventId)
+        {
+            var response = await _eventVehicleService.GetAllEventVehiclesActiveByEventAsync(eventId);
+            return Ok(response);
+        }
+
     }
 
 
