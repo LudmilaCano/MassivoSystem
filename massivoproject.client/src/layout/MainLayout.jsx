@@ -13,8 +13,9 @@ const MainLayout = ({children}) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <header>
+      <HeaderPerfil />
               {/*{isProfilePage ? <HeaderPerfil /> : <Header />}*/}
-        <Header/>
+       {/*  <Header/> */}
       </header>
       
       <main style={{ flex: 1 }}>

@@ -1,33 +1,84 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Grid, Typography, TextField, Paper } from "@mui/material";
-
-import imagenEjemplo from "../images/logo2.png";
-import { getRandomEvents, filterEvents } from "../api/EventEndpoints";
-
+import {
+  Box, Button, Typography, Paper, Card, CardMedia, CardContent,
+  CardActions, Chip, Rating, Divider, Grid, useTheme, useMediaQuery,
+  Stack, IconButton, Pagination
+} from "@mui/material";
+import Carousel from 'react-material-ui-carousel';
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { getRandomEvents, filterEvents, getAllEvents } from "../api/EventEndpoints";
 import { getEventTypeLabel } from "../constants/eventCategories";
 import { useBusyDialog } from "../hooks/useBusyDialog";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { setShowInNavbar, setEvents } from "../redux/SearchSlice";
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import PeopleIcon from '@mui/icons-material/People';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ShareIcon from '@mui/icons-material/Share';
 
 const Home = () => {
-  const [events, setEvents] = useState([]);
-  const [people, setPeople] = useState("");
-  const [searchName, setSearchName] = useState("");
-  const [searchDate, setSearchDate] = useState("");
+  const events = useSelector(state => state.search.events || []);
+  const searchActive = useSelector(state => state.search.searchName || state.search.searchDate);
   const [busy, setBusy, BusyDialog] = useBusyDialog();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
-
-  const handleFilter = async () => {
-    setBusy(true);
-    try {
-      const data = await filterEvents(searchName, searchDate);
-      setEvents(data);
-    } catch (error) {
-      console.error("Error filtrando eventos:", error);
+  const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [page, setPage] = useState(1);
+  const [eventsPerPage] = useState(3);
+  const [randomEvents, setRandomEvents] = useState([]);
+  const [combinedCarouselItems, setCombinedCarouselItems] = useState([
+    {
+      image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
+      title: "Hacete prestador",
+      subtitle: "Ofrecé tu vehículo para eventos y generá ingresos.",
+      buttonText: "Quiero ser prestador",
+      buttonAction: () => navigate("/profile")
+    },
+    {
+      image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
+      title: "Pagá fácil y seguro",
+      subtitle: "Usá Mercado Pago para tus reservas sin complicaciones.",
+      buttonText: "Reservá ahora",
+      buttonAction: () => navigate(auth.isAuthenticated ? "/events" : "/login")
+    },
+    {
+      image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
+      title: "Seguridad ante todo",
+      subtitle: "Validamos cada viaje con QR único.",
+      buttonText: "Cómo funciona",
+      buttonAction: () => navigate("/como-funciona")
+    },
+    {
+      image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
+      title: "Gestioná todo desde tu perfil",
+      subtitle: "Eventos, vehículos, reservas y más en un solo lugar.",
+      buttonText: "Ir al perfil",
+      buttonAction: () => navigate("/profile")
     }
-    setBusy(false);
+  ]);
+
+  // Activar el buscador en el navbar cuando estamos en Home
+  useEffect(() => {
+    dispatch(setShowInNavbar(true));
+    return () => dispatch(setShowInNavbar(false));
+  }, [dispatch]);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    // Opcional: hacer scroll hacia arriba cuando cambia la página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const indexOfLastEvent = page * eventsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+  const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
+
+  console.log(events);
+  // Calcular el número total de páginas
+  const totalPages = Math.ceil(events.length / eventsPerPage);
 
   function formatDate(dateString) {
     const date = new Date(dateString);
@@ -42,182 +93,332 @@ const Home = () => {
     const fetchEvents = async () => {
       setBusy(true);
       try {
-        const data = await getRandomEvents(4);
-        setEvents(data);
+        // Obtener todos los eventos para la lista principal
+        const data = await getAllEvents();
+        dispatch(setEvents(data));
+
+        // Obtener eventos aleatorios para el carrusel
+        const randomEventsData = await getRandomEvents(4);
+        setRandomEvents(randomEventsData);
+
+        const randomSlides = randomEventsData.map(event => ({
+  image: event.image || "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
+  title: event.name || "Evento destacado",
+  subtitle: event.description || "Únete a este increíble evento",
+  buttonText: "Ver detalles",
+  buttonAction: () => navigate(`/vehicle-list/${event.eventId}`),
+  isEvent: true,
+  eventId: event.eventId,
+  eventDate: event.eventDate,
+  location: event.location
+}));
+
+        // Agregar los nuevos slides al final del array
+        setCombinedCarouselItems(prevItems => {
+          // Mantener solo los slides informativos originales (los primeros 5)
+          const infoSlides = prevItems.slice(0, 5);
+          return [...infoSlides, ...randomSlides];
+        });
+
+        console.log(combinedCarouselItems);
       } catch (error) {
-        console.error("Error fetching random events:", error);
+        console.error("Error fetching events:", error);
       }
       setBusy(false);
     };
     fetchEvents();
-  }, []);
+  }, [dispatch, auth.token, navigate]);
 
-  const features = [
-    {
-      icon: "✅🚗",
-      label: "Viajá seguro",
-      shadowColor: "rgba(255, 69, 0, 0.5)",
-    },
-    {
-      icon: "💸",
-      label: "Viajá barato",
-      shadowColor: "rgba(30, 144, 255, 0.5)",
-    },
-    {
-      icon: "📍🌍",
-      label: "Viajá donde sea",
-      shadowColor: "rgba(34, 139, 34, 0.5)",
-    },
-  ];
+
+
+
+  // Definición de los slides para el carrusel
+
 
   return (
     <>
       {BusyDialog}
-      {
-        <Box sx={{ px: 8, py: 2, maxHeight: "70vh" }}>
-          {/* Header */}
-          <Typography variant="h5" fontWeight="bold" textAlign="center">
-            Compartí tu viaje, compartí la experiencia
-          </Typography>
-
-          {/* Search Bar */}
-          <Paper
-            elevation={3}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              mt: 3,
-              mx: 6,
-              p: 2,
-              flexWrap: "wrap",
-              gap: 1,
-            }}
-          >
-            <TextField
-              variant="standard"
-              placeholder="¿Qué evento buscas?"
-              fullWidth
-              onChange={(e) => setSearchName(e.target.value)}
-              sx={{ flex: 2, minWidth: 120, px: 2 }}
-            />
-            <TextField
-              variant="standard"
-              type="date"
-              fullWidth
-              onChange={(e) => setSearchDate(e.target.value)}
-              sx={{ flex: 1, px: 2 }}
-            />
-            {/* <TextField
-                    label="Cantidad de personas"
-                    type="text"
-                    variant="standard"
-                    value={people}
-                    onChange={handlePeopleChange}
-                    inputProps={{
-                        inputMode: 'numeric',
-                        pattern: '[0-9]*',
-                        min: 1,
-                    }}
-                    sx={{ minWidth: 150 }}
-                /> */}
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: "#139AA0", minWidth: 100, px: 2 }}
-              onClick={handleFilter}
+      <Box sx={{ px: { xs: 2, md: 8 }, py: 4, maxWidth: "1400px", mx: "auto" }}>
+        {/* Mostrar el carrusel solo si no hay búsqueda activa */}
+        {!searchActive && (
+          <Box sx={{ mb: 6 }}>
+            <Carousel
+              animation="slide"
+              navButtonsAlwaysVisible
+              autoPlay
+              interval={2000}
+              indicatorIcon={combinedCarouselItems}
+              indicators={true}
+              navButtonsProps={{
+                style: {
+                  backgroundColor: 'rgba(19, 154, 160, 0.7)',
+                  borderRadius: '50%',
+                  margin: '0 20px'
+                }
+              }}
             >
-              Buscar
-            </Button>
-
-            {auth.role === "Admin" ||
-              (auth.role === "Prestador" && (
-                <Button
-                  variant="contained"
-                  sx={{ backgroundColor: "#139AA0", minWidth: 100, px: 2 }}
-                  onClick={() => navigate("/add-event")}
-                >
-                  Agregar Evento
-                </Button>
-              ))}
-          </Paper>
-
-          <Grid
-            container
-            spacing={3}
-            justifyContent="center"
-            sx={{ my: 5, px: 8 }}
-          >
-            {features.map((item, index) => (
-              <Grid item xs={12} sm={4} key={index}>
+              {combinedCarouselItems.map((item, index) => (
                 <Paper
+                  key={index}
                   sx={{
-                    width: "30vh",
-                    height: "30vh",
-                    borderRadius: "50%",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    mx: "auto",
-                    textAlign: "center",
-                    p: 2,
-                    boxShadow: `0 0 20px ${item.shadowColor}`,
+                    position: 'relative',
+                    height: { xs: '300px', md: '450px' },
+                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${item.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    color: 'white',
+                    textAlign: 'center',
+                    padding: 4,
+                    borderRadius: 4
                   }}
                 >
-                  <Typography fontSize={40}>{item.icon}</Typography>
-                  <Typography fontWeight="bold">{item.label}</Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
+                  {item.isEvent && (
+                    <Chip
+                      label="Evento destacado"
+                      color="primary"
+                      sx={{
+                        position: 'absolute',
+                        top: 16,
+                        right: 16,
+                        backgroundColor: '#ff9800',
+                        fontWeight: 'bold'
+                      }}
+                    />
+                  )}
+                  <Typography variant={isMobile ? "h4" : "h2"} component="h2" sx={{ mb: 2, fontWeight: 'bold' }}>
+                    {item.title}
+                  </Typography>
+                  <Typography variant={isMobile ? "body1" : "h6"} sx={{ mb: 4 }}>
+                    {item.subtitle}
+                  </Typography>
 
-          {/* Event Cards */}
-          <Grid container spacing={4} justifyContent="center">
-            {events.map((event, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Paper elevation={4} sx={{ p: 2, m: 2 }}>
-                  <Box
-                    component="img"
-                    src={event.image}
-                    alt={event.title}
+                  {/* Mostrar información adicional solo para eventos */}
+                  {item.isEvent && (
+                    <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                      <Chip
+                        icon={<CalendarTodayIcon />}
+                        label={formatDate(randomEvents.find(e => e.eventId === item.eventId)?.eventDate) || "Fecha próxima"}
+                        sx={{ color: 'white', backgroundColor: 'rgba(255,255,255,0.2)' }}
+                      />
+                      <Chip
+                        icon={<LocationOnIcon />}
+                        label={randomEvents.find(e => e.eventId === item.eventId)?.location || "Ver ubicación"}
+                        sx={{ color: 'white', backgroundColor: 'rgba(255,255,255,0.2)' }}
+                      />
+                    </Box>
+                  )}
+
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={item.buttonAction}
                     sx={{
-                      width: "100%",
-                      height: 200,
-                      objectFit: "contain",
-                      p: 2,
+                      backgroundColor: item.isEvent ? '#ff9800' : '#139AA0',
+                      '&:hover': { backgroundColor: item.isEvent ? '#f57c00' : '#0d7e82' },
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: 8,
+                      fontWeight: 'bold',
+                      textTransform: 'none',
+                      fontSize: '1.1rem'
                     }}
-                  />
-                  <Box sx={{ p: 2 }}>
-                    <Typography variant="h6" fontWeight="bold">
+                  >
+                    {item.buttonText}
+                  </Button>
+                </Paper>
+              ))}
+            </Carousel>
+          </Box>
+        )}
+
+        {/* Título de la sección de eventos */}
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          sx={{
+            mb: 4,
+            position: 'relative',
+            '&:after': {
+              content: '""',
+              position: 'absolute',
+              bottom: -10,
+              left: 0,
+              width: 80,
+              height: 4,
+              backgroundColor: '#139AA0',
+              borderRadius: 2
+            }
+          }}
+        >
+          {searchActive && "Resultados de búsqueda"}
+        </Typography>
+
+        {/* Tarjetas de eventos en formato horizontal */}
+        <Stack spacing={3}>
+          {currentEvents.map((event, index) => (
+            <Card
+              key={index}
+
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                overflow: 'hidden',
+                borderRadius: 3,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: '0 12px 28px rgba(0,0,0,0.18)'
+                }
+              }}
+            >
+              {/* Imagen del evento */}
+              <CardMedia
+                component="img"
+                sx={{
+                  width: { xs: '100%', md: 300 },
+                  height: { xs: 200, md: 300 },
+                  objectFit: 'cover'
+                }}
+                image={event.image || "https://picsum.photos/800/600"}
+                alt={event.name}
+              />
+
+              {/* Contenido del evento */}
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                flexGrow: 1,
+                p: 3
+              }}>
+                <CardContent sx={{ flex: '1 0 auto', pb: 0 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Typography variant="h5" fontWeight="bold" gutterBottom>
                       {event.name}
                     </Typography>
-                    <Typography variant="body2">
-                      Fecha : {formatDate(event.eventDate)}
-                    </Typography>
-                    <Typography variant="body2">
-                      Lugar : {event.location}
-                    </Typography>
-                    <Typography sx={{ mt: 1 }}>
-                      <strong>{event.price}</strong> $999 por persona
-                    </Typography>
-                    <Typography variant="body2">
-                      Categoría : {getEventTypeLabel(event.type)}
-                    </Typography>
-                    <Typography variant="body2">{event.date}</Typography>
+                    <Chip
+                      label={getEventTypeLabel(event.type)}
+                      color="primary"
+                      sx={{
+                        backgroundColor: '#139AA0',
+                        fontWeight: 'bold'
+                      }}
+                    />
+                  </Box>
+
+                  <Typography variant="body1" color="text.secondary" paragraph>
+                    {event.description || "Únete a este increíble evento y disfruta de una experiencia inolvidable con transporte seguro y cómodo."}
+                  </Typography>
+
+                  <Grid container spacing={2} sx={{ mb: 2 }}>
+                    <Grid item xs={12} sm={6}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <CalendarTodayIcon color="primary" />
+                        <Typography variant="body2">
+                          {formatDate(event.eventDate)}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <LocationOnIcon color="primary" />
+                        <Typography variant="body2">
+                          {event.location || "Ubicación no especificada"}
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                  </Grid>
+
+
+                  <Typography variant="h6" color="primary" fontWeight="bold">
+                    {event.isActive === 0 && "No Disponible"}
+                  </Typography>
+                </CardContent>
+
+                <Divider sx={{ my: 1 }} />
+
+                <CardActions sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}>
+
+
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton size="small">
+                      <FavoriteIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small">
+                      <ShareIcon fontSize="small" />
+                    </IconButton>
                     <Button
                       variant="contained"
-                      fullWidth
-                      sx={{ mt: 2, backgroundColor: "#139AA0" }}
+                      sx={{
+                        backgroundColor: '#139AA0',
+                        '&:hover': { backgroundColor: '#0d7e82' },
+                        borderRadius: 8,
+                        textTransform: 'none'
+                      }}
+                      disabled={!event.isActive}
                       onClick={() => navigate(`/vehicle-list/${event.eventId}`)}
                     >
                       Buscar vehículo
                     </Button>
                   </Box>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
+                </CardActions>
+              </Box>
+            </Card>
+          ))}
+        </Stack>
+
+        {/* Mensaje si no hay eventos */}
+        {events.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Typography variant="h6" color="text.secondary">
+              No se encontraron eventos que coincidan con tu búsqueda.
+            </Typography>
+            <Button
+              variant="contained"
+              sx={{ mt: 2, backgroundColor: '#139AA0' }}
+              onClick={() => dispatch(setEvents([]))}
+            >
+              Ver todos los eventos
+            </Button>
+          </Box>
+        )}
+      </Box>
+      {events.length > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            sx={{
+              '& .MuiPaginationItem-root': {
+                color: '#139AA0',
+              },
+              '& .Mui-selected': {
+                backgroundColor: '#139AA0 !important',
+                color: 'white',
+              }
+            }}
+          />
         </Box>
-      }
+      )}
+
+      {events.length > 0 && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          align="center"
+          sx={{ mt: 1 }}
+        >
+          Mostrando {indexOfFirstEvent + 1}-{Math.min(indexOfLastEvent, events.length)} de {events.length} eventos
+        </Typography>
+      )}
     </>
   );
 };

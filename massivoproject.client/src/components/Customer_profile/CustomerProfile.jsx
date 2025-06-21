@@ -101,6 +101,8 @@ const CustomerProfile = () => {
           dniNumber: data.identificationNumber || "",
         });
 
+        console.log("Datos del usuario:", data);
+
         setEditData({
           userId: data.userId,
           firstName: data.firstName || "",
@@ -156,18 +158,15 @@ const CustomerProfile = () => {
       let profileImageUrl = editData.profilePic;
       if (selectedFile) {
         const formData = new FormData();
-        formData.append("file", selectedFile);
+        formData.append('file', selectedFile);
 
-        const response = await fetch(
-          "https://localhost:7089/api/File/upload/user",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
+        const response = await fetch('https://localhost:7089/api/File/upload/user', {
+          method: 'POST',
+          body: formData
+        });
 
         if (!response.ok) {
-          throw new Error("Error al subir la imagen");
+          throw new Error('Error al subir la imagen');
         }
 
         const data = await response.json();
@@ -182,7 +181,7 @@ const CustomerProfile = () => {
         Password: editData.password || null,
         City: parseInt(editData.city),
         Province: parseInt(editData.province),
-        ProfileImage: profileImageUrl,
+        ProfileImage: profileImageUrl
       };
 
       await updateUser(userId, payload);
@@ -200,6 +199,7 @@ const CustomerProfile = () => {
 
       setOpen(false);
       showAlert("¡Datos guardados correctamente!", "success"); // Aquí la alerta SweetAlert
+      navigate("/"); // Redirigir al perfil o a la página deseada
     } catch (error) {
       showAlert("Error al guardar los datos", "error"); // Alerta error
       if (error.response) {
@@ -272,8 +272,7 @@ const CustomerProfile = () => {
               sx={{ width: 120, height: 120, mb: 2 }}
             >
               {!userData.profileImage &&
-                `${userData.firstName?.[0] || ""}${
-                  userData.lastName?.[0] || ""
+                `${userData.firstName?.[0] || ""}${userData.lastName?.[0] || ""
                 }`}
             </Avatar>
 
@@ -281,36 +280,12 @@ const CustomerProfile = () => {
               Datos personales
             </Typography>
 
-            <Box sx={{ width: "100%", mt: 2 }}>
-              <TextField
-                label="Nombre"
-                value={userData.firstName}
-                fullWidth
-                disabled
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                label="Apellido"
-                value={userData.lastName}
-                fullWidth
-                disabled
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                label="DNI"
-                value={userData.dniNumber}
-                fullWidth
-                disabled
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                label="Email"
-                value={userData.email}
-                fullWidth
-                disabled
-                sx={{ mb: 2 }}
-              />
-            </Box>
+            <Avatar
+              src={selectedFile ? URL.createObjectURL(selectedFile) : profilePic || userData.profileImage}
+              sx={{ width: 80, height: 80, alignSelf: "center", mb: 2 }}
+            >
+              {!profilePic && !selectedFile && `${editData.firstName?.[0] || ''}${editData.lastName?.[0] || ''}`}
+            </Avatar>
 
             <Button
               variant="contained"
@@ -383,18 +358,10 @@ const CustomerProfile = () => {
                 </Typography>
 
                 <Avatar
-                  src={
-                    selectedFile
-                      ? URL.createObjectURL(selectedFile)
-                      : profilePic || "/path/to/default-avatar.png"
-                  }
+                  src={selectedFile ? URL.createObjectURL(selectedFile) : profilePic || userData.profileImage}
                   sx={{ width: 80, height: 80, alignSelf: "center", mb: 2 }}
                 >
-                  {!profilePic &&
-                    !selectedFile &&
-                    `${editData.firstName?.[0] || ""}${
-                      editData.lastName?.[0] || ""
-                    }`}
+                  {!profilePic && !selectedFile && `${editData.firstName?.[0] || ''}${editData.lastName?.[0] || ''}`}
                 </Avatar>
 
                 <input
