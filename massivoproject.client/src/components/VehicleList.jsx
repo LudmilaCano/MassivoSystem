@@ -1,21 +1,41 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Grid, Typography, Paper, Button, TextField, Chip } from '@mui/material';
+import {
+    Box, Grid, Typography, Paper, Button, TextField, Chip,
+    FormControl, InputLabel, Select, MenuItem, Checkbox,
+    Fab, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    IconButton, Alert, Collapse
+} from '@mui/material';
 import Pagination from '@mui/material/Pagination';
 import { useParams } from 'react-router-dom';
-import { getEventById, getVehiclesByEvent, } from '../api/EventEndpoints';
+import { getEventById, getVehiclesByEvent } from '../api/EventEndpoints';
 import { getEventTypeLabel, getEventTypeIcon } from '../constants/eventCategories';
 import { getVehicleTypeImage } from '../constants/vehicleType';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
+// Icons
+import ShareIcon from '@mui/icons-material/Share';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import MapIcon from '@mui/icons-material/Map';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import FlagIcon from '@mui/icons-material/Flag';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import CloseIcon from '@mui/icons-material/Close';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 
 const VehicleList = () => {
-
-
     const [search, setSearch] = useState('');
     const [vehicles, setVehicles] = useState([]);
     const [filteredVehicles, setFilteredVehicles] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedVehicles, setSelectedVehicles] = useState([]);
+    const [sortBy, setSortBy] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
+    const [compareOpen, setCompareOpen] = useState(false);
+
     const { eventId } = useParams();
     const [event, setEvent] = useState(null);
     const [loadingEvent, setLoadingEvent] = useState(true);
@@ -32,7 +52,6 @@ const VehicleList = () => {
             setLoadingEvent(true);
             try {
                 const data = await getEventById(eventId);
-
                 setEvent(data);
             } catch (error) {
                 setEvent(null);
@@ -44,27 +63,37 @@ const VehicleList = () => {
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
-            const filtered = vehicles.filter(vehicle =>
+            let filtered = vehicles.filter(vehicle =>
                 (vehicle.from || '').toLowerCase().includes(search.toLowerCase())
             );
+
+            // Aplicar filtro de precio
+            if (maxPrice) {
+                filtered = filtered.filter(vehicle => vehicle.price <= parseInt(maxPrice));
+            }
+
+            // Aplicar ordenamiento
+            if (sortBy === 'price') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sortBy === 'time') {
+                filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            } else if (sortBy === 'available') {
+                filtered.sort((a, b) => b.vehicle.available - a.vehicle.available);
+            }
+
             setFilteredVehicles(filtered);
             setCurrentPage(1);
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [search, vehicles]);
+    }, [search, vehicles, maxPrice, sortBy]);
 
     useEffect(() => {
         const fetchVehicles = async () => {
             try {
                 const data = await getVehiclesByEvent(eventId);
-
-                console.log("Vehículos recibidos:", data);
-
                 setVehicles(data);
-                setFilteredVehicles(data); // si quieres filtrar sobre estos datos
-
-
+                setFilteredVehicles(data);
             } catch (error) {
                 setVehicles([]);
                 setFilteredVehicles([]);
@@ -73,6 +102,38 @@ const VehicleList = () => {
         if (eventId) fetchVehicles();
     }, [eventId]);
 
+    const handleSelectVehicle = (vehicleId) => {
+        setSelectedVehicles(prev => {
+            if (prev.includes(vehicleId)) {
+                return prev.filter(id => id !== vehicleId);
+            } else {
+                return [...prev, vehicleId];
+            }
+        });
+    };
+
+    const handleShareEvent = () => {
+        const message = `
+        Hola! Estoy viendo en Massivo con qué vehículos podemos ir a "${event.name}".
+
+        Fecha: ${new Date(event.eventDate).toLocaleDateString()}
+        Lugar: ${event.location}
+
+        Te paso el link para que lo veas y me digas qué te parece: ${window.location.href}
+            `;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    };
+
+    const getSelectedVehiclesData = () => {
+        return vehicles.filter(v => selectedVehicles.includes(v.eventVehicleId));
+    };
+
+    const clearFilters = () => {
+        setSortBy('');
+        setMaxPrice('');
+        setSearch('');
+    };
 
     if (loadingEvent) {
         return (
@@ -170,7 +231,7 @@ const VehicleList = () => {
                             {event.description}
                         </Typography>
                     </Box>
-                    <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
                         <Chip
                             label={event.location}
                             color="primary"
@@ -185,38 +246,105 @@ const VehicleList = () => {
                             }}
                             icon={<span role="img" aria-label="location">📍</span>}
                         />
-                    </Box>
-                    {(auth?.role === "Prestador" || auth?.role === "Admin") && (
-                        <Button
-                            onClick={() => navigate(`/add-vehicle-event/${eventId}`, {
-                                state: { description: event.name }
-                            })}
 
-                            color="warning"
-                            size="small"
-                        >
-                            Agregar Vehículo
-                        </Button>
-                    )}
+                        {(auth?.role === "Prestador" || auth?.role === "Admin") && (
+                            <Button
+                                startIcon={<DirectionsCarIcon />}
+                                onClick={() => navigate(`/add-vehicle-event/${eventId}`, {
+                                    state: { description: event.name }
+                                })}
+                                variant="contained"
+                                color="warning"
+                                size="small"
+                                sx={{ borderRadius: 3 }}
+                            >
+                                Agregar Vehículo
+                            </Button>
+                        )}
+
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            <Button
+                                startIcon={<ShareIcon />}
+                                variant="outlined"
+                                onClick={handleShareEvent}
+                                size="small"
+                                sx={{ borderRadius: 3 }}
+                            >
+                                Compartir por WhatsApp
+                            </Button>
+
+                        </Box>
+                    </Box>
                 </Box>
             </Paper>
 
-            <Box sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
+            {/* Filtros*/}
+            <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" fontWeight="bold">
+                        Encontrar el vehículo perfecto
+                    </Typography>
+                    <Button
+                        startIcon={<FilterListIcon />}
+                        onClick={() => setShowFilters(!showFilters)}
+                        variant="outlined"
+                        sx={{ borderRadius: 3 }}
+                    >
+                        Filtros
+                    </Button>
+                </Box>
+
                 <TextField
-                    margin="normal"
                     label="Buscar lugar de salida"
-                    sx={{
-                        height: '8vh',
-                        width: { md: '90vw' },
-                        '& label.Mui-focused': { color: '#139AA0' },
-                        '& .MuiOutlinedInput-root': {
-                            '&.Mui-focused fieldset': { borderColor: '#139AA0' }
-                        }
-                    }}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
+                    fullWidth
+                    sx={{
+                        mb: 2,
+                        '& label.Mui-focused': { color: '#139AA0' },
+                        '& .MuiOutlinedInput-root': {
+                            '&.Mui-focused fieldset': { borderColor: '#139AA0' },
+                            borderRadius: 2
+                        }
+                    }}
                 />
-            </Box>
+
+                <Collapse in={showFilters}>
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}>
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <InputLabel>Ordenar</InputLabel>
+                            <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                                <MenuItem value="">Sin orden</MenuItem>
+                                <MenuItem value="price">Precio (menor a mayor)</MenuItem>
+                                <MenuItem value="time">Horario de salida</MenuItem>
+                                <MenuItem value="available">Más disponibilidad</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <InputLabel>Precio</InputLabel>
+                            <Select value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)}>
+                                <MenuItem value="">Todos</MenuItem>
+                                <MenuItem value="5000">Hasta $5.000</MenuItem>
+                                <MenuItem value="10000">Hasta $10.000</MenuItem>
+                                <MenuItem value="15000">Hasta $15.000</MenuItem>
+                                <MenuItem value="20000">Hasta $20.000</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        {(sortBy || maxPrice || search) && (
+                            <Button
+                                onClick={clearFilters}
+                                variant="text"
+                                startIcon={<CloseIcon />}
+                                size="small"
+                            >
+                                Limpiar filtros
+                            </Button>
+                        )}
+                    </Box>
+                </Collapse>
+            </Paper>
 
             <Box mt={1} mb={2} display="flex" justifyContent="center">
                 <Pagination
@@ -229,8 +357,9 @@ const VehicleList = () => {
                 />
             </Box>
 
+            {/* Lista */}
             <Box sx={{
-                maxHeight: '50vh',
+                maxHeight: '60vh',
                 overflowY: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
@@ -238,23 +367,76 @@ const VehicleList = () => {
             }}>
                 {currentItems.length !== 0 ? (
                     currentItems.map((item, index) => (
-                        <Paper key={index} elevation={3} sx={{ display: 'flex', p: 2, alignItems: 'center' }}>
-                            <Paper sx={{ width: '100%' }} color='black'>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+                        <Paper
+                            key={index}
+                            elevation={selectedVehicles.includes(item.eventVehicleId) ? 8 : 3}
+                            sx={{
+                                p: 2,
+                                borderRadius: 3,
+                                border: selectedVehicles.includes(item.eventVehicleId) ? '2px solid #139AA0' : 'none',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    elevation: 6,
+                                    transform: 'translateY(-2px)'
+                                }
+                            }}
+                        >
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                width: '100%'
+                            }}>
+                                <Tooltip title="Seleccionar para comparar">
+                                    <Checkbox
+                                        checked={selectedVehicles.includes(item.eventVehicleId)}
+                                        onChange={() => handleSelectVehicle(item.eventVehicleId)}
+                                        sx={{
+                                            color: '#139AA0',
+                                            '&.Mui-checked': {
+                                                color: '#139AA0',
+                                            },
+                                            '& .MuiSvgIcon-root': { fontSize: 28 }
+                                        }}
+                                    />
+                                </Tooltip>
+
+                                {/* Imagen  */}
+                                <Box sx={{ flexShrink: 0 }}>
                                     <img
-                                        src={getVehicleTypeImage(item.vehicleType)}
-                                        alt={item.vehicleType}
-                                        style={{ width: 60, height: 40, objectFit: 'contain', borderRadius: 8 }}
+                                        src={item.vehicle?.imagePath || getVehicleTypeImage(item.vehicleType)}
+                                        alt={item.vehicle?.name}
+                                        style={{
+                                            width: 120,
+                                            height: 80,
+                                            objectFit: 'cover',
+                                            borderRadius: 8
+                                        }}
                                     />
                                 </Box>
 
+                                {/* Info*/}
                                 <Box sx={{ flexGrow: 1 }}>
                                     <Typography variant="h6" fontWeight="bold">
                                         {item.vehicle.name}
                                     </Typography>
-                                    <Typography variant="body2" mt={1}>
-                                        👥 {item.vehicle.capacity} Personas máximo
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            👥 {item.vehicle.capacity} personas máximo
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                        <LocationOnIcon fontSize="small" color="action" />
+                                        <Typography variant="body2">
+                                            <strong>{item.from}</strong>
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                        <AccessTimeIcon fontSize="small" color="action" />
+                                        <Typography variant="body2" color="text.secondary">
+                                            {new Date(item.date).toLocaleDateString()} - {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </Typography>
+                                    </Box>
                                 </Box>
 
                                 <Box sx={{
@@ -262,21 +444,23 @@ const VehicleList = () => {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'flex-end',
-                                    gap: 1
+                                    gap: 1,
+                                    flexShrink: 0
                                 }}>
                                     <Chip
-                                        label={item.vehicle.available < 2
-                                            ? `${item.vehicle.available} lugar disponible`
-                                            : `${item.vehicle.available} lugares disponibles`}
-                                        color={item.vehicle.available < 2 ? "error" : "success"}
+                                        label={item.vehicle.available <= 0 ? "Sin disponibilidad" :
+                                            item.vehicle.available < 2
+                                                ? `${item.vehicle.available} lugar disponible`
+                                                : `${item.vehicle.available} lugares disponibles`}
+                                        color={item.vehicle.available <= 0 ? "error" :
+                                            item.vehicle.available < 2 ? "warning" : "success"}
                                         size="small"
                                     />
-                                    <Typography variant="body2">
-                                        Salida: <strong>{item.vehicle.from}</strong><br />
-                                        {new Date(item.date).toLocaleDateString()} - {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}hs
+                                    <Typography variant="h5" color="primary" fontWeight="bold">
+                                        ${item.price.toLocaleString()}
                                     </Typography>
-                                    <Typography variant="h6" color="primary">
-                                        ${item.price}
+                                    <Typography variant="caption" color="text.secondary">
+                                        por persona
                                     </Typography>
                                     <Button
                                         onClick={() => navigate(`/trip-detail/${item.eventVehicleId}`, {
@@ -285,27 +469,129 @@ const VehicleList = () => {
                                         variant="contained"
                                         color="warning"
                                         size="small"
+                                        sx={{ borderRadius: 3 }}
                                     >
-                                        Ver más detalles
+                                        Ver detalles
                                     </Button>
                                 </Box>
-                            </Paper>
+                            </Box>
                         </Paper>
                     ))
-
                 ) : (
-                    <Typography variant="h5" fontWeight="bold" mb={3}>
-                        No hay vehículos que coincidan con la búsqueda
-                    </Typography>
+                    <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
+                        <Typography variant="h5" fontWeight="bold" mb={2}>
+                            No hay vehículos que coincidan con la búsqueda
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">
+                            Intenta ajustar los filtros o buscar otro lugar de salida
+                        </Typography>
+                    </Paper>
                 )}
-
-
-
-
             </Box>
+
+            {/* comparar */}
+            {selectedVehicles.length > 0 && (
+                <Tooltip title={`Comparar ${selectedVehicles.length} vehículos`}>
+                    <Fab
+                        color="primary"
+                        sx={{
+                            position: 'fixed',
+                            bottom: 20,
+                            right: 20,
+                            backgroundColor: '#139AA0',
+                            '&:hover': { backgroundColor: '#0f7f85' }
+                        }}
+                        onClick={() => setCompareOpen(true)}
+                    >
+                        <CompareArrowsIcon />
+                    </Fab>
+                </Tooltip>
+            )}
+
+            {/* Modal*/}
+            <Dialog
+                open={compareOpen}
+                onClose={() => setCompareOpen(false)}
+                maxWidth="lg"
+                fullWidth
+            >
+                <DialogTitle>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        Comparar Vehículos Seleccionados
+                        <IconButton onClick={() => setCompareOpen(false)}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><strong>Vehículo</strong></TableCell>
+                                    <TableCell><strong>Precio</strong></TableCell>
+                                    <TableCell><strong>Salida</strong></TableCell>
+                                    <TableCell><strong>Horario</strong></TableCell>
+                                    <TableCell><strong>Disponibilidad</strong></TableCell>
+                                    <TableCell><strong>Acción</strong></TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {getSelectedVehiclesData().map((vehicle) => (
+                                    <TableRow key={vehicle.eventVehicleId}>
+                                        <TableCell>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <img
+                                                    src={vehicle.vehicle?.imagePath || getVehicleTypeImage(vehicle.vehicleType)}
+                                                    alt={vehicle.vehicle?.name}
+                                                    style={{ width: 40, height: 30, objectFit: 'cover', borderRadius: 4 }}
+                                                />
+                                                {vehicle.vehicle.name}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>${vehicle.price.toLocaleString()}</TableCell>
+                                        <TableCell>{vehicle.from}</TableCell>
+                                        <TableCell>
+                                            {new Date(vehicle.date).toLocaleDateString()} - {new Date(vehicle.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={`${vehicle.vehicle.available} lugares`}
+                                                color={vehicle.vehicle.available < 2 ? "warning" : "success"}
+                                                size="small"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                onClick={() => {
+                                                    setCompareOpen(false);
+                                                    navigate(`/trip-detail/${vehicle.eventVehicleId}`, {
+                                                        state: { destination: event.location }
+                                                    });
+                                                }}
+                                            >
+                                                Elegir
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setSelectedVehicles([])}>
+                        Limpiar selección
+                    </Button>
+                    <Button onClick={() => setCompareOpen(false)} variant="contained">
+                        Cerrar
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
-
 
 export default VehicleList

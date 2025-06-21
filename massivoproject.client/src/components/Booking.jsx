@@ -14,33 +14,30 @@ import Colors from "../layout/Colors";
 import { useNavigate, useLocation } from "react-router";
 import useSwalAlert from "../hooks/useSwalAlert";
 import { createBooking } from "../api/BookingEndpoints";
+import Swal from "sweetalert2";
 import {
   PAYMENT_TYPE_ENUM,
   PAYMENT_TYPE_LABELS,
   PAYMENT_TYPE_ICONS,
 } from "../constants/paymentsTypes";
-import { BOOKING_TYPE, BOOKING_LABEL } from "../constants/bookingStatus";
 import { useSelector } from "react-redux";
 
 const Booking = () => {
   const [errors, setErrors] = useState({});
   const [paymentMethods, setPaymentMethods] = useState([]);
-  const [paymentSelected, setPaymentSelected] = useState({});
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const { showAlert } = useSwalAlert();
   const navigate = useNavigate();
   const location = useLocation();
   const { eventVehicle, destination } = location.state;
   const userId = useSelector((state) => state.auth.userId);
-
   const [formData, setFormData] = useState({
     travelers: "",
     paymentMethod: {},
   });
 
   useEffect(() => {
-    console.log("eventVehicle: ", eventVehicle);
-    console.log("destination: ", destination);
     setPaymentMethods(
       Object.keys(PAYMENT_TYPE_ENUM).map((key) => ({
         value: PAYMENT_TYPE_ENUM[key],
@@ -52,7 +49,6 @@ const Booking = () => {
 
   useEffect(() => {
     if (paymentMethods.length > 0) {
-      setPaymentSelected(paymentMethods[0].value);
       setFormData((prev) => ({
         ...prev,
         paymentMethod: paymentMethods[0].value,
@@ -63,7 +59,6 @@ const Booking = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    console.log("payment change: ", e.target);
   };
 
   const validateForm = () => {
@@ -76,7 +71,7 @@ const Booking = () => {
       newErrors.travelers = `No puede excederse la capacidad máxima.`;
     }
 
-    if (!paymentMethod) {
+    if (paymentMethod === undefined || paymentMethod === null || paymentMethod === '') {
       newErrors.paymentMethod = "Debe seleccionar un método de pago.";
     }
 
@@ -99,33 +94,58 @@ const Booking = () => {
           seatNumber: Number(formData.travelers),
         };
 
-        console.log("payload: ", payload);
-        console.log("Metodo", payload.payment.paymentMethod);
-
         const response = await createBooking(payload);
-
-        console.log("RESPONSE COMPLETA:", response);
-        //const paymentLink = response?.data?.payment?.details;
         const paymentLink = response?.payment?.details;
 
-        if (Number(formData.paymentMethod) === 4) {
+        if (Number(formData.paymentMethod) === 4) { // MercadoPago
           if (paymentLink && paymentLink.includes("https://www.mercadopago")) {
             showAlert("Redirigiendo a Mercado Pago...", "success");
             window.location.href = paymentLink;
           } else {
-            showAlert(
-              "Reserva creada, pero no se pudo obtener el link de pago.",
-              "warning"
-            );
+            showAlert("Reserva creada, pero no se pudo obtener el link de pago.", "warning");
             navigate("/");
           }
+        } else if (Number(formData.paymentMethod) === 1 || Number(formData.paymentMethod) === 2) {
+          if (paymentLink && paymentLink.includes("stripe.com")) {
+            setRedirecting(true);
+            showAlert("Redirigiendo a Stripe para completar el pago...", "success");
+
+            setTimeout(() => {
+              window.location.href = paymentLink;
+            }, 1500);
+          } else {
+            showAlert(`Reserva creada, pero link inválido: ${paymentLink}`, "warning");
+            navigate(`/trip-detail/${eventVehicle.eventVehicleId}`, {
+              state: { destination: destination }
+            });
+          }
+        } else if (Number(formData.paymentMethod) === 0) {
+          const paymentDetails = response?.payment?.details;
+
+          const rapipagoMatch = paymentDetails?.match(/RP-\d{8}-\d{4}/);
+          const rapipagoCode = rapipagoMatch ? rapipagoMatch[0] : "N/A";
+
+          Swal.fire({
+            title: '💰 Reserva Creada',
+            html: `
+            <p><strong>Tu código de pago Rapipago es:</strong></p>
+            <div style="font-family: monospace; font-size: 20px; font-weight: bold; color: #139AA0; border: 2px dashed #139AA0; padding: 10px; margin: 10px 0;">
+              ${rapipagoCode}
+            </div>
+            <p><strong>Monto a pagar:</strong> $${response.payment.amount}</p>
+            <p>Andá a cualquier Rapipago, decí que querés pagar con código y mostrá: <strong>${rapipagoCode}</strong></p>
+        `,
+            icon: 'success',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#139AA0'
+          });
+          navigate("/");
         } else {
           showAlert("Reserva creada correctamente.", "success");
           navigate("/");
         }
       } catch (err) {
         let errorMsg = "Error al crear la reserva.";
-
         if (err.response && err.response.data) {
           if (typeof err.response.data === "string") {
             errorMsg = err.response.data;
@@ -133,7 +153,6 @@ const Booking = () => {
             errorMsg = err.response.data.error;
           }
         }
-
         showAlert(errorMsg, "error");
       }
       setLoading(false);
@@ -259,9 +278,9 @@ const Booking = () => {
                 width: "95%",
                 backgroundColor: "#139AA0",
               }}
-              disabled={loading}
+              disabled={loading || redirecting}
             >
-              CONFIRMAR RESERVA
+              {(loading || redirecting) ? "Esto puede tomar unos segundos..." : "CONFIRMAR RESERVA"}
             </Button>
           </Box>
         </Grid>
