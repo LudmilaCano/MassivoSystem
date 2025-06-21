@@ -7,10 +7,9 @@ import {
   DialogContent,
   DialogActions,
   Rating,
-  Accordion,
-  AccordionSummary
+  Divider,
+  Paper
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -19,9 +18,7 @@ import ReviewForm from './ReviewForm';
 import ReviewItem from './ReviewItem';
 
 const ReviewList = ({ eventVehicleId }) => {
-
   const [reviews, setReviews] = useState([]);
-  const [listModalOpen, setListModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
 
@@ -69,76 +66,101 @@ const ReviewList = ({ eventVehicleId }) => {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h6" sx={{ mb: 1 }}>Reseñas</Typography>
+      {/* Header con título, rating y botón */}
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        mb: 2,
+        flexWrap: 'wrap',
+        gap: 2
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="h6">Reseñas ({reviews.length})</Typography>
+          <Rating value={averageScore} precision={0.1} readOnly size="small" />
+        </Box>
 
-      <Rating value={averageScore} precision={0.1} readOnly sx={{ mb: 2 }} />
+        {!authLoading && userId && (
+          <Box>
+            {!ownReview ? (
+              <Button
+                variant="contained"
+                onClick={handleNew}
+                size="small"
+                sx={{ bgcolor: 'primary.main' }}
+              >
+                Escribir reseña
+              </Button>
+            ) : (
+              <Button
+                variant="outlined"
+                onClick={() => handleEdit(ownReview)}
+                size="small"
+              >
+                Editar mi reseña
+              </Button>
+            )}
+          </Box>
+        )}
+      </Box>
 
-      {authLoading ? null : userId ? (
-        !ownReview ? (
-          <Button variant="contained" onClick={handleNew} sx={{ mb: 2 }}>
-            Dejar una reseña
-          </Button>
-        ) : (
-          <Button variant="outlined" onClick={() => handleEdit(ownReview)} sx={{ mb: 2 }}>
-            Editar mi reseña
-          </Button>
-        )
-      ) : (
-        <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+      {!authLoading && !userId && (
+        <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary', fontStyle: 'italic' }}>
           Inicia sesión para dejar una reseña.
         </Typography>
       )}
 
-      <Accordion elevation={1} sx={{ cursor: 'pointer' }}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          onClick={() => setListModalOpen(true)}
-        >
-          <Typography>Ver reseñas ({reviews.length})</Typography>
-        </AccordionSummary>
-      </Accordion>
+      <Divider sx={{ mb: 2 }} />
 
-      <Dialog
-        open={listModalOpen}
-        onClose={() => setListModalOpen(false)}
-        fullWidth maxWidth="sm"
+      {/* Lista scrolleable de reseñas */}
+      <Paper
+        variant="outlined"
+        sx={{
+          maxHeight: 400,
+          overflow: 'auto',
+          p: 2,
+          bgcolor: 'grey.50'
+        }}
       >
-        <DialogTitle>Todas las reseñas</DialogTitle>
-        <DialogContent dividers>
-          <Box
-            sx={{
-              maxHeight: 400,
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2
-            }}
-          >
-            {reviews.length === 0 ? (
-              <Typography>No hay reseñas todavía.</Typography>
-            ) : (
-              reviews.map(r => (
+        {reviews.length === 0 ? (
+          <Box sx={{
+            textAlign: 'center',
+            py: 4,
+            color: 'text.secondary'
+          }}>
+            <Typography variant="body1">No hay reseñas todavía.</Typography>
+            <Typography variant="body2">¡Sé el primero en escribir una!</Typography>
+          </Box>
+        ) : (
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
+          }}>
+            {reviews.map((review, index) => (
+              <Box key={review.reviewId}>
                 <ReviewItem
-                  key={r.reviewId}
-                  review={r}
+                  review={review}
                   onDelete={handleDelete}
                   onEdit={handleEdit}
                 />
-              ))
-            )}
+                {index < reviews.length - 1 && <Divider sx={{ mt: 2 }} />}
+              </Box>
+            ))}
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setListModalOpen(false)}>Cerrar</Button>
-        </DialogActions>
-      </Dialog>
+        )}
+      </Paper>
 
+      {/* Modal para crear/editar reseñas */}
       <Dialog
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        fullWidth maxWidth="sm"
+        fullWidth
+        maxWidth="sm"
       >
-        <DialogTitle>{editingReview ? 'Editar reseña' : 'Escribir reseña'}</DialogTitle>
+        <DialogTitle>
+          {editingReview ? 'Editar reseña' : 'Escribir reseña'}
+        </DialogTitle>
         <DialogContent dividers>
           <ReviewForm
             eventVehicleId={eventVehicleId}
@@ -150,11 +172,12 @@ const ReviewList = ({ eventVehicleId }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditModalOpen(false)}>Cancelar</Button>
+          <Button onClick={() => setEditModalOpen(false)}>
+            Cancelar
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
-  
   );
 };
 

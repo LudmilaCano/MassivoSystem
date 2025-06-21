@@ -15,6 +15,7 @@ using System.Security.Claims;
 using System.Text;
 using MassivoProject.Application.Interfaces;
 using MassivoProject.Infrastructure.Services;
+using Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,7 +96,6 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IEventVehicleRepository, EventVehicleRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-
 #endregion
 
 #region Services
@@ -111,7 +111,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IPaymentService, MercadoPagoService>();
- //builder.Services.AddSingleton<IHashingService, Pbkdf2HashingService>();
+builder.Services.AddScoped<IStripeService, StripeService>();
+//builder.Services.AddSingleton<IHashingService, Pbkdf2HashingService>();
 
 // Authentification
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
