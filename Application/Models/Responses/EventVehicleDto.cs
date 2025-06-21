@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace Application.Models.Responses
                 Price = eventVehicleEntity.Price,
                 VehicleType = eventVehicleEntity.Vehicle?.Type.ToString(),
                 From = eventVehicleEntity.Vehicle?.User?.City?.Name,
-                Vehicle = eventVehicleEntity.Vehicle != null ? VehicleDto.Create(eventVehicleEntity.Vehicle) : null
+                Vehicle = eventVehicleEntity.Vehicle != null ? VehicleDto.Create(eventVehicleEntity.Vehicle) : null,
             };
         }
     }

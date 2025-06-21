@@ -40,11 +40,20 @@ namespace Infraestructure.Data
             return await _context.Events
                 .Include(e => e.Location)
                 .Include(e => e.EventVehicles)
-                
+
                     .ThenInclude(ev => ev.Vehicle)
                 .ToListAsync();
         }
 
+        public async Task<List<Event>> GetAllActiveEventsWithVehiclesIncludedAsync()
+        {
+            return await _context.Events
+                .Include(e => e.Location)
+                .Include(e => e.EventVehicles)
+                    .ThenInclude(ev => ev.Vehicle)
+                    .Where(e => e.IsActive == Domain.Enums.EntityState.Active)
+                .ToListAsync();
+        }
         public async Task<List<Event>> GetRandomEventsAsync(int count)
         {
             // Incluye la relación antes de traer los datos a memoria
@@ -62,7 +71,7 @@ namespace Infraestructure.Data
         public async Task<List<Event>> FilterEventsAsync(string? name, DateTime? date)
         {
             var query = _context.Events
-                .Include(e => e.Location) 
+                .Include(e => e.Location)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(name))
@@ -82,7 +91,7 @@ namespace Infraestructure.Data
 
             eventEntity.IsActive = eventEntity.IsActive == Domain.Enums.EntityState.Active
                     ? Domain.Enums.EntityState.Inactive
-                    : Domain.Enums.EntityState.Active; 
+                    : Domain.Enums.EntityState.Active;
             await _context.SaveChangesAsync();
             return true;
         }

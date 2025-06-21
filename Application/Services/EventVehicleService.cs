@@ -146,5 +146,15 @@ namespace Application.Services
         {
             return await _eventVehicleRepository.ToggleStatusAsync(eventVehicleId);
         }
+
+        public async Task<List<EventVehicleDto>> GetAllEventVehiclesActiveByEventAsync(int eventId) 
+        {
+            var response = await _eventVehicleRepository.GetAllActiveVehiclesByEventAsync(eventId);
+            if (response == null || response.Count == 0)
+                throw new KeyNotFoundException("No se encontró la lista de eventos...");
+
+            return response.Select(EventVehicleDto.Create).ToList();
+        }
+
     }
 }

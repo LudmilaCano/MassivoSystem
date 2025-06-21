@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Models.Responses;
+using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace Infraestructure.Data
         {
             return await _dbContext.Set<Vehicle>()
                 .Where(v => v.LicensePlate == licensePlate)
-                .FirstOrDefaultAsync(); 
+                .FirstOrDefaultAsync();
         }
 
         public async Task<List<Vehicle>> GetVehiclesByUserIdAsync(int userId)
@@ -40,7 +41,7 @@ namespace Infraestructure.Data
 
             vehicle.IsActive = vehicle.IsActive == Domain.Enums.EntityState.Active
                     ? Domain.Enums.EntityState.Inactive
-                    : Domain.Enums.EntityState.Active; 
+                    : Domain.Enums.EntityState.Active;
             await _dbContext.SaveChangesAsync();
             return true;
         }
@@ -62,5 +63,11 @@ namespace Infraestructure.Data
             return vehicle.IsActive;
         }
 
+        public async Task<List<Vehicle>> GetAllActiveVehiclesAsync()
+        {
+            return await _dbContext.Set<Vehicle>()
+                .Where(v => v.IsActive == Domain.Enums.EntityState.Active)
+                .ToListAsync();
+        }
     }
 }

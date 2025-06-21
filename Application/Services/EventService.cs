@@ -37,7 +37,7 @@ namespace Application.Services
             var events = await _eventRepository.GetAllEventsWithVehiclesIncludedAsync();
 
             if (events == null || !events.Any())
-           
+
             {
                 throw new KeyNotFoundException("No events found.");
             }
@@ -115,7 +115,7 @@ namespace Application.Services
 
             existingEvent.LocationId = request.Location;
             existingEvent.Name = request.Name;
-            existingEvent.Description = request.Description;    
+            existingEvent.Description = request.Description;
             existingEvent.EventDate = request.EventDate;
             existingEvent.Type = request.Type;
             existingEvent.Image = request.Image;
@@ -241,5 +241,15 @@ namespace Application.Services
             // Finalmente, cambiar el estado del evento
             return await _eventRepository.ToggleStatusAsync(eventId);
         }
+        public async Task<List<EventDto>> GetAllActiveEventsWithVehiclesIncludedAsync()
+        {
+            var response = await _eventRepository.GetAllActiveEventsWithVehiclesIncludedAsync();
+
+            if (response == null || response.Count == 0)
+                throw new KeyNotFoundException("No se encontró la lista de eventos...");
+
+            return response.Select(EventDto.Create).ToList();
+        }
     }
 }
+

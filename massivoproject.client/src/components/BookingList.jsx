@@ -133,7 +133,7 @@ const BookingList = () => {
                   variant="contained"
                   color="warning"
                   onClick={() =>
-                    console.log(navigate(`/booking-detail/${booking.id}`))
+                    console.log(navigate(`/booking/${booking.id}`))
                   }
                 >
                   Ver Detalles

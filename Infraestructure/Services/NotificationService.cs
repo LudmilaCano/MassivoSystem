@@ -22,7 +22,7 @@ namespace Infraestructure.Services
                 _emailService = emailService;
             }
 
-            public async Task SendNotificationEmail(string toEmail, NotificationType type, object data)
+            public async Task SendNotificationEmail(string toEmail, NotificationType type, object data, byte[]? qrCodeBytes = null)
             {
                 string subject = "";
                 string body = "";
@@ -61,7 +61,12 @@ namespace Infraestructure.Services
                     case NotificationType.ReservaCreadaUser:
                         var reservaUsuario = data as BookingDto;
                         subject = "✅ Reserva confirmada";
-                        body = $@"
+                        if (qrCodeBytes != null)
+                        {
+                            string qrBase64 = Convert.ToBase64String(qrCodeBytes);
+                            string qrImageHtml = $"<img src='data:image/png;base64,{qrBase64}' alt='Código QR' width='200' height='200'/>";
+
+                            body = $@"
                             <p>Hola,</p>
                             <p>Tu reserva fue confirmada correctamente.</p>
                             <p>Evento: <b>{reservaUsuario.Event.Name}</b></p>
@@ -69,8 +74,29 @@ namespace Infraestructure.Services
                             <p>Vehículo: <b>{reservaUsuario.Vehicle.Name}</b> ({reservaUsuario.Vehicle.LicensePlate})</p>
                             <p>Asientos reservados: {reservaUsuario.SeatNumber}</p>                            
                             <b>Monto abonado:</b> {reservaUsuario.Payment.Amount:N2}
-                            <p>Con este correo podés presentarte el día de la salida programada.</p>";
-                        break;
+                            <p>Mostrá el código QR para abordar el vehículo.</p>
+                            <br/>
+                            {qrBase64}
+                            <br/>
+                            <p>¡Gracias por usar Massivo App!</p>";
+                        }
+                        else
+                        {
+                            body = $@"
+                            <p>Hola,</p>
+                            <p>Tu reserva fue confirmada correctamente.</p>
+                            <p>Detalles:</p>
+                            <p>Evento: <b>{reservaUsuario.Event.Name}</b></p>
+                            <p>Fecha de salida: {reservaUsuario.Event.EventDate}</p>
+                            <p>Vehículo: <b>{reservaUsuario.Vehicle.Name}</b> ({reservaUsuario.Vehicle.LicensePlate})</p>
+                            <p>Asientos reservados: {reservaUsuario.SeatNumber}</p>                            
+                            <b>Monto abonado:</b> {reservaUsuario.Payment.Amount:N2}
+                            <p>Mostrá este correo para abordar el vehículo.</p>
+                            <p>¡Gracias por usar Massivo App!</p>";
+
+                        }
+
+                            break;
                     case NotificationType.ReservaProxima:
                         var recordatorio = data as BookingDto;
                         subject = "📅 Recordatorio de tu reserva";

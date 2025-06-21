@@ -61,11 +61,12 @@ namespace MassivoProject.Server.Controllers
             {
                 var createdEvent = await _eventService.AddEventAsync(request);
                 return Ok(createdEvent);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-         
+
         }
 
         [HttpPut("{eventId}")]
@@ -139,5 +140,16 @@ namespace MassivoProject.Server.Controllers
 
             return Ok(new { message = "Estado del evento actualizado correctamente" });
         }
-    }       
+
+
+        [HttpGet("Activos")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> GetActiveEvents()
+        {
+            var events = await _eventService.GetAllActiveEventsWithVehiclesIncludedAsync();
+            return Ok(events);
+        }
+
+    }
 }

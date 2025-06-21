@@ -46,7 +46,7 @@ namespace MassivoApp.Server.Controllers
                 if (!isEmailUnique)
                     return Conflict(new { Message = "El email ya está registrado." });
 
-                _userService.SignUpUser(request);
+                await _userService.SignUpUser(request);
                 return StatusCode(StatusCodes.Status201Created, new { Message = "Usuario registrado correctamente." });
             }catch (Exception ex)
             {

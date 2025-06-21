@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Application.Models.Responses;
 using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -125,6 +126,16 @@ namespace MassivoProject.Server.Controllers
                 return NotFound($"Vehículo con patente {licensePlate} no encontrado");
 
             return Ok(new { message = "Estado del vehículo actualizado correctamente" });
+        }
+
+        [HttpGet("Active")]
+        public async Task<IActionResult> GetActiveVehicles()
+        {
+            var vehicles = await _vehicleService.GetAllActiveVehiclesAsync();
+
+            var vehicleDtos = vehicles.Select(VehicleDto.Create).ToList();
+
+            return Ok(vehicleDtos);
         }
 
 

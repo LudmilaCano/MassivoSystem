@@ -33,6 +33,18 @@ namespace Infraestructure.Data
                 .ToListAsync();
         }
 
+        public async Task<List<EventVehicle>> GetAllActiveVehiclesByEventAsync(int eventId)
+        {
+            return await _context.EventsVehicles
+                .Include(ev => ev.Vehicle)
+                    .ThenInclude(v => v.User)
+                        .ThenInclude(u => u.City)
+                .Where(ev => ev.EventId == eventId && ev.IsActive == Domain.Enums.EntityState.Active)
+
+                .ToListAsync();
+        }
+
+
         public async Task<IEnumerable<EventVehicle>> GetEventVehiclesByUserIdAsync(int userId)
         {
             return await _context.EventsVehicles
