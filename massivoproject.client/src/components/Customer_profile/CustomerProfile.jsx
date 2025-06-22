@@ -158,15 +158,18 @@ const CustomerProfile = () => {
       let profileImageUrl = editData.profilePic;
       if (selectedFile) {
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        formData.append("file", selectedFile);
 
-        const response = await fetch('https://localhost:7089/api/File/upload/user', {
-          method: 'POST',
-          body: formData
-        });
+        const response = await fetch(
+          "https://localhost:7089/api/File/upload/user",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
         if (!response.ok) {
-          throw new Error('Error al subir la imagen');
+          throw new Error("Error al subir la imagen");
         }
 
         const data = await response.json();
@@ -181,7 +184,7 @@ const CustomerProfile = () => {
         Password: editData.password || null,
         City: parseInt(editData.city),
         Province: parseInt(editData.province),
-        ProfileImage: profileImageUrl
+        ProfileImage: profileImageUrl,
       };
 
       await updateUser(userId, payload);
@@ -272,7 +275,8 @@ const CustomerProfile = () => {
               sx={{ width: 120, height: 120, mb: 2 }}
             >
               {!userData.profileImage &&
-                `${userData.firstName?.[0] || ""}${userData.lastName?.[0] || ""
+                `${userData.firstName?.[0] || ""}${
+                  userData.lastName?.[0] || ""
                 }`}
             </Avatar>
 
@@ -280,12 +284,36 @@ const CustomerProfile = () => {
               Datos personales
             </Typography>
 
-            <Avatar
-              src={selectedFile ? URL.createObjectURL(selectedFile) : profilePic || userData.profileImage}
-              sx={{ width: 80, height: 80, alignSelf: "center", mb: 2 }}
-            >
-              {!profilePic && !selectedFile && `${editData.firstName?.[0] || ''}${editData.lastName?.[0] || ''}`}
-            </Avatar>
+            <Box sx={{ width: "100%", maxWidth: 400, mt: 3 }}>
+              <TextField
+                label="Nombre"
+                value={userData.firstName}
+                fullWidth
+                disabled
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                label="Apellido"
+                value={userData.lastName}
+                fullWidth
+                disabled
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                label="DNI"
+                value={userData.dniNumber}
+                fullWidth
+                disabled
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                label="Email"
+                value={userData.email}
+                fullWidth
+                disabled
+                sx={{ mb: 2 }}
+              />
+            </Box>
 
             <Button
               variant="contained"
@@ -358,10 +386,18 @@ const CustomerProfile = () => {
                 </Typography>
 
                 <Avatar
-                  src={selectedFile ? URL.createObjectURL(selectedFile) : profilePic || userData.profileImage}
+                  src={
+                    selectedFile
+                      ? URL.createObjectURL(selectedFile)
+                      : profilePic || userData.profileImage
+                  }
                   sx={{ width: 80, height: 80, alignSelf: "center", mb: 2 }}
                 >
-                  {!profilePic && !selectedFile && `${editData.firstName?.[0] || ''}${editData.lastName?.[0] || ''}`}
+                  {!profilePic &&
+                    !selectedFile &&
+                    `${editData.firstName?.[0] || ""}${
+                      editData.lastName?.[0] || ""
+                    }`}
                 </Avatar>
 
                 <input
