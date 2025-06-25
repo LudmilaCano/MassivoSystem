@@ -217,20 +217,45 @@ const HeaderPerfil = () => {
             </ListItem>
           )}
 
-          <ListItem button onClick={() => handleNavigate("/contact")}>
-            <ListItemText primary="Contacto" />
-          </ListItem>
-
-          <ListItem button onClick={() => handleNavigate("/about-us")}>
-            <ListItemText primary="Nosotros" />
-          </ListItem>
-
           {role === "Admin" && (
-            <ListItem button onClick={() => handleNavigate("/admin")}>
-              <ListItemText primary="Panel Admin" />
+            <ListItem button onClick={() => handleNavigate("/admin-dashboard")}>
+              <ListItemText primary="Dashboard" />
             </ListItem>
           )}
-
+          {role === "Prestador" && (
+            <ListItem
+              button
+              onClick={() => handleNavigate("/provider-dashboard")}
+            >
+              <ListItemText primary="Dashboard" />
+            </ListItem>
+          )}
+          {role === "User" && (
+            <>
+              <ListItem button onClick={toggleActividad}>
+                <ListItemText primary="Mi Actividad" />
+                {openActividad ? <ExpandLess /> : <ExpandMore />}
+              </ListItem>
+              <Collapse in={openActividad} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  <ListItem
+                    button
+                    onClick={() => handleNavigate("/booking-list")}
+                    sx={{ pl: 4 }}
+                  >
+                    <ListItemText primary="Mis Reservas" />
+                  </ListItem>
+                  <ListItem
+                    button
+                    onClick={() => handleNavigate("/review-list")}
+                    sx={{ pl: 4 }}
+                  >
+                    <ListItemText primary="Mis Reseñas" />
+                  </ListItem>
+                </List>
+              </Collapse>{" "}
+            </>
+          )}
           <ListItem button onClick={toggleOpciones}>
             <ListItemText primary="Opciones" />
             {openOpciones ? <ExpandLess /> : <ExpandMore />}
@@ -263,68 +288,18 @@ const HeaderPerfil = () => {
                   >
                     <ListItemText primary="Agregar Evento" />
                   </ListItem>
-                  <ListItem
-                    button
-                    onClick={() => handleNavigate("/")}
-                    sx={{ pl: 4 }}
-                  >
-                    <ListItemText primary="Agregar Vehículo a Evento" />
-                  </ListItem>
                 </>
               )}
             </List>
           </Collapse>
-          <ListItem button onClick={toggleActividad}>
-            <ListItemText primary="Mi Actividad" />
-            {openActividad ? <ExpandLess /> : <ExpandMore />}
+
+          <ListItem button onClick={() => handleNavigate("/about-us")}>
+            <ListItemText primary="Nosotros" />
           </ListItem>
-          <Collapse in={openActividad} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {role === "User" && (
-                <>
-                  <ListItem
-                    button
-                    onClick={() => handleNavigate("/booking-list")}
-                    sx={{ pl: 4 }}
-                  >
-                    <ListItemText primary="Mis Reservas" />
-                  </ListItem>
-                  <ListItem
-                    button
-                    onClick={() => handleNavigate("/review-list")}
-                    sx={{ pl: 4 }}
-                  >
-                    <ListItemText primary="Mis Reseñas" />
-                  </ListItem>
-                </>
-              )}
-              {role === "Prestador" && (
-                <>
-                  <ListItem
-                    button
-                    onClick={() => handleNavigate("/booking-list")}
-                    sx={{ pl: 4 }}
-                  >
-                    <ListItemText primary="Mis reservas" />
-                  </ListItem>
-                  <ListItem
-                    button
-                    onClick={() => handleNavigate("/vehicle-list")}
-                    sx={{ pl: 4 }}
-                  >
-                    <ListItemText primary="Mis Vehículos" />
-                  </ListItem>
-                  <ListItem
-                    button
-                    onClick={() => handleNavigate("/")}
-                    sx={{ pl: 4 }}
-                  >
-                    <ListItemText primary="Mis Eventos" />
-                  </ListItem>
-                </>
-              )}
-            </List>
-          </Collapse>
+
+          <ListItem button onClick={() => handleNavigate("/contact")}>
+            <ListItemText primary="Contacto" />
+          </ListItem>
         </List>
       </Drawer>
     </div>
