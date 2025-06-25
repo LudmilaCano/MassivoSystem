@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Container,
@@ -11,123 +11,132 @@ import {
   Snackbar,
   Alert,
   useTheme,
-  useMediaQuery
-} from '@mui/material';
-import EmailIcon from '@mui/icons-material/Email';
-import SendIcon from '@mui/icons-material/Send';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PhoneIcon from '@mui/icons-material/Phone';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+  useMediaQuery,
+} from "@mui/material";
+import EmailIcon from "@mui/icons-material/Email";
+import SendIcon from "@mui/icons-material/Send";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import PhoneIcon from "@mui/icons-material/Phone";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import { sendContactMessage } from "../api/ContactEndpoints";
 
 const Contact = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-    reason: ''
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+    reason: "",
   });
-  
+
   const [errors, setErrors] = useState({});
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: '',
-    severity: 'success'
+    message: "",
+    severity: "success",
   });
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Limpiar error cuando el usuario escribe
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: null
+        [name]: null,
       }));
     }
   };
-  
+
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es obligatorio';
+      newErrors.name = "El nombre es obligatorio";
     }
-    
+
     if (!formData.email.trim()) {
-      newErrors.email = 'El email es obligatorio';
+      newErrors.email = "El email es obligatorio";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
+      newErrors.email = "Email inválido";
     }
-    
+
     if (!formData.subject.trim()) {
-      newErrors.subject = 'El asunto es obligatorio';
+      newErrors.subject = "El asunto es obligatorio";
     }
-    
+
     if (!formData.message.trim()) {
-      newErrors.message = 'El mensaje es obligatorio';
+      newErrors.message = "El mensaje es obligatorio";
     }
-    
+
     if (!formData.reason) {
-      newErrors.reason = 'Por favor selecciona un motivo';
+      newErrors.reason = "Por favor selecciona un motivo";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
-      // Aquí iría la lógica para enviar el correo
-      // Por ahora solo simulamos el envío
-      console.log('Enviando email:', formData);
-      
-      // Mostrar mensaje de éxito
-      setSnackbar({
-        open: true,
-        message: '¡Mensaje enviado correctamente! Te responderemos a la brevedad.',
-        severity: 'success'
-      });
-      
-      // Limpiar formulario
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-        reason: ''
-      });
+      try {
+        await sendContactMessage(formData);
+
+        setSnackbar({
+          open: true,
+          message:
+            "¡Mensaje enviado correctamente! Te responderemos a la brevedad.",
+          severity: "success",
+        });
+
+        // Limpiar formulario
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          message: "",
+          reason: "",
+        });
+      } catch (error) {
+        console.error("Error al enviar el mensaje de contacto:", error);
+        setSnackbar({
+          open: true,
+          message:
+            "Ocurrió un error al enviar tu mensaje. Por favor intentá nuevamente más tarde.",
+          severity: "error",
+        });
+      }
     } else {
       setSnackbar({
         open: true,
-        message: 'Por favor completa todos los campos requeridos',
-        severity: 'error'
+        message: "Por favor completá todos los campos requeridos",
+        severity: "error",
       });
     }
   };
-  
+
   const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({
+    setSnackbar((prev) => ({
       ...prev,
-      open: false
+      open: false,
     }));
   };
-  
+
   const contactReasons = [
-    'Consulta general',
-    'Problema con una reserva',
-    'Quiero ser prestador',
-    'Sugerencia',
-    'Otro'
+    "Consulta general",
+    "Problema con una reserva",
+    "Quiero ser prestador",
+    "Sugerencia",
+    "Otro",
   ];
 
   return (
@@ -135,67 +144,80 @@ const Contact = () => {
       <Grid container spacing={4}>
         <Grid item xs={12} md={6}>
           <Box sx={{ mb: 4 }}>
-            <Typography 
-              variant="h3" 
-              component="h1" 
+            <Typography
+              variant="h3"
+              component="h1"
               fontWeight="bold"
-              sx={{ 
+              sx={{
                 mb: 2,
-                position: 'relative',
-                '&:after': {
+                position: "relative",
+                "&:after": {
                   content: '""',
-                  position: 'absolute',
+                  position: "absolute",
                   bottom: -10,
                   left: 0,
                   width: 80,
                   height: 4,
-                  backgroundColor: '#139AA0',
-                  borderRadius: 2
-                }
+                  backgroundColor: "#139AA0",
+                  borderRadius: 2,
+                },
               }}
             >
               Contactanos
             </Typography>
-            <Typography variant="body1" sx={{ mt: 4, mb: 4, color: 'text.secondary' }}>
+            <Typography
+              variant="body1"
+              sx={{ mt: 4, mb: 4, color: "text.secondary" }}
+            >
               ¿Tenés alguna pregunta o sugerencia? Estamos aquí para ayudarte.
               Completá el formulario y te responderemos a la brevedad.
             </Typography>
-            
+
             <Box sx={{ mt: 6 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <LocationOnIcon sx={{ color: '#139AA0', mr: 2, fontSize: 28 }} />
+              <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                <LocationOnIcon
+                  sx={{ color: "#139AA0", mr: 2, fontSize: 28 }}
+                />
                 <Box>
-                  <Typography variant="h6" fontWeight="bold">Dirección</Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    Dirección
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Av. Siempreviva 742, Springfield
                   </Typography>
                 </Box>
               </Box>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <EmailIcon sx={{ color: '#139AA0', mr: 2, fontSize: 28 }} />
+
+              <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                <EmailIcon sx={{ color: "#139AA0", mr: 2, fontSize: 28 }} />
                 <Box>
-                  <Typography variant="h6" fontWeight="bold">Email</Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    Email
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
                     contacto@massivoapp.com
                   </Typography>
                 </Box>
               </Box>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <PhoneIcon sx={{ color: '#139AA0', mr: 2, fontSize: 28 }} />
+
+              <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                <PhoneIcon sx={{ color: "#139AA0", mr: 2, fontSize: 28 }} />
                 <Box>
-                  <Typography variant="h6" fontWeight="bold">Teléfono</Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    Teléfono
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
                     +54 11 1234-5678
                   </Typography>
                 </Box>
               </Box>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <WhatsAppIcon sx={{ color: '#139AA0', mr: 2, fontSize: 28 }} />
+
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <WhatsAppIcon sx={{ color: "#139AA0", mr: 2, fontSize: 28 }} />
                 <Box>
-                  <Typography variant="h6" fontWeight="bold">WhatsApp</Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    WhatsApp
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
                     +54 9 11 1234-5678
                   </Typography>
@@ -204,14 +226,14 @@ const Contact = () => {
             </Box>
           </Box>
         </Grid>
-        
+
         <Grid item xs={12} md={6}>
-          <Paper 
-            elevation={3} 
-            sx={{ 
-              p: 4, 
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
               borderRadius: 3,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
             }}
           >
             <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -228,7 +250,7 @@ const Contact = () => {
                     helperText={errors.name}
                   />
                 </Grid>
-                
+
                 <Grid item xs={12}>
                   <TextField
                     name="email"
@@ -242,7 +264,7 @@ const Contact = () => {
                     helperText={errors.email}
                   />
                 </Grid>
-                
+
                 <Grid item xs={12}>
                   <TextField
                     name="reason"
@@ -262,7 +284,7 @@ const Contact = () => {
                     ))}
                   </TextField>
                 </Grid>
-                
+
                 <Grid item xs={12}>
                   <TextField
                     name="subject"
@@ -275,7 +297,7 @@ const Contact = () => {
                     helperText={errors.subject}
                   />
                 </Grid>
-                
+
                 <Grid item xs={12}>
                   <TextField
                     name="message"
@@ -290,7 +312,7 @@ const Contact = () => {
                     helperText={errors.message}
                   />
                 </Grid>
-                
+
                 <Grid item xs={12}>
                   <Button
                     type="submit"
@@ -299,13 +321,13 @@ const Contact = () => {
                     size="large"
                     startIcon={<SendIcon />}
                     sx={{
-                      backgroundColor: '#139AA0',
-                      '&:hover': { backgroundColor: '#0d7e82' },
+                      backgroundColor: "#139AA0",
+                      "&:hover": { backgroundColor: "#0d7e82" },
                       py: 1.5,
                       borderRadius: 8,
-                      fontWeight: 'bold',
-                      textTransform: 'none',
-                      fontSize: '1.1rem'
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      fontSize: "1.1rem",
                     }}
                   >
                     Enviar mensaje
@@ -316,17 +338,17 @@ const Contact = () => {
           </Paper>
         </Grid>
       </Grid>
-      
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity={snackbar.severity} 
-          sx={{ width: '100%' }}
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>
