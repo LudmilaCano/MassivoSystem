@@ -1,64 +1,84 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box, Button, Typography, Paper, Card, CardMedia, CardContent,
-  CardActions, Chip, Rating, Divider, Grid, useTheme, useMediaQuery,
-  Stack, IconButton, Pagination
+  Box,
+  Button,
+  Typography,
+  Paper,
+  Card,
+  CardMedia,
+  CardContent,
+  CardActions,
+  Chip,
+  Rating,
+  Divider,
+  Grid,
+  useTheme,
+  useMediaQuery,
+  Stack,
+  IconButton,
+  Pagination,
 } from "@mui/material";
-import Carousel from 'react-material-ui-carousel';
+import Carousel from "react-material-ui-carousel";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { getRandomEvents, filterEvents, getAllEvents } from "../api/EventEndpoints";
+import {
+  getRandomEvents,
+  filterEvents,
+  getAllEvents,
+} from "../api/EventEndpoints";
 import { getEventTypeLabel } from "../constants/eventCategories";
 import { useBusyDialog } from "../hooks/useBusyDialog";
 import { setShowInNavbar, setEvents } from "../redux/SearchSlice";
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import PeopleIcon from '@mui/icons-material/People';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import PeopleIcon from "@mui/icons-material/People";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ShareIcon from "@mui/icons-material/Share";
 
 const Home = () => {
-  const events = useSelector(state => state.search.events || []);
-  const searchActive = useSelector(state => state.search.searchName || state.search.searchDate);
+  const events = useSelector((state) => state.search.events || []);
+  const searchActive = useSelector(
+    (state) => state.search.searchName || state.search.searchDate
+  );
   const [busy, setBusy, BusyDialog] = useBusyDialog();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [page, setPage] = useState(1);
   const [eventsPerPage] = useState(3);
   const [randomEvents, setRandomEvents] = useState([]);
   const [combinedCarouselItems, setCombinedCarouselItems] = useState([
     {
-      image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
+      image: "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
       title: "Hacete prestador",
       subtitle: "Ofrecé tu vehículo para eventos y generá ingresos.",
       buttonText: "Quiero ser prestador",
-      buttonAction: () => navigate("/profile")
+      buttonAction: () => navigate("/profile"),
     },
     {
-      image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
+      image: "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
       title: "Pagá fácil y seguro",
       subtitle: "Usá Mercado Pago para tus reservas sin complicaciones.",
       buttonText: "Reservá ahora",
-      buttonAction: () => navigate(auth.isAuthenticated ? "/events" : "/login")
+      buttonAction: () => navigate(auth.isAuthenticated ? "/events" : "/login"),
     },
     {
-      image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
+      image: "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
       title: "Seguridad ante todo",
       subtitle: "Validamos cada viaje con QR único.",
       buttonText: "Cómo funciona",
-      buttonAction: () => navigate("/como-funciona")
+      buttonAction: () => navigate("/como-funciona"),
     },
     {
-      image: 'https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg',
+      image: "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
       title: "Gestioná todo desde tu perfil",
       subtitle: "Eventos, vehículos, reservas y más en un solo lugar.",
       buttonText: "Ir al perfil",
-      buttonAction: () => navigate("/profile")
-    }
+      buttonAction: () => navigate("/profile"),
+    },
   ]);
 
   // Activar el buscador en el navbar cuando estamos en Home
@@ -70,7 +90,7 @@ const Home = () => {
   const handlePageChange = (event, value) => {
     setPage(value);
     // Opcional: hacer scroll hacia arriba cuando cambia la página
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const indexOfLastEvent = page * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
@@ -101,20 +121,22 @@ const Home = () => {
         const randomEventsData = await getRandomEvents(4);
         setRandomEvents(randomEventsData);
 
-        const randomSlides = randomEventsData.map(event => ({
-  image: event.image || "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
-  title: event.name || "Evento destacado",
-  subtitle: event.description || "Únete a este increíble evento",
-  buttonText: "Ver detalles",
-  buttonAction: () => navigate(`/vehicle-list/${event.eventId}`),
-  isEvent: true,
-  eventId: event.eventId,
-  eventDate: event.eventDate,
-  location: event.location
-}));
+        const randomSlides = randomEventsData.map((event) => ({
+          image:
+            event.image ||
+            "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
+          title: event.name || "Evento destacado",
+          subtitle: event.description || "Únete a este increíble evento",
+          buttonText: "Ver detalles",
+          buttonAction: () => navigate(`/vehicle-list/${event.eventId}`),
+          isEvent: true,
+          eventId: event.eventId,
+          eventDate: event.eventDate,
+          location: event.location,
+        }));
 
         // Agregar los nuevos slides al final del array
-        setCombinedCarouselItems(prevItems => {
+        setCombinedCarouselItems((prevItems) => {
           // Mantener solo los slides informativos originales (los primeros 5)
           const infoSlides = prevItems.slice(0, 5);
           return [...infoSlides, ...randomSlides];
@@ -129,11 +151,7 @@ const Home = () => {
     fetchEvents();
   }, [dispatch, auth.token, navigate]);
 
-
-
-
   // Definición de los slides para el carrusel
-
 
   return (
     <>
@@ -151,29 +169,29 @@ const Home = () => {
               indicators={true}
               navButtonsProps={{
                 style: {
-                  backgroundColor: 'rgba(19, 154, 160, 0.7)',
-                  borderRadius: '50%',
-                  margin: '0 20px'
-                }
+                  backgroundColor: "rgba(19, 154, 160, 0.7)",
+                  borderRadius: "50%",
+                  margin: "0 20px",
+                },
               }}
             >
               {combinedCarouselItems.map((item, index) => (
                 <Paper
                   key={index}
                   sx={{
-                    position: 'relative',
-                    height: { xs: '300px', md: '450px' },
+                    position: "relative",
+                    height: { xs: "300px", md: "450px" },
                     backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${item.image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    color: 'white',
-                    textAlign: 'center',
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    color: "white",
+                    textAlign: "center",
                     padding: 4,
-                    borderRadius: 4
+                    borderRadius: 4,
                   }}
                 >
                   {item.isEvent && (
@@ -181,33 +199,54 @@ const Home = () => {
                       label="Evento destacado"
                       color="primary"
                       sx={{
-                        position: 'absolute',
+                        position: "absolute",
                         top: 16,
                         right: 16,
-                        backgroundColor: '#ff9800',
-                        fontWeight: 'bold'
+                        backgroundColor: "#ff9800",
+                        fontWeight: "bold",
                       }}
                     />
                   )}
-                  <Typography variant={isMobile ? "h4" : "h2"} component="h2" sx={{ mb: 2, fontWeight: 'bold' }}>
+                  <Typography
+                    variant={isMobile ? "h4" : "h2"}
+                    component="h2"
+                    sx={{ mb: 2, fontWeight: "bold" }}
+                  >
                     {item.title}
                   </Typography>
-                  <Typography variant={isMobile ? "body1" : "h6"} sx={{ mb: 4 }}>
+                  <Typography
+                    variant={isMobile ? "body1" : "h6"}
+                    sx={{ mb: 4 }}
+                  >
                     {item.subtitle}
                   </Typography>
 
                   {/* Mostrar información adicional solo para eventos */}
                   {item.isEvent && (
-                    <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
                       <Chip
                         icon={<CalendarTodayIcon />}
-                        label={formatDate(randomEvents.find(e => e.eventId === item.eventId)?.eventDate) || "Fecha próxima"}
-                        sx={{ color: 'white', backgroundColor: 'rgba(255,255,255,0.2)' }}
+                        label={
+                          formatDate(
+                            randomEvents.find((e) => e.eventId === item.eventId)
+                              ?.eventDate
+                          ) || "Fecha próxima"
+                        }
+                        sx={{
+                          color: "white",
+                          backgroundColor: "rgba(255,255,255,0.2)",
+                        }}
                       />
                       <Chip
                         icon={<LocationOnIcon />}
-                        label={randomEvents.find(e => e.eventId === item.eventId)?.location || "Ver ubicación"}
-                        sx={{ color: 'white', backgroundColor: 'rgba(255,255,255,0.2)' }}
+                        label={
+                          randomEvents.find((e) => e.eventId === item.eventId)
+                            ?.location || "Ver ubicación"
+                        }
+                        sx={{
+                          color: "white",
+                          backgroundColor: "rgba(255,255,255,0.2)",
+                        }}
                       />
                     </Box>
                   )}
@@ -217,14 +256,16 @@ const Home = () => {
                     size="large"
                     onClick={item.buttonAction}
                     sx={{
-                      backgroundColor: item.isEvent ? '#ff9800' : '#139AA0',
-                      '&:hover': { backgroundColor: item.isEvent ? '#f57c00' : '#0d7e82' },
+                      backgroundColor: item.isEvent ? "#ff9800" : "#139AA0",
+                      "&:hover": {
+                        backgroundColor: item.isEvent ? "#f57c00" : "#0d7e82",
+                      },
                       px: 4,
                       py: 1.5,
                       borderRadius: 8,
-                      fontWeight: 'bold',
-                      textTransform: 'none',
-                      fontSize: '1.1rem'
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      fontSize: "1.1rem",
                     }}
                   >
                     {item.buttonText}
@@ -241,17 +282,17 @@ const Home = () => {
           fontWeight="bold"
           sx={{
             mb: 4,
-            position: 'relative',
-            '&:after': {
+            position: "relative",
+            "&:after": {
               content: '""',
-              position: 'absolute',
+              position: "absolute",
               bottom: -10,
               left: 0,
               width: 80,
               height: 4,
-              backgroundColor: '#139AA0',
-              borderRadius: 2
-            }
+              backgroundColor: "#139AA0",
+              borderRadius: 2,
+            },
           }}
         >
           {searchActive && "Resultados de búsqueda"}
@@ -262,41 +303,49 @@ const Home = () => {
           {currentEvents.map((event, index) => (
             <Card
               key={index}
-
               sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', md: 'row' },
-                overflow: 'hidden',
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                overflow: "hidden",
                 borderRadius: 3,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 12px 28px rgba(0,0,0,0.18)'
-                }
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
+                },
               }}
             >
               {/* Imagen del evento */}
               <CardMedia
                 component="img"
                 sx={{
-                  width: { xs: '100%', md: 300 },
+                  width: { xs: "100%", md: 300 },
                   height: { xs: 200, md: 300 },
-                  objectFit: 'cover'
+                  objectFit: "cover",
                 }}
                 image={event.image || "https://picsum.photos/800/600"}
                 alt={event.name}
               />
 
               {/* Contenido del evento */}
-              <Box sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                flexGrow: 1,
-                p: 3
-              }}>
-                <CardContent sx={{ flex: '1 0 auto', pb: 0 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  flexGrow: 1,
+                  p: 3,
+                }}
+              >
+                <CardContent sx={{ flex: "1 0 auto", pb: 0 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      mb: 2,
+                    }}
+                  >
                     <Typography variant="h5" fontWeight="bold" gutterBottom>
                       {event.name}
                     </Typography>
@@ -304,19 +353,22 @@ const Home = () => {
                       label={getEventTypeLabel(event.type)}
                       color="primary"
                       sx={{
-                        backgroundColor: '#139AA0',
-                        fontWeight: 'bold'
+                        backgroundColor: "#139AA0",
+                        fontWeight: "bold",
                       }}
                     />
                   </Box>
 
                   <Typography variant="body1" color="text.secondary" paragraph>
-                    {event.description || "Únete a este increíble evento y disfruta de una experiencia inolvidable con transporte seguro y cómodo."}
+                    {event.description ||
+                      "Únete a este increíble evento y disfruta de una experiencia inolvidable con transporte seguro y cómodo."}
                   </Typography>
 
                   <Grid container spacing={2} sx={{ mb: 2 }}>
                     <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <CalendarTodayIcon color="primary" />
                         <Typography variant="body2">
                           {formatDate(event.eventDate)}
@@ -324,16 +376,16 @@ const Home = () => {
                       </Box>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <LocationOnIcon color="primary" />
                         <Typography variant="body2">
                           {event.location || "Ubicación no especificada"}
                         </Typography>
                       </Box>
                     </Grid>
-
                   </Grid>
-
 
                   <Typography variant="h6" color="primary" fontWeight="bold">
                     {event.isActive === 0 && "No Disponible"}
@@ -342,10 +394,14 @@ const Home = () => {
 
                 <Divider sx={{ my: 1 }} />
 
-                <CardActions sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}>
-
-
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                <CardActions
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    px: 2,
+                  }}
+                >
+                  <Box sx={{ display: "flex", gap: 1 }}>
                     <IconButton size="small">
                       <FavoriteIcon fontSize="small" />
                     </IconButton>
@@ -355,10 +411,10 @@ const Home = () => {
                     <Button
                       variant="contained"
                       sx={{
-                        backgroundColor: '#139AA0',
-                        '&:hover': { backgroundColor: '#0d7e82' },
+                        backgroundColor: "#139AA0",
+                        "&:hover": { backgroundColor: "#0d7e82" },
                         borderRadius: 8,
-                        textTransform: 'none'
+                        textTransform: "none",
                       }}
                       disabled={!event.isActive}
                       onClick={() => navigate(`/vehicle-list/${event.eventId}`)}
@@ -374,13 +430,13 @@ const Home = () => {
 
         {/* Mensaje si no hay eventos */}
         {events.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Box sx={{ textAlign: "center", py: 8 }}>
             <Typography variant="h6" color="text.secondary">
               No se encontraron eventos que coincidan con tu búsqueda.
             </Typography>
             <Button
               variant="contained"
-              sx={{ mt: 2, backgroundColor: '#139AA0' }}
+              sx={{ mt: 2, backgroundColor: "#139AA0" }}
               onClick={() => dispatch(setEvents([]))}
             >
               Ver todos los eventos
@@ -389,7 +445,7 @@ const Home = () => {
         )}
       </Box>
       {events.length > 0 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
           <Pagination
             count={totalPages}
             page={page}
@@ -397,13 +453,13 @@ const Home = () => {
             color="primary"
             size="large"
             sx={{
-              '& .MuiPaginationItem-root': {
-                color: '#139AA0',
+              "& .MuiPaginationItem-root": {
+                color: "#139AA0",
               },
-              '& .Mui-selected': {
-                backgroundColor: '#139AA0 !important',
-                color: 'white',
-              }
+              "& .Mui-selected": {
+                backgroundColor: "#139AA0 !important",
+                color: "white",
+              },
             }}
           />
         </Box>
@@ -416,7 +472,8 @@ const Home = () => {
           align="center"
           sx={{ mt: 1 }}
         >
-          Mostrando {indexOfFirstEvent + 1}-{Math.min(indexOfLastEvent, events.length)} de {events.length} eventos
+          Mostrando {indexOfFirstEvent + 1}-
+          {Math.min(indexOfLastEvent, events.length)} de {events.length} eventos
         </Typography>
       )}
     </>

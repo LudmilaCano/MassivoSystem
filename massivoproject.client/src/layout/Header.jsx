@@ -20,7 +20,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/AuthSlice";
-import { setSearchName, setSearchDate, filterEventsThunk } from "../redux/SearchSlice"; // Importa las acciones de búsqueda
+import {
+  setSearchName,
+  setSearchDate,
+  filterEventsThunk,
+} from "../redux/SearchSlice"; // Importa las acciones de búsqueda
 import Colors from "./Colors.jsx";
 import logo from "../Images/logo2.png";
 import useChangeRol from "../hooks/useChangeRol.jsx";
@@ -37,12 +41,12 @@ const Header = () => {
   const fullName = useSelector((state) => state.auth.fullName);
   const role = useSelector((state) => state.auth.role);
   const logueado = !!token;
-  
+
   // Obtener el estado de búsqueda de Redux
-  const { searchName, searchDate } = useSelector(state => state.search);
-  
+  const { searchName, searchDate } = useSelector((state) => state.search);
+
   // Determinar si estamos en la página de inicio
-  const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === "/";
 
   const handleChangeRol = useChangeRol();
 
@@ -67,7 +71,7 @@ const Header = () => {
     navigate(path);
     setDrawerOpen(false);
   };
-  
+
   // Manejar la búsqueda
   const handleSearch = () => {
     dispatch(filterEventsThunk());
@@ -95,10 +99,8 @@ const Header = () => {
           style={{ width: "auto", height: "7vh", marginLeft: 10 }}
         />
       </div>
-      
+
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-       
-        
         {!logueado ? (
           <>
             <Button
@@ -145,9 +147,95 @@ const Header = () => {
       </div>
 
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-        {/* El contenido del drawer no cambia */}
         <div style={{ width: 250 }} role="presentation">
-          {/* ... resto del código del drawer ... */}
+          <List>
+            <ListItem>
+              <Typography variant="h6">
+                {logueado ? `${fullName} - ${role}` : "Menú"}
+              </Typography>
+            </ListItem>
+            <Divider />
+
+            <ListItem button onClick={() => handleNavigate("/")}>
+              <ListItemText primary="Inicio" />
+            </ListItem>
+            <Divider />
+
+            {logueado && (
+              <ListItem button onClick={() => handleNavigate("/profile")}>
+                <ListItemText primary="Perfil" />
+              </ListItem>
+            )}
+
+            <ListItem
+              button
+              onClick={() =>
+                window.scrollTo({
+                  top: document.body.scrollHeight,
+                  behavior: "smooth",
+                })
+              }
+            >
+              <ListItemText primary="Contacto" />
+            </ListItem>
+            <Divider />
+
+            <ListItem button onClick={() => handleNavigate("/about-us")}>
+              <ListItemText primary="Nosotros" />
+            </ListItem>
+            <Divider />
+
+            {role === "Admin" && (
+              <ListItem button onClick={() => handleNavigate("/admin")}>
+                <ListItemText primary="Panel Admin" />
+              </ListItem>
+            )}
+            <Divider />
+
+            <ListItem button onClick={toggleOpciones}>
+              <ListItemText primary="Opciones" />
+              {openOpciones ? <ExpandLess /> : <ExpandMore />}
+            </ListItem>
+            <Collapse in={openOpciones} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {role === "User" && (
+                  <ListItem button onClick={handleChangeRol} sx={{ pl: 4 }}>
+                    <ListItemText primary="Quiero ser Prestador" />
+                  </ListItem>
+                )}
+                {role === "Admin" && (
+                  <ListItem button onClick={handleSendReminders} sx={{ pl: 4 }}>
+                    <ListItemText primary="Enviar recordatorios de eventos" />
+                  </ListItem>
+                )}
+                {role === "Prestador" && (
+                  <>
+                    <ListItem
+                      button
+                      onClick={() => handleNavigate("/add-vehicle")}
+                      sx={{ pl: 4 }}
+                    >
+                      <ListItemText primary="Agregar Vehículo" />
+                    </ListItem>
+                    <ListItem
+                      button
+                      onClick={() => handleNavigate("/add-event")}
+                      sx={{ pl: 4 }}
+                    >
+                      <ListItemText primary="Agregar Evento" />
+                    </ListItem>
+                    <ListItem
+                      button
+                      onClick={() => handleNavigate("/")}
+                      sx={{ pl: 4 }}
+                    >
+                      <ListItemText primary="Agregar Vehículo a Evento" />
+                    </ListItem>
+                  </>
+                )}
+              </List>
+            </Collapse>
+          </List>
         </div>
       </Drawer>
     </div>
