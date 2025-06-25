@@ -15,6 +15,7 @@ import {
   InputAdornment,
   Collapse,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -36,6 +37,7 @@ const HeaderPerfil = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openActividad, setOpenActividad] = useState(false);
   const [openOpciones, setOpenOpciones] = useState(false);
+  const [openPerfil, setOpenPerfil] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -78,6 +80,7 @@ const HeaderPerfil = () => {
 
   const toggleOpciones = () => setOpenOpciones(!openOpciones);
   const toggleActividad = () => setOpenActividad(!openActividad);
+  const togglePerfil = () => setOpenPerfil(!openPerfil);
 
   return (
     <div
@@ -95,11 +98,13 @@ const HeaderPerfil = () => {
         <IconButton onClick={toggleDrawer(true)} sx={{ color: "white" }}>
           <MenuIcon />
         </IconButton>
-        <img
-          src={logo}
-          alt="Logo"
-          style={{ width: "auto", height: "7vh", marginLeft: 10 }}
-        />
+        <Link to="/" style={{ textDecoration: "none" }}>
+          <img
+            src={logo}
+            alt="Logo"
+            style={{ width: "auto", height: "7vh", marginLeft: 10 }}
+          />
+        </Link>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: "140px" }}>
@@ -213,11 +218,11 @@ const HeaderPerfil = () => {
 
           {logueado && (
             <>
-              <ListItem button onClick={toggleOpciones}>
+              <ListItem button onClick={togglePerfil}>
                 <ListItemText primary="Perfil" />
-                {openOpciones ? <ExpandLess /> : <ExpandMore />}
+                {openPerfil ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
-              <Collapse in={openOpciones} timeout="auto" unmountOnExit>
+              <Collapse in={openPerfil} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
                   <ListItem
                     button
@@ -278,43 +283,50 @@ const HeaderPerfil = () => {
               </Collapse>{" "}
             </>
           )}
-          <ListItem button onClick={toggleOpciones}>
-            <ListItemText primary="Opciones" />
-            {openOpciones ? <ExpandLess /> : <ExpandMore />}
-          </ListItem>
-          <Collapse in={openOpciones} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {role === "User" && (
-                <ListItem button onClick={handleChangeRol} sx={{ pl: 4 }}>
-                  <ListItemText primary="Quiero ser Prestador" />
-                </ListItem>
-              )}
-              {role === "Admin" && (
-                <ListItem button onClick={handleSendReminders} sx={{ pl: 4 }}>
-                  <ListItemText primary="Enviar recordatorios de eventos" />
-                </ListItem>
-              )}
-              {role === "Prestador" && (
-                <>
-                  <ListItem
-                    button
-                    onClick={() => handleNavigate("/add-vehicle")}
-                    sx={{ pl: 4 }}
-                  >
-                    <ListItemText primary="Agregar Vehículo" />
-                  </ListItem>
-                  <ListItem
-                    button
-                    onClick={() => handleNavigate("/add-event")}
-                    sx={{ pl: 4 }}
-                  >
-                    <ListItemText primary="Agregar Evento" />
-                  </ListItem>
-                </>
-              )}
-            </List>
-          </Collapse>
-
+          {logueado && (
+            <>
+              <ListItem button onClick={toggleOpciones}>
+                <ListItemText primary="Opciones" />
+                {openOpciones ? <ExpandLess /> : <ExpandMore />}
+              </ListItem>
+              <Collapse in={openOpciones} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {role === "User" && (
+                    <ListItem button onClick={handleChangeRol} sx={{ pl: 4 }}>
+                      <ListItemText primary="Quiero ser Prestador" />
+                    </ListItem>
+                  )}
+                  {role === "Admin" && (
+                    <ListItem
+                      button
+                      onClick={handleSendReminders}
+                      sx={{ pl: 4 }}
+                    >
+                      <ListItemText primary="Enviar recordatorios de eventos" />
+                    </ListItem>
+                  )}
+                  {role === "Prestador" && (
+                    <>
+                      <ListItem
+                        button
+                        onClick={() => handleNavigate("/add-vehicle")}
+                        sx={{ pl: 4 }}
+                      >
+                        <ListItemText primary="Agregar Vehículo" />
+                      </ListItem>
+                      <ListItem
+                        button
+                        onClick={() => handleNavigate("/add-event")}
+                        sx={{ pl: 4 }}
+                      >
+                        <ListItemText primary="Agregar Evento" />
+                      </ListItem>
+                    </>
+                  )}
+                </List>
+              </Collapse>
+            </>
+          )}
           <ListItem button onClick={() => handleNavigate("/about-us")}>
             <ListItemText primary="Nosotros" />
           </ListItem>

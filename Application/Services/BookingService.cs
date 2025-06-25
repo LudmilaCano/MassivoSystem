@@ -131,8 +131,8 @@ namespace Application.Services
                 title: $"Reserva para {eventEntity.Name}",
                 amount: (decimal)addBookingRequest.Payment.Amount,
                 externalReference: Guid.NewGuid().ToString(),
-                successUrl: "https://localhost:5173/", // ver reemplazar
-                failureUrl: "https://localhost:5173/"  // ver reemplazar
+                successUrl: "https://localhost:5173/booking-list/",
+                failureUrl: "https://localhost:5173/booking-list/"
             );
 
                 payment = new Payment
@@ -339,7 +339,7 @@ namespace Application.Services
             var user = await _userRepository.GetByIdAsync(booking.UserId);
             await _notificationService.SendNotificationEmail(
                     user.Email,
-                    NotificationType.ReservaCreadaUser,
+                    NotificationType.ReservaCancelUser,
                     bookingDto
                     );
             //Se envia notificacion a prestador
