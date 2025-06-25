@@ -122,6 +122,37 @@ namespace Infraestructure.Services
                             <p>El equipo de soporte de Massivo App.</p>";
                         break;
 
+                    case NotificationType.ReservaCancelUser:
+                        var reservaCancelUser = data as BookingDto;
+                        subject = "❌ Cancelación de tu reserva";
+                        body = $@"
+                            <p>Hola,</p>
+                            <p>Tu reserva fue cancelada correctamente.</p>
+                            <p><strong>Detalles:</strong></p>
+                            <ul>
+                                <li>Evento: <b>{reservaCancelUser.Event.Name}</b></li>
+                                <li>Vehículo: <b>{reservaCancelUser.Vehicle.Name}</b> ({reservaCancelUser.Vehicle.LicensePlate})</li>
+                                <li>Asientos cancelados: {reservaCancelUser.SeatNumber}</li>
+                                <li>Monto reembolsado: ${reservaCancelUser.Payment.Amount:N2}</li>
+                            </ul>
+                            <p>Lamentamos que no puedas asistir. ¡Te esperamos en la próxima!</p>";
+                        break;
+
+                    case NotificationType.ReservaCancelPrestador:
+                        var reservaCancelPrestador = data as BookingDto;
+                        subject = "❌ Cancelación de reserva para tu vehículo";
+                        body = $@"
+                                <p>Hola,</p>
+                                <p>Una reserva ha sido cancelada para tu vehículo <b>{reservaCancelPrestador.Vehicle.Name}</b> con matrícula <span style='font-size:18px;'>{reservaCancelPrestador.Vehicle.LicensePlate} 🚗</span>.</p>
+                                <p><strong>Detalles:</strong></p>
+                                <ul>
+                                    <li>Evento: <b>{reservaCancelPrestador.Event.Name}</b></li>
+                                    <li>Fecha del evento: {reservaCancelPrestador.Event.EventDate:dd/MM/yyyy}</li>
+                                    <li>Asientos cancelados: {reservaCancelPrestador.SeatNumber}</li>
+                                    <li>Monto cancelado: ${reservaCancelPrestador.Payment.Amount:N2}</li>
+                                </ul>
+                                <p>Podés revisar más detalles desde tu panel de control.</p>";
+                        break;
 
 
 

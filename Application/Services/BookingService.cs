@@ -333,6 +333,23 @@ namespace Application.Services
             // Se realiza el reembolso del pago
             payment.PaymentStatus = PaymentStatus.Refunded;
             await _paymentRepository.UpdateAsync(payment);
+
+            var bookingDto = BookingDto.Create(booking, eventEntity, vehicle);
+            //Se envia notificacion a User
+            var user = await _userRepository.GetByIdAsync(booking.UserId);
+            await _notificationService.SendNotificationEmail(
+                    user.Email,
+                    NotificationType.ReservaCreadaUser,
+                    bookingDto
+                    );
+            //Se envia notificacion a prestador
+            var ownerUser = await _userRepository.GetByIdAsync(vehicle.UserId.Value)
+                ?? throw new KeyNotFoundException($"El vehículo {vehicle.LicensePlate} no tiene un usuario asignado.");
+            await _notificationService.SendNotificationEmail(
+                ownerUser.Email,
+                NotificationType.ReservaCancelPrestador,
+                bookingDto
+            );
         }
 
         public async Task CompleteBookingAsync(int bookingId)
