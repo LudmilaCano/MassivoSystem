@@ -30,6 +30,8 @@ import BookingDetail from "./components/BookingDetail.jsx";
 import NotFound from "./layout/NotFound.jsx";
 import Contact from "./components/Contact.jsx";
 import Instructive from "./components/Instructive.jsx";
+import ReviewList from "./components/ReviewList.jsx";
+import ReviewListByUser from "./components/ReviewListByUser.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -198,6 +200,22 @@ function App() {
       ),
     },
     {
+      path: "/review-list",
+      element: (
+        <MainLayout>
+          <ReviewList />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/review-list-user",
+      element: (
+        <MainLayout>
+          <ReviewListByUser />
+        </MainLayout>
+      ),
+    },
+    {
       path: "/booking/:bookingId",
       element: (
         <MainLayout>
@@ -205,28 +223,20 @@ function App() {
         </MainLayout>
       ),
     },
-     {
+    {
       path: "/contact",
       element: (
-        
-        
-          <MainLayout>
-            <Contact />
-          </MainLayout>
-        
-        
+        <MainLayout>
+          <Contact />
+        </MainLayout>
       ),
     },
     {
       path: "/instructivo",
       element: (
-        
-        
-          <MainLayout>
-            <Instructive  />
-          </MainLayout>
-        
-        
+        <MainLayout>
+          <Instructive />
+        </MainLayout>
       ),
     },
     {

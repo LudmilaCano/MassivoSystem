@@ -8,28 +8,28 @@ import {
   DialogActions,
   Rating,
   Divider,
-  Paper
-} from '@mui/material';
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+  Paper,
+} from "@mui/material";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
-import { getReviewsByEventVehicle, deleteReview } from '../api/ReviewEndpoints';
-import ReviewForm from './ReviewForm';
-import ReviewItem from './ReviewItem';
+import { getReviewsByEventVehicle, deleteReview } from "../api/ReviewEndpoints";
+import ReviewForm from "./ReviewForm";
+import ReviewItem from "./ReviewItem";
 
 const ReviewList = ({ eventVehicleId }) => {
   const [reviews, setReviews] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
 
-  const { userId, loading: authLoading } = useSelector(state => state.auth);
+  const { userId, loading: authLoading } = useSelector((state) => state.auth);
 
   const fetchReviews = async () => {
     try {
       const { reviews } = await getReviewsByEventVehicle(eventVehicleId);
       setReviews(reviews);
     } catch (err) {
-      console.error('Error fetching reviews:', err);
+      console.error("Error fetching reviews:", err);
     }
   };
 
@@ -40,7 +40,7 @@ const ReviewList = ({ eventVehicleId }) => {
   }, [eventVehicleId, authLoading]);
 
   const handleDelete = async (review) => {
-    if (!confirm('¿Seguro que quieres eliminar esta reseña?')) return;
+    if (!confirm("¿Seguro que quieres eliminar esta reseña?")) return;
     await deleteReview(review.reviewId);
     fetchReviews();
   };
@@ -55,9 +55,10 @@ const ReviewList = ({ eventVehicleId }) => {
     setEditModalOpen(true);
   };
 
-  const ownReview = !authLoading && userId !== null
-    ? reviews.find(r => String(r.userId) === String(userId))
-    : null;
+  const ownReview =
+    !authLoading && userId !== null
+      ? reviews.find((r) => String(r.userId) === String(userId))
+      : null;
 
   const averageScore =
     reviews.length > 0
@@ -67,15 +68,17 @@ const ReviewList = ({ eventVehicleId }) => {
   return (
     <Box sx={{ p: 2 }}>
       {/* Header con título, rating y botón */}
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        mb: 2,
-        flexWrap: 'wrap',
-        gap: 2
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Typography variant="h6">Reseñas ({reviews.length})</Typography>
           <Rating value={averageScore} precision={0.1} readOnly size="small" />
         </Box>
@@ -87,7 +90,7 @@ const ReviewList = ({ eventVehicleId }) => {
                 variant="contained"
                 onClick={handleNew}
                 size="small"
-                sx={{ bgcolor: 'primary.main' }}
+                sx={{ bgcolor: "primary.main" }}
               >
                 Escribir reseña
               </Button>
@@ -105,7 +108,10 @@ const ReviewList = ({ eventVehicleId }) => {
       </Box>
 
       {!authLoading && !userId && (
-        <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary', fontStyle: 'italic' }}>
+        <Typography
+          variant="body2"
+          sx={{ mb: 2, color: "text.secondary", fontStyle: "italic" }}
+        >
           Inicia sesión para dejar una reseña.
         </Typography>
       )}
@@ -117,26 +123,32 @@ const ReviewList = ({ eventVehicleId }) => {
         variant="outlined"
         sx={{
           maxHeight: 400,
-          overflow: 'auto',
+          overflow: "auto",
           p: 2,
-          bgcolor: 'grey.50'
+          bgcolor: "grey.50",
         }}
       >
         {reviews.length === 0 ? (
-          <Box sx={{
-            textAlign: 'center',
-            py: 4,
-            color: 'text.secondary'
-          }}>
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 4,
+              color: "text.secondary",
+            }}
+          >
             <Typography variant="body1">No hay reseñas todavía.</Typography>
-            <Typography variant="body2">¡Sé el primero en escribir una!</Typography>
+            <Typography variant="body2">
+              ¡Sé el primero en escribir una!
+            </Typography>
           </Box>
         ) : (
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+            }}
+          >
             {reviews.map((review, index) => (
               <Box key={review.reviewId}>
                 <ReviewItem
@@ -159,7 +171,7 @@ const ReviewList = ({ eventVehicleId }) => {
         maxWidth="sm"
       >
         <DialogTitle>
-          {editingReview ? 'Editar reseña' : 'Escribir reseña'}
+          {editingReview ? "Editar reseña" : "Escribir reseña"}
         </DialogTitle>
         <DialogContent dividers>
           <ReviewForm
@@ -172,9 +184,7 @@ const ReviewList = ({ eventVehicleId }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditModalOpen(false)}>
-            Cancelar
-          </Button>
+          <Button onClick={() => setEditModalOpen(false)}>Cancelar</Button>
         </DialogActions>
       </Dialog>
     </Box>

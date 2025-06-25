@@ -247,7 +247,7 @@ const HeaderPerfil = () => {
                   </ListItem>
                   <ListItem
                     button
-                    onClick={() => handleNavigate("/review-list")}
+                    onClick={() => handleNavigate("/review-list-user")}
                     sx={{ pl: 4 }}
                   >
                     <ListItemText primary="Mis Reseñas" />
