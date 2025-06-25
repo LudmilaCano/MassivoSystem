@@ -1,6 +1,8 @@
-﻿using Application.Interfaces;
+﻿using System.Security.Claims;
+using Application.Interfaces;
 using Application.Models.Requests;
 using Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -72,6 +74,32 @@ namespace MassivoProject.Server.Controllers
 
             return Ok(new { Message = "✅ Cuenta activada correctamente. Ya podés iniciar sesión." });
         }
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Datos inválidos");
+
+            if (request.NewPassword != request.ConfirmNewPassword)
+                    return BadRequest("Las nuevas contraseñas no coinciden.");
+
+            var userIdClaim = User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value
+    ?? User?.Claims?.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+            //var userIdClaim = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
+            var result = await _userService.ChangePasswordAsync(userId, request.CurrentPassword, request.NewPassword);
+
+            if (!result)
+                return BadRequest("La contraseña actual es incorrecta.");
+
+            return Ok(new { message = "Contraseña actualizada correctamente." });
+        }
+
 
 
     }

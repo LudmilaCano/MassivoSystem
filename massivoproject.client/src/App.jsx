@@ -32,6 +32,7 @@ import Contact from "./components/Contact.jsx";
 import Instructive from "./components/Instructive.jsx";
 import ReviewList from "./components/ReviewList.jsx";
 import ReviewListByUser from "./components/ReviewListByUser.jsx";
+import ChangePassword from "./components/ChangePassword.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -151,6 +152,14 @@ function App() {
       element: (
         <MainLayout>
           <ResetPasswordWithCode />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/change-password",
+      element: (
+        <MainLayout>
+          <ChangePassword />
         </MainLayout>
       ),
     },

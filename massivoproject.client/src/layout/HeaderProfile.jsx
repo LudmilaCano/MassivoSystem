@@ -212,9 +212,31 @@ const HeaderPerfil = () => {
           <Divider />
 
           {logueado && (
-            <ListItem button onClick={() => handleNavigate("/profile")}>
-              <ListItemText primary="Perfil" />
-            </ListItem>
+            <>
+              <ListItem button onClick={toggleOpciones}>
+                <ListItemText primary="Perfil" />
+                {openOpciones ? <ExpandLess /> : <ExpandMore />}
+              </ListItem>
+              <Collapse in={openOpciones} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  <ListItem
+                    button
+                    onClick={() => handleNavigate("/profile")}
+                    sx={{ pl: 4 }}
+                  >
+                    <ListItemText primary="Mis Datos" />
+                  </ListItem>
+
+                  <ListItem
+                    button
+                    onClick={() => handleNavigate("/change-password")}
+                    sx={{ pl: 4 }}
+                  >
+                    <ListItemText primary="Cambiar Mi Contraseña" />
+                  </ListItem>
+                </List>
+              </Collapse>
+            </>
           )}
 
           {role === "Admin" && (

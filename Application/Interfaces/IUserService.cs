@@ -23,5 +23,7 @@ namespace Application.Interfaces
         Task<bool> ResetPasswordWithRecoveryCodeAsync(string email, string recoveryCode, string newPassword);
         Task<bool> ActivateAccountAsync(string email, string code);
         Task<bool> UpdateOwnProfileAsync(int userId, UpdateOwnUserDto request);
+        Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
+
     }
 }

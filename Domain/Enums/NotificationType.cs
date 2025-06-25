@@ -18,6 +18,7 @@ namespace Domain.Enums
         ReservaProxima,
         PagoConfirmado,
         NuevaResena,
+        PasswordChanged,
         CambioRol
     }
 }

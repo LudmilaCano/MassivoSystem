@@ -288,5 +288,26 @@ namespace Application.Services
             return true;
         }
 
+        public async Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+                return false;
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            if (user.Password != currentPassword)
+                return false;
+
+            user.Password = newPassword;
+            user.MustChangePassword = false;
+
+            await _userRepository.UpdateAsync(user);
+            await _notificationService.SendNotificationEmail(user.Email, NotificationType.PasswordChanged, null);
+            return true;
+        }
+
+
     }
 }

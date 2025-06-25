@@ -153,6 +153,16 @@ namespace Infraestructure.Services
                                 </ul>
                                 <p>Podés revisar más detalles desde tu panel de control.</p>";
                         break;
+                    case NotificationType.PasswordChanged:
+                        subject = "🔐 Tu contraseña ha sido actualizada";
+                        body = $@"
+                                <p>Hola,</p>
+                                <p>Te informamos que la contraseña de tu cuenta fue cambiada exitosamente.</p>
+                                <p>Si no realizaste este cambio, por favor contacta con soporte inmediatamente.</p>
+                                <br/>
+                                <p>El equipo de Massivo App.</p>";
+                        break;
+                        break;
 
 
 
