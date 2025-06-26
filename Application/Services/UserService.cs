@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Models.Requests;
+using Application.Models.Responses;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Interfaces;
@@ -20,35 +21,38 @@ namespace Application.Services
         private readonly IEventVehicleRepository _eventVehicleRepository;
 
         private readonly IEmailService _emailService;
+        private readonly INotificationService _notificationService;
 
         public UserService(
         IUserRepository userRepository,
         IVehicleRepository vehicleRepository,
         IEventRepository eventRepository,
-        IEventVehicleRepository eventVehicleRepository,IEmailService emailService)
+        IEventVehicleRepository eventVehicleRepository, 
+        IEmailService emailService,
+        INotificationService notificationService)
         {
             _userRepository = userRepository;
             _vehicleRepository = vehicleRepository;
             _eventRepository = eventRepository;
             _eventVehicleRepository = eventVehicleRepository;
             _emailService = emailService;
-        }
-      
+            _notificationService = notificationService;
 
-        public List<User> GetUsers()
-        {
-            return _userRepository.ListAsync().Result ?? new List<User>();
         }
 
-        public User? GetUserById(int idUser)
+        public async Task<List<User>> GetUsers()
         {
-            return _userRepository.GetByIdAsync(idUser).Result;
+            return await _userRepository.ListAsync() ?? new List<User>();
+        }
+
+        public async Task<User?> GetUserById(int idUser)
+        {
+            return await _userRepository.GetByIdAsync(idUser);
         }
 
         public async Task SignUpUser(UserSignUpRequest userSignUpRequest)
         {
             var recoveryCode = GenerateRecoveryCode();
-
             var user = new User
             {
                 FirstName = userSignUpRequest.FirstName,
@@ -60,10 +64,9 @@ namespace Application.Services
                 CityId = userSignUpRequest.City,
                 ProvinceId = userSignUpRequest.Province,
                 IsActive = EntityState.Inactive,
+                ProfileImage = userSignUpRequest.ProfileImage,
                 RecoveryCode = recoveryCode
             };
-
-
             await _userRepository.AddAsync(user);
 
             await _emailService.SendEmailAsync(
@@ -77,7 +80,6 @@ namespace Application.Services
             <br/>
             <p>El equipo de soporte de Massivo App.</p>"
             );
-
         }
 
         public async Task<bool> ActivateAccountAsync(string email, string code)
@@ -94,11 +96,9 @@ namespace Application.Services
             await _userRepository.UpdateAsync(user);
             return true;
         }
-
-
-        public void UpdateUser(UserUpdateRequest userUpdateRequest, int idUser)
+        public async Task UpdateUser(UserUpdateRequest userUpdateRequest, int idUser)
         {
-            User? user = _userRepository.GetByIdAsync(idUser).Result;
+            User? user = await _userRepository.GetByIdAsync(idUser);
             if (user == null)
             {
                 throw new ArgumentNullException("User not found");
@@ -108,37 +108,46 @@ namespace Application.Services
             user.LastName = userUpdateRequest.LastName;
             user.IdentificationNumber = userUpdateRequest.DniNumber;
             user.Email = userUpdateRequest.Email ?? user.Email;
-            if (!string.IsNullOrEmpty(userUpdateRequest.Password))
+            user.ProfileImage = userUpdateRequest.ProfileImage ?? user.ProfileImage;
+            /*if (!string.IsNullOrEmpty(userUpdateRequest.Password))
             {
                 user.Password = userUpdateRequest.Password;
             }
             user.CityId = userUpdateRequest.City;
-            user.ProvinceId = userUpdateRequest.Province;
+            user.ProvinceId = userUpdateRequest.Province;*/
 
-            _userRepository.UpdateAsync(user).Wait();
+            await _userRepository.UpdateAsync(user);
         }
 
-        public void ChangeUserRole(RoleChangeRequest roleChangeRequest)
+        public async Task ChangeUserRole(RoleChangeRequest roleChangeRequest)
         {
-            User? user = _userRepository.GetByIdAsync(roleChangeRequest.UserId).Result;
+            var user = await _userRepository.GetByIdAsync(roleChangeRequest.UserId);
             if (user == null)
             {
                 throw new ArgumentNullException("User not found");
             }
 
             user.Role = roleChangeRequest.NewRole;
-            _userRepository.UpdateAsync(user).Wait();
+            await _userRepository.UpdateAsync(user);
+
+            var userDto = UserNotificationDto.Create(user);
+            await _notificationService.SendNotificationEmail(
+                user.Email,
+                NotificationType.CambioRol,
+                userDto
+            );
         }
 
-        public void DesactiveUser(int idUser)
+        public async Task DesactiveUser(int idUser)
         {
-            User? user = _userRepository.GetByIdAsync(idUser).Result;
+            User? user = await _userRepository.GetByIdAsync(idUser);
             if (user == null)
             {
                 throw new ArgumentNullException("User not found");
             }
+
             user.IsActive = Domain.Enums.EntityState.Inactive;
-            _userRepository.UpdateAsync(user).Wait();
+            await _userRepository.UpdateAsync(user);
         }
 
         public async Task<bool> AdminUpdateUserAsync(int userId, AdminUserUpdateRequest request)
@@ -155,7 +164,7 @@ namespace Application.Services
             user.CityId = request.CityId;
             user.ProvinceId = request.ProvinceId;
             user.Role = request.Role;
-
+            user.ProfileImage = request.ProfileImage;
             /*if (!string.IsNullOrEmpty(request.Password))
             {
                 user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
@@ -263,5 +272,43 @@ namespace Application.Services
             // Finalmente, cambiar el estado del usuario
             return await _userRepository.ToggleStatusAsync(userId);
         }
+
+        //descartado
+        public async Task<bool> UpdateOwnProfileAsync(int userId, UpdateOwnUserDto request)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.IdentificationNumber = request.IdentificationNumber;
+            user.Email = request.Email;
+
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
+        public async Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+                return false;
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            if (user.Password != currentPassword)
+                return false;
+
+            user.Password = newPassword;
+            user.MustChangePassword = false;
+
+            await _userRepository.UpdateAsync(user);
+            await _notificationService.SendNotificationEmail(user.Email, NotificationType.PasswordChanged, null);
+            return true;
+        }
+
+
     }
 }

@@ -1,24 +1,26 @@
 // AdminVehiclePanel.jsx
 import React, { useState } from 'react';
-import { 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, FormControl, InputLabel, Select, MenuItem, Box
+  TextField, FormControl, InputLabel, Select, MenuItem, Box, Typography, CircularProgress
 } from '@mui/material';
-import { adminUpdateVehicle,toggleVehicleStatus}from '../../api/VehicleEndpoints';
+import { adminUpdateVehicle, toggleVehicleStatus } from '../../api/VehicleEndpoints';
 import Swal from 'sweetalert2';
 
 const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAlert }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [errors, setErrors] = useState({});
-  
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   const handleEditVehicle = (vehicle) => {
-    setSelectedVehicle({...vehicle});
+    setSelectedVehicle({ ...vehicle });
     setErrors({});
     setOpenDialog(true);
   };
-console.log(vehicles)
+  console.log(vehicles)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSelectedVehicle(prev => ({ ...prev, [name]: value }));
@@ -30,7 +32,7 @@ console.log(vehicles)
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!selectedVehicle.name) newErrors.name = "El nombre es obligatorio";
     if (!selectedVehicle.description) newErrors.description = "La descripción es obligatoria";
     if (!selectedVehicle.capacity) newErrors.capacity = "La capacidad es obligatoria";
@@ -39,11 +41,39 @@ console.log(vehicles)
     if (!selectedVehicle.yearModel) newErrors.yearModel = "El año del modelo es obligatorio";
     if (!selectedVehicle.imagePath) newErrors.imagePath = "La URL de imagen es obligatoria";
     if (selectedVehicle.available === undefined || selectedVehicle.available === null) newErrors.available = "La disponibilidad es obligatoria";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  /*   const handleSaveVehicle = async () => {
+      if (!validateForm()) {
+        showErrorAlert("Por favor complete todos los campos obligatorios");
+        return;
+      }
+  
+      try {
+        // Crear objeto con la estructura esperada por el backend
+        const vehicleData = {
+          licensePlate: selectedVehicle.licensePlate,
+          name: selectedVehicle.name,
+          description: selectedVehicle.description,
+          capacity: parseInt(selectedVehicle.capacity),
+          type: parseInt(selectedVehicle.type),
+          driverName: selectedVehicle.driverName,
+          yearModel: parseInt(selectedVehicle.yearModel),
+          imagePath: selectedVehicle.imagePath
+        };
+  
+        await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
+        showSuccessAlert("Vehículo actualizado correctamente");
+        onRefresh();
+        handleCloseDialog();
+      } catch (error) {
+        console.error("Error updating vehicle:", error);
+        showErrorAlert(`Error al actualizar vehículo: ${error.message}`);
+      }
+    }; */
   const handleSaveVehicle = async () => {
     if (!validateForm()) {
       showErrorAlert("Por favor complete todos los campos obligatorios");
@@ -51,7 +81,29 @@ console.log(vehicles)
     }
 
     try {
-      // Crear objeto con la estructura esperada por el backend
+      setLoading(true);
+
+      let imageUrl = selectedVehicle.imagePath;
+
+      // Si hay un archivo seleccionado, súbelo primero
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        const response = await fetch('https://localhost:7089/api/File/upload/vehicle', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al subir la imagen');
+        }
+
+        const data = await response.json();
+        imageUrl = data.url;
+      }
+
+      // Crear objeto con todos los datos, incluyendo la URL de la imagen
       const vehicleData = {
         licensePlate: selectedVehicle.licensePlate,
         name: selectedVehicle.name,
@@ -60,16 +112,19 @@ console.log(vehicles)
         type: parseInt(selectedVehicle.type),
         driverName: selectedVehicle.driverName,
         yearModel: parseInt(selectedVehicle.yearModel),
-        imagePath: selectedVehicle.imagePath
+        imagePath: imageUrl
       };
 
       await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
       showSuccessAlert("Vehículo actualizado correctamente");
       onRefresh();
       handleCloseDialog();
+      setSelectedFile(null);
     } catch (error) {
       console.error("Error updating vehicle:", error);
       showErrorAlert(`Error al actualizar vehículo: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,7 +140,7 @@ console.log(vehicles)
         <p><strong>Año:</strong> ${vehicle.yearModel || ''}</p>        
       </div>
     `;
-    
+
     Swal.fire({
       title: 'Detalles de Vehículo',
       html: content,
@@ -109,7 +164,7 @@ console.log(vehicles)
     setErrors({});
   };
 
-  const handleToggleStatus = async(licensePlate) => {
+  const handleToggleStatus = async (licensePlate) => {
     try {
       await toggleVehicleStatus(licensePlate);
       showSuccessAlert("Estado del vehículo actualizado correctamente");
@@ -118,7 +173,7 @@ console.log(vehicles)
       console.error("Error updating vehicle status:", error);
       showErrorAlert(`Error al actualizar estado del vehículo: ${error.message}`);
     }
-  };  
+  };
 
   return (
     <>
@@ -143,29 +198,29 @@ console.log(vehicles)
                 <TableCell>{vehicle.capacity}</TableCell>
                 <TableCell>{vehicle.driverName}</TableCell>
                 <TableCell>
-                  <Button 
-                    size="small" 
+                  <Button
+                    size="small"
                     variant="outlined"
                     onClick={() => handleEditVehicle(vehicle)}
                     sx={{ mr: 1 }}
                   >
                     Editar
                   </Button>
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
+                  <Button
+                    size="small"
+                    variant="outlined"
                     color="info"
                     onClick={() => handleViewVehicleDetails(vehicle)}
                   >
                     Detalles
                   </Button>
                   <Button
-                  variant='contained'
+                    variant='contained'
                     size="small"
                     onClick={() => handleToggleStatus(vehicle.licensePlate)}
-                  sx={{ mr: 1,ml:1 } }
+                    sx={{ mr: 1, ml: 1 }}
                   >
-                     {vehicle.isActive == 0 ?" Desactivar" : "Activar"}
+                    {vehicle.isActive == 0 ? " Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -249,7 +304,49 @@ console.log(vehicles)
                 error={!!errors.yearModel}
                 helperText={errors.yearModel}
               />
-              <TextField
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1">Imagen del Vehículo</Typography>
+
+                {/* Vista previa de la imagen */}
+                {(selectedVehicle.imagePath || selectedFile) && (
+                  <Box sx={{ textAlign: 'center', mb: 2 }}>
+                    <img
+                      src={selectedFile ? URL.createObjectURL(selectedFile) : selectedVehicle.imagePath}
+                      alt="Vista previa"
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '200px',
+                        objectFit: 'contain',
+                        borderRadius: '4px'
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {/* Selector de archivo */}
+                <input
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  id="vehicle-image-upload"
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setSelectedFile(file);
+                    }
+                  }}
+                />
+                <label htmlFor="vehicle-image-upload">
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    fullWidth
+                  >
+                    Seleccionar Imagen
+                  </Button>
+                </label>
+              </Box>
+              {/*   <TextField
                 label="URL de imagen *"
                 name="imagePath"
                 value={selectedVehicle.imagePath || ''}
@@ -258,7 +355,7 @@ console.log(vehicles)
                 required
                 error={!!errors.imagePath}
                 helperText={errors.imagePath}
-              />
+              /> */}
               {/* <FormControl fullWidth required error={!!errors.available}>
                 <InputLabel>Disponible *</InputLabel>
                 <Select

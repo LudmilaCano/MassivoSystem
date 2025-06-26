@@ -1,12 +1,12 @@
 // src/components/ServiceProviderDashboard/ProviderEventPanel.jsx
 import React, { useState, useEffect } from 'react';
-import { 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, FormControl, InputLabel, Select, MenuItem, Box,
-  Autocomplete, Grid, CircularProgress
+  Autocomplete, Grid, CircularProgress, Typography
 } from '@mui/material';
- 
+
 import { adminUpdateEvent } from '../../api/EventEndpoints';
 import { getAllCities, getCityById } from '../../api/CityEndpoints';
 import { getEventsByUserId } from '../../api/EventEndpoints';
@@ -27,6 +27,7 @@ const ProviderEventPanel = ({ userId }) => {
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [citiesByProvince, setCitiesByProvince] = useState([]);
   const [selectedCity, setSelectedCity] = useState(null);
+  const [eventSelectedFile, setEventSelectedFile] = useState(null);
   const { showAlert } = useSwalAlert();
 
   useEffect(() => {
@@ -85,7 +86,7 @@ const ProviderEventPanel = ({ userId }) => {
           const citiesData = await getCitiesByProvince(selectedProvince);
           const citiesArray = Array.isArray(citiesData) ? citiesData : [];
           setCitiesByProvince(citiesArray);
-          
+
           // Si hay una ciudad seleccionada y pertenece a esta provincia, mantenerla
           if (selectedCity && selectedCity.provinceId === selectedProvince) {
             // Verificar si la ciudad ya está en la lista
@@ -110,34 +111,34 @@ const ProviderEventPanel = ({ userId }) => {
 
   const handleEditEvent = async (event) => {
     setDialogLoading(true);
-    setSelectedEvent({...event});
+    setSelectedEvent({ ...event });
     setErrors({});
-    
+
     try {
       // Primero, abrir el diálogo para mostrar que está cargando
       setOpenDialog(true);
-      
+
       // Si el evento tiene una ciudad, buscar sus detalles
       if (event.locationId) {
         // Obtener detalles de la ciudad
         const cityData = await getCityById(event.locationId);
         console.log("Ciudad obtenida:", cityData);
-        
+
         if (cityData) {
           // Guardar la ciudad seleccionada
           setSelectedCity(cityData);
-          
+
           // Si la ciudad tiene provincia, establecerla
           if (cityData.provinceId) {
             setSelectedProvince(cityData.provinceId);
-            
+
             // Cargar las ciudades de esa provincia
             const citiesData = await getCitiesByProvince(cityData.provinceId);
             const citiesArray = Array.isArray(citiesData) ? citiesData : [];
-            
+
             // Verificar si la ciudad actual está en la lista
             const cityExists = citiesArray.some(city => city.id === cityData.id);
-            
+
             // Si la ciudad no está en la lista, añadirla
             if (!cityExists) {
               setCitiesByProvince([...citiesArray, cityData]);
@@ -167,7 +168,7 @@ const ProviderEventPanel = ({ userId }) => {
   const handleProvinceChange = async (event) => {
     const provinceId = event.target.value;
     setSelectedProvince(provinceId);
-    
+
     // Resetear la ciudad seleccionada cuando cambia la provincia
     setSelectedCity(null);
     setSelectedEvent(prev => ({
@@ -175,7 +176,7 @@ const ProviderEventPanel = ({ userId }) => {
       locationId: null,
       location: null
     }));
-    
+
     try {
       const citiesData = await getCitiesByProvince(provinceId);
       setCitiesByProvince(Array.isArray(citiesData) ? citiesData : []);
@@ -201,7 +202,7 @@ const ProviderEventPanel = ({ userId }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!selectedEvent.name) newErrors.name = "El nombre es obligatorio";
     if (!selectedEvent.description) newErrors.description = "La descripción es obligatoria";
     if (!selectedEvent.eventDate) newErrors.eventDate = "La fecha es obligatoria";
@@ -209,7 +210,7 @@ const ProviderEventPanel = ({ userId }) => {
     if (!selectedEvent.locationId) newErrors.locationId = "La ciudad es obligatoria";
     if (!selectedEvent.image) newErrors.image = "La imagen es obligatoria";
     if (!selectedProvince) newErrors.provinceId = "La provincia es obligatoria";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -221,20 +222,39 @@ const ProviderEventPanel = ({ userId }) => {
     }
 
     try {
+      let imageUrl = selectedEvent.image;
+
+      // Si hay un archivo seleccionado, súbelo primero
+      if (eventSelectedFile) {
+        const formData = new FormData();
+        formData.append('file', eventSelectedFile);
+
+        const response = await fetch('https://localhost:7089/api/File/upload/event', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al subir la imagen');
+        }
+
+        const data = await response.json();
+        imageUrl = data.url;
+      }
       const eventData = {
         eventId: selectedEvent.eventId,
         name: selectedEvent.name,
         description: selectedEvent.description,
         eventDate: selectedEvent.eventDate,
         type: parseInt(selectedEvent.type),
-        image: selectedEvent.image,
+        image: imageUrl,
         locationId: selectedEvent.locationId,
         userId: selectedEvent.userId
       };
 
       await adminUpdateEvent(selectedEvent.eventId, eventData);
       showAlert("Evento actualizado correctamente", "success");
-    
+
       fetchEvents();
       handleCloseDialog();
     } catch (error) {
@@ -256,7 +276,7 @@ const ProviderEventPanel = ({ userId }) => {
         <p><strong>Imagen:</strong> ${event.image ? 'Sí' : 'No'}</p>
       </div>
     `;
-    
+
     Swal.fire({
       title: 'Detalles de Evento',
       html: content,
@@ -299,33 +319,40 @@ const ProviderEventPanel = ({ userId }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {events.map((event) => (
-              <TableRow key={event.eventId}>
-                <TableCell>{event.eventId}</TableCell>
-                <TableCell>{event.name}</TableCell>
-                <TableCell>{event.location}</TableCell>
-                <TableCell>{new Date(event.eventDate).toLocaleDateString()}</TableCell>
-                <TableCell>{getEventTypeName(event.type)}</TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => handleEditEvent(event)}
-                    sx={{ mr: 1 }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="info"
-                    onClick={() => handleViewEventDetails(event)}
-                  >
-                    Detalles
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {
+              events.length === 0 ? (
+                <Typography color="textSecondary" align="center" sx={{ mt: 2 }}>
+                  No tienes eventos disponibles
+                </Typography>
+              ) : (
+                events.map((event) => (
+                  <TableRow key={event.eventId}>
+                    <TableCell>{event.eventId}</TableCell>
+                    <TableCell>{event.name}</TableCell>
+                    <TableCell>{event.location}</TableCell>
+                    <TableCell>{new Date(event.eventDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{getEventTypeName(event.type)}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleEditEvent(event)}
+                        sx={{ mr: 1 }}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="info"
+                        onClick={() => handleViewEventDetails(event)}
+                      >
+                        Detalles
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+                ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -431,7 +458,7 @@ const ProviderEventPanel = ({ userId }) => {
                 </Grid>
               </Grid>
 
-              <TextField
+              {/*   <TextField
                 label="URL de Imagen *"
                 name="image"
                 value={selectedEvent.image || ''}
@@ -440,15 +467,57 @@ const ProviderEventPanel = ({ userId }) => {
                 required
                 error={!!errors.image}
                 helperText={errors.image}
-              />
+              /> */}
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Foto de evento</Typography>
+
+                {/* Vista previa de la imagen */}
+                {eventSelectedFile && (
+                  <Box sx={{ textAlign: 'center', mb: 2 }}>
+                    <img
+                      src={URL.createObjectURL(eventSelectedFile)}
+                      alt="Vista previa"
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '200px',
+                        objectFit: 'contain',
+                        borderRadius: '4px'
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {/* Selector de archivo */}
+                <input
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  id="event-image-upload"
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setEventSelectedFile(file);
+                    }
+                  }}
+                />
+                <label htmlFor="event-image-upload">
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    fullWidth
+                  >
+                    Seleccionar Imagen de Evento
+                  </Button>
+                </label>
+              </Grid>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancelar</Button>
-          <Button 
-            onClick={handleSaveEvent} 
-            variant="contained" 
+          <Button
+            onClick={handleSaveEvent}
+            variant="contained"
             color="primary"
             disabled={dialogLoading}
           >

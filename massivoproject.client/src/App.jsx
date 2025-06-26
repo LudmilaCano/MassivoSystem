@@ -26,6 +26,13 @@ import AboutUs from "./components/AboutUs.jsx";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard.jsx";
 import ActivateAccount from "./components/ActivateAccount.jsx";
 import BookingList from "./components/BookingList.jsx";
+import BookingDetail from "./components/BookingDetail.jsx";
+import NotFound from "./layout/NotFound.jsx";
+import Contact from "./components/Contact.jsx";
+import Instructive from "./components/Instructive.jsx";
+import ReviewList from "./components/ReviewList.jsx";
+import ReviewListByUser from "./components/ReviewListByUser.jsx";
+import ChangePassword from "./components/ChangePassword.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -125,7 +132,7 @@ function App() {
     {
       path: "/booking",
       element: (
-        <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
+        <ProtectedRoute allowedRoles={["Admin", "User"]}>
           <MainLayout>
             <Booking />
           </MainLayout>
@@ -149,6 +156,14 @@ function App() {
       ),
     },
     {
+      path: "/change-password",
+      element: (
+        <MainLayout>
+          <ChangePassword />
+        </MainLayout>
+      ),
+    },
+    {
       path: "/activate-account",
       element: (
         <MainLayout>
@@ -164,6 +179,7 @@ function App() {
         </MainLayout>
       ),
     },
+
     {
       path: "/admin-dashboard",
       element: (
@@ -177,7 +193,7 @@ function App() {
     {
       path: "/provider-dashboard",
       element: (
-        <ProtectedRoute allowedRoles={["Prestador","Admin"]}>
+        <ProtectedRoute allowedRoles={["Prestador", "Admin"]}>
           <MainLayout>
             <ProviderDashboard />
           </MainLayout>
@@ -189,6 +205,54 @@ function App() {
       element: (
         <MainLayout>
           <BookingList />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/review-list",
+      element: (
+        <MainLayout>
+          <ReviewList />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/review-list-user",
+      element: (
+        <MainLayout>
+          <ReviewListByUser />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/booking/:bookingId",
+      element: (
+        <MainLayout>
+          <BookingDetail />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/contact",
+      element: (
+        <MainLayout>
+          <Contact />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/instructivo",
+      element: (
+        <MainLayout>
+          <Instructive />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "*",
+      element: (
+        <MainLayout>
+          <NotFound />
         </MainLayout>
       ),
     },

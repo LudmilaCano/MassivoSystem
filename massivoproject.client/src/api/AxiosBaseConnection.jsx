@@ -1,5 +1,7 @@
 import axios from 'axios';
-
+import { store } from '../redux/Store';
+import { logout } from '../redux/AuthSlice'; // revisar
+import { showAlert } from '../hooks/AlertHelper';
 // conexion base con Axios
 
 const api = axios.create({
@@ -15,6 +17,7 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
+        
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -22,5 +25,59 @@ api.interceptors.request.use(
     },
     (error) => Promise.reject(error)
 );
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const { response } = error;
+
+        if (!response) {
+            showAlert('No se pudo conectar con el servidor.', 'error');
+            return Promise.reject(error);
+        }
+
+        const { status, data } = response;
+        const mensaje = data?.error || 'Ocurrió un error inesperado.';
+
+        switch (status) {
+            case 400:
+                showAlert(mensaje, 'error');
+                break;
+            case 401:
+                if (response.config.url.includes('/authentication/Authenticate')) {
+                    showAlert('Credenciales inválidas.', 'error');
+                } else {
+                    showAlert('Sesión expirada. Por favor, iniciá sesión nuevamente.', 'warning');
+                    store.dispatch(logout());
+                    window.location.href = '/login';
+                }
+                break;
+            case 403:
+                showAlert('No tenés permisos para acceder a este recurso.', 'error');
+                break;
+            case 404:
+                showAlert('Recurso no encontrado.', 'error');
+                break;
+            case 408:
+                showAlert('Tiempo de espera agotado. Intentalo nuevamente.', 'error');
+                break;
+            case 409:
+                showAlert('Conflicto en la operación.', 'warning');
+                break;
+            case 500:
+                showAlert('Error interno del servidor.', 'error');
+                break;
+            case 501:
+                showAlert('Funcionalidad no implementada.', 'error');
+                break;
+            default:
+                showAlert(mensaje, 'error');
+                break;
+        }
+
+        return Promise.reject(error);
+    }
+);
+
 
 export default api;

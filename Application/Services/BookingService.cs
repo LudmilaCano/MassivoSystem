@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QRCoder;
+using System.Drawing;
+using System.IO;
 
 namespace Application.Services
 {
@@ -19,12 +22,25 @@ namespace Application.Services
         private readonly IEventRepository _eventRepository;
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IPaymentRepository _paymentRepository;
-        public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository)
+
+        private readonly IPaymentService _paymentService;
+        private readonly IUserRepository _userRepository;
+        private readonly INotificationService _notificationService;
+        private readonly IEmailService _emailService;
+        private readonly IStripeService _stripeService;
+
+        public BookingService(INotificationService notificationService,IUserRepository userRepository, IPaymentService paymentService, IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository, IEmailService emailService, IStripeService stripeService)
+
         {
             _bookingRepository = bookingRepository;
             _eventRepository = eventRepository;
             _vehicleRepository = vehicleRepository;
             _paymentRepository = paymentRepository;
+            _paymentService = paymentService;
+            _userRepository = userRepository;
+            _notificationService = notificationService;
+            _emailService = emailService;
+            _stripeService = stripeService;
         }
 
         public async Task<List<BookingDto>> GetBookingsAsync()
@@ -79,45 +95,215 @@ namespace Application.Services
         public async Task<BookingDto> AddBookingAsync(AddBookingRequest addBookingRequest)
         {
             var eventEntity = await _eventRepository.GetEventByIdWithVehiclesIncludedAsync(addBookingRequest.EventId)
-               ?? throw new KeyNotFoundException($"Evento con ID {addBookingRequest.EventId} no fue encontrado.");
+                ?? throw new KeyNotFoundException($"Evento con ID {addBookingRequest.EventId} no fue encontrado.");
+
             var eventVehicle = eventEntity.EventVehicles.FirstOrDefault(ev => ev.LicensePlate == addBookingRequest.LicensePlate)
-               ?? throw new KeyNotFoundException($"El vehículo con matrícula {addBookingRequest.LicensePlate} no se asignó a este evento.");
+                ?? throw new KeyNotFoundException($"El vehículo con matrícula {addBookingRequest.LicensePlate} no se asignó a este evento.");
+
             var vehicle = await _vehicleRepository.GetByIdAsync(addBookingRequest.LicensePlate)
-               ?? throw new KeyNotFoundException($"Vehículo con matrícula {addBookingRequest.LicensePlate} no fue encontrado.");
-            if (addBookingRequest.SeatNumber + vehicle.Available > vehicle.Capacity)
+                ?? throw new KeyNotFoundException($"Vehículo con matrícula {addBookingRequest.LicensePlate} no fue encontrado.");
+
+            var ownerUser = await _userRepository.GetByIdAsync(vehicle.UserId.Value)
+                ?? throw new KeyNotFoundException($"El vehículo {vehicle.LicensePlate} no tiene un usuario asignado.");
+            if (vehicle.Available < addBookingRequest.SeatNumber)
             {
-                throw new InvalidOperationException("La suma del número de asientos y la disponibilidad no debe exceder la capacidad del vehículo.");
+                throw new InvalidOperationException("No hay suficientes asientos disponibles para esta reserva.");
             }
+
             if (addBookingRequest.Payment == null)
-            {
                 throw new ArgumentNullException(nameof(addBookingRequest.Payment), "El pago no puede ser nulo.");
+
+            if (addBookingRequest.Payment.PaymentMethod == PaymentMethod.MercadoPago && string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken))
+                throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago");
+
+            //if (string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken)) 
+                //throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago");
+
+            Payment payment;
+
+            if ((PaymentMethod)addBookingRequest.Payment.PaymentMethod == PaymentMethod.MercadoPago)
+            {
+                if (string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken))
+                    throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago.");
+
+                string paymentUrl = await _paymentService.CrearPreferenciaPagoAsync(
+                accessToken: ownerUser.MercadoPagoAccessToken, 
+                title: $"Reserva para {eventEntity.Name}",
+                amount: (decimal)addBookingRequest.Payment.Amount,
+                externalReference: Guid.NewGuid().ToString(),
+                successUrl: "https://localhost:5173/booking-list/",
+                failureUrl: "https://localhost:5173/booking-list/"
+            );
+
+                payment = new Payment
+                {
+                    Amount = addBookingRequest.Payment.Amount,
+                    Date = DateTime.Now,
+                    PaymentMethod = addBookingRequest.Payment.PaymentMethod,
+                    PaymentStatus = PaymentStatus.Success, // Pending deberia ser pero en testing lo ponemos como aprobado ya que no usamos WebHooks de MP
+                    Details = paymentUrl
+                };
             }
-            var booking = new Booking()
+            else if ((PaymentMethod)addBookingRequest.Payment.PaymentMethod == PaymentMethod.Cash)
+            {
+                string rapipagoCode = $"RP-{DateTime.Now:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
+
+                payment = new Payment
+                {
+                    Amount = addBookingRequest.Payment.Amount,
+                    Date = DateTime.Now,
+                    PaymentMethod = addBookingRequest.Payment.PaymentMethod,
+                    PaymentStatus = PaymentStatus.Success,
+                    Details = $"Código Rapipago: {rapipagoCode} - Monto: ${addBookingRequest.Payment.Amount}"
+                };
+            }
+            else if ((PaymentMethod)addBookingRequest.Payment.PaymentMethod == PaymentMethod.CreditCard ||
+            (PaymentMethod)addBookingRequest.Payment.PaymentMethod == PaymentMethod.DebitCard)
+            {
+                string paymentUrl = await _stripeService.CreatePaymentLinkAsync(
+                    amount: (decimal)addBookingRequest.Payment.Amount,
+                    eventVehicle.EventVehicleId,
+                    description: $"Reserva para {eventEntity.Name} - Vehículo {vehicle.Name}"
+                );
+
+                payment = new Payment
+                {
+                    Amount = addBookingRequest.Payment.Amount,
+                    Date = DateTime.Now,
+                    PaymentMethod = addBookingRequest.Payment.PaymentMethod,
+                    PaymentStatus = PaymentStatus.Success,
+                    Details = paymentUrl
+                };
+            }
+            else
+            {
+                payment = new Payment
+                {
+                    Amount = addBookingRequest.Payment.Amount,
+                    Date = DateTime.Now,
+                    PaymentMethod = addBookingRequest.Payment.PaymentMethod,
+                    PaymentStatus = PaymentStatus.Success,
+                    Details = $"Pago de {eventEntity.Name} para el vehículo {vehicle.LicensePlate} - {vehicle.Name}"
+                };
+            }
+
+            var paymentSaved = await _paymentRepository.AddAsync(payment);
+
+            var booking = new Booking
             {
                 Date = DateTime.Now,
                 UserId = addBookingRequest.UserId,
                 EventVehicleId = eventVehicle.EventVehicleId,
                 BookingStatus = BookingStatus.Confirmed,
                 SeatNumber = addBookingRequest.SeatNumber ?? 0,
+                PaymentId = paymentSaved.Id
             };
 
-            var payment = new Payment()
-            {
-                Amount = addBookingRequest.Payment.Amount,
-                Date = DateTime.Now,
-                PaymentMethod = addBookingRequest.Payment.PaymentMethod,
-                PaymentStatus = PaymentStatus.Success,
-                Details = $"Pago de {eventEntity.Name} que va con el vehiculo {vehicle.LicensePlate} - {vehicle.Name}"
-            };
-            var paymentSaved = await _paymentRepository.AddAsync(payment);
-            booking.PaymentId = paymentSaved.Id;
             var bookingSaved = await _bookingRepository.AddAsync(booking);
-            vehicle.Available += booking.SeatNumber;
+            //vehicle.Available += booking.SeatNumber;
+            vehicle.Available -= booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
+
             bookingSaved.Payment = paymentSaved;
 
-            return BookingDto.Create(bookingSaved, eventEntity, vehicle);
+            var bookingDto = BookingDto.Create(bookingSaved, eventEntity, vehicle);
+
+            await _notificationService.SendNotificationEmail(
+                ownerUser.Email,
+                NotificationType.ReservaCreadaPrestador,
+                bookingDto
+            );
+
+            var user = await _userRepository.GetByIdAsync(addBookingRequest.UserId);
+            string qrPayload = $"BookingId:{bookingSaved.Id};UserId:{user.UserId};Event:{eventEntity.Name};Date:{bookingSaved.Date};Estado:{bookingSaved.BookingStatus}";
+            byte[] qrCodeBytes = GenerateQrCode(qrPayload);
+
+            if (user != null)
+            {
+                /*await _notificationService.SendNotificationEmail(
+                    user.Email,
+                    NotificationType.ReservaCreadaUser,
+                    bookingDto,
+                    qrCodeBytes
+            );
+            }*/
+                Console.WriteLine($"Método de pago: {addBookingRequest.Payment.PaymentMethod}");
+
+                if ((PaymentMethod)addBookingRequest.Payment.PaymentMethod == PaymentMethod.CreditCard || (PaymentMethod)addBookingRequest.Payment.PaymentMethod == PaymentMethod.DebitCard)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        await Task.Delay(15000);
+                        await _emailService.SendEmailAsync( user.Email,
+                            "🎟 Confirmación de tu reserva en Massivo App",
+                            $@"
+                            <p>¡Hola {user.FirstName}!</p>
+                            <p>Tu reserva para <strong>{eventEntity.Name}</strong> ha sido confirmada.</p>
+                            <p>Adjuntamos tu código QR que usarás para abordar el vehículo.</p>
+                            <p>Detalles:</p>
+                            <ul>
+                                <li>Vehículo: {vehicle.Name} ({vehicle.LicensePlate})</li>
+                                <li>Asientos reservados: {booking.SeatNumber}</li>
+                                <li>Fecha de reserva: {booking.Date:dd/MM/yyyy HH:mm}</li>
+                            </ul>
+                            <br/>
+                            <p>¡Gracias por usar Massivo App!</p>",
+                            qrCodeBytes
+                        );
+                    });
+
+                    // Retornar sin enviar email
+                    return bookingDto;
+                }
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "🎟 Confirmación de tu reserva en Massivo App",
+                    $@"
+            <p>¡Hola {user.FirstName}!</p>
+            <p>Tu reserva para <strong>{eventEntity.Name}</strong> ha sido confirmada.</p>
+            <p>Adjuntamos tu código QR que usarás para abordar el vehículo.</p>
+            <p>Detalles:</p>
+            <ul>
+                <li>Vehículo: {vehicle.Name} ({vehicle.LicensePlate})</li>
+                <li>Asientos reservados: {booking.SeatNumber}</li>
+                <li>Fecha de reserva: {booking.Date:dd/MM/yyyy HH:mm}</li>
+            </ul>
+            <br/>
+            <p>¡Gracias por usar Massivo App!</p>",
+                    qrCodeBytes
+                );
+            }
+
+
+            return bookingDto;
+
         }
+
+        //envio de mails masivos avisos por reservas proximas
+        public async Task NotificarReservasProximasAsync()
+        {
+            var reservasProximas = await _bookingRepository.GetConfirmedBookingsForTomorrowAsync();
+
+            foreach (var reserva in reservasProximas)
+            {
+                var user = await _userRepository.GetByIdAsync(reserva.UserId);
+                var vehicle = reserva.EventVehicle.Vehicle;
+                var eventEntity = reserva.EventVehicle.Event;
+
+                if (user != null && !string.IsNullOrEmpty(user.Email))
+                {
+                    var bookingDto = BookingDto.Create(reserva, eventEntity, vehicle);
+
+                    await _notificationService.SendNotificationEmail(
+                        user.Email,
+                        NotificationType.ReservaProxima,
+                        bookingDto
+                    );
+                }
+            }
+        }
+
+
 
         public async Task CancelBookingAsync(int bookingId)
         {
@@ -140,12 +326,57 @@ namespace Application.Services
             await _bookingRepository.UpdateAsync(booking);
 
             // Se libera los espacio del vehiculo
-            vehicle.Available -= booking.SeatNumber;
+            //vehicle.Available -= booking.SeatNumber;
+            vehicle.Available += booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
 
             // Se realiza el reembolso del pago
             payment.PaymentStatus = PaymentStatus.Refunded;
             await _paymentRepository.UpdateAsync(payment);
+
+            var bookingDto = BookingDto.Create(booking, eventEntity, vehicle);
+            //Se envia notificacion a User
+            var user = await _userRepository.GetByIdAsync(booking.UserId);
+            await _notificationService.SendNotificationEmail(
+                    user.Email,
+                    NotificationType.ReservaCancelUser,
+                    bookingDto
+                    );
+            //Se envia notificacion a prestador
+            var ownerUser = await _userRepository.GetByIdAsync(vehicle.UserId.Value)
+                ?? throw new KeyNotFoundException($"El vehículo {vehicle.LicensePlate} no tiene un usuario asignado.");
+            await _notificationService.SendNotificationEmail(
+                ownerUser.Email,
+                NotificationType.ReservaCancelPrestador,
+                bookingDto
+            );
         }
+
+        public async Task CompleteBookingAsync(int bookingId)
+        {
+            var booking = await _bookingRepository.GetBookingWithEventVehicleIdAsync(bookingId)
+                ?? throw new KeyNotFoundException($"Reserva con ID {bookingId} no fue encontrada.");
+
+            if (booking.BookingStatus == BookingStatus.Completed)
+            {
+                throw new InvalidOperationException("La reserva ya fue confirmada anteriormente.");
+            }
+            if (booking.BookingStatus == BookingStatus.Cancelled)
+            {
+                throw new InvalidOperationException("La reserva que intenta confirmar fue cancelada.");
+            }
+
+            booking.BookingStatus = BookingStatus.Completed;
+            await _bookingRepository.UpdateAsync(booking);
+        }
+
+        private byte[] GenerateQrCode(string qrText)
+        {
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(qrText, QRCodeGenerator.ECCLevel.Q);
+            var qrCode = new PngByteQRCode(qrData);
+            return qrCode.GetGraphic(20);
+        }
+
     }
 }

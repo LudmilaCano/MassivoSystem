@@ -14,6 +14,8 @@ namespace Domain.Interfaces
         Task<bool> ToggleStatusAsync(int eventId);
         Task<List<int>> GetEventEventVehicleIdsAsync(int eventId);
         Task<EntityState> GetEventEntityStateAsync(int eventId);
+        Task<List<Event>> GetAllActiveEventsWithVehiclesIncludedAsync();
+
 
     }
 }

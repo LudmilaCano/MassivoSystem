@@ -43,6 +43,7 @@ namespace MassivoProject.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> AddBooking([FromBody] AddBookingRequest addBookingRequest)
         {
+            Console.WriteLine($"👉 Booking recibido: {(addBookingRequest)}");
             if (addBookingRequest == null)
             {
                 return BadRequest("Invalid booking request.");
@@ -50,11 +51,40 @@ namespace MassivoProject.Server.Controllers
             var booking = await _bookingService.AddBookingAsync(addBookingRequest);
             return CreatedAtAction(nameof(GetBookingById), new { id = booking.Id }, booking);
         }
+
         [HttpDelete("{bookingId}")]
         public async Task<IActionResult> CancelBooking(int bookingId)
         {
             await _bookingService.CancelBookingAsync(bookingId);
             return NoContent();
         }
+
+        [HttpPost("notificar-reservas-proximas")]
+        public async Task<IActionResult> NotificarReservasProximas()
+        {
+            await _bookingService.NotificarReservasProximasAsync();
+            return Ok("Notificaciones enviadas.");
+        }
+
+
+
+        [HttpPut("{bookingId}/complete")]
+        public async Task<IActionResult> CompleteBooking(int bookingId)
+        {
+            try
+            {
+                await _bookingService.CompleteBookingAsync(bookingId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

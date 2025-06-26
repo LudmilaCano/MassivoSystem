@@ -39,6 +39,8 @@ const AddVehicle = () => {
   });
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const [vehicleSelectedFile, setVehicleSelectedFile] = useState(null);
+
   const { showAlert } = useSwalAlert();
 
   const handleChange = (e) => {
@@ -113,12 +115,32 @@ const AddVehicle = () => {
 
     if (validateForm()) {
       try {
+        let imageUrl = null;
+
+        // Si hay un archivo seleccionado, súbelo primero
+        if (vehicleSelectedFile) {
+          const formData = new FormData();
+          formData.append('file', vehicleSelectedFile);
+
+          const response = await fetch('https://localhost:7089/api/File/upload/vehicle', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error('Error al subir la imagen');
+          }
+
+          const data = await response.json();
+          imageUrl = data.url;
+        }
+        console.log("imageUrl: ", imageUrl);
         const payload = {
           userId: Number(userId),
           licensePlate: formData.licensePlate,
           name: formData.name,
           description: formData.description,
-          imagePath: formData.imagePath || "https://picsum.photos/200/300",
+          imagePath: imageUrl || "https://picsum.photos/200/300",
           driverName: formData.driverName,
           capacity: Number(formData.capacity),
           yearModel: Number(formData.yearModel),
@@ -127,7 +149,7 @@ const AddVehicle = () => {
         console.log("payload content: ", payload);
         await createVehicle(payload);
         showAlert(
-          "Vehicle registered successfully. You will be redirected to the homepage.",
+          "El vehículo se registró correctamente!",
           "success"
         );
         setFormData({
@@ -144,7 +166,7 @@ const AddVehicle = () => {
         navigate("/");
       } catch (err) {
         console.error("Error: ", err.message);
-        showAlert("Something went wrong!", "error");
+        showAlert("Algo salió mal...no se puede registrar el vehículo, intentalo más tarde!", "warning");
       }
     }
   };
@@ -194,7 +216,7 @@ const AddVehicle = () => {
               sx={{ width: { xs: "30vw", md: "10vw" }, mb: "3vh" }}
             />
             <Typography variant="h4" gutterBottom>
-              Register Vehicle
+              Registrar vehículo
             </Typography>
 
             <Box sx={{ display: "flex", gap: 2, width: "95%" }}>
@@ -299,7 +321,7 @@ const AddVehicle = () => {
               />
             </Box>
 
-            <Box sx={{ display: "flex", width: "95%", mt: 2 }}>
+            {/* <Box sx={{ display: "flex", width: "95%", mt: 2 }}>
               <TextField
                 name="imagePath"
                 label="Image URL"
@@ -309,7 +331,49 @@ const AddVehicle = () => {
                 value={formData.imagePath}
                 onChange={handleChange}
               />
-            </Box>
+            </Box> */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1">Foto de vehículo</Typography>
+
+              {/* Vista previa de la imagen */}
+              {vehicleSelectedFile && (
+                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                  <img
+                    src={URL.createObjectURL(vehicleSelectedFile)}
+                    alt="Vista previa"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '200px',
+                      objectFit: 'contain',
+                      borderRadius: '4px'
+                    }}
+                  />
+                </Box>
+              )}
+
+              {/* Selector de archivo */}
+              <input
+                accept="image/*"
+                style={{ display: 'none' }}
+                id="vehicle-image-upload"
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setVehicleSelectedFile(file);
+                  }
+                }}
+              />
+              <label htmlFor="vehicle-image-upload">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  fullWidth
+                >
+                  Seleccionar Imagen de vehículo
+                </Button>
+              </label>
+            </Grid>
 
             <Button
               variant="contained"

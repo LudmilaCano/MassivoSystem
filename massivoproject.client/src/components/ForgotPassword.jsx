@@ -11,6 +11,7 @@ import Colors from "../layout/Colors";
 import Logo2 from "../images/logo2.png";
 import loginIllustration from "../images/login.svg";
 import useSwalAlert from "../hooks/useSwalAlert";
+import { ForgotPasswordService } from "../api/AuthenticationEndPoints";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -20,27 +21,18 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        "https://localhost:7089/api/authentication/forgot-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        }
-      );
+    await ForgotPasswordService(email);
 
-      if (response.ok) {
-        showAlert("Si el correo está registrado, se enviará un email.", "success");
-        setEmail("");
-      } else {
-        showAlert("Ocurrió un error al procesar la solicitud.", "error");
-      }
-    } catch (error) {
-      showAlert("Error de conexión con el servidor", "error");
-    }
-  };
+    showAlert(
+      "Si el correo está registrado, se enviará un email.",
+      "success"
+    );
+    setEmail("");
+  } catch (err) {
+        showAlert("Error al procesar la solicitud de recuperación.", "error");
+    console.error("Error: ", err)
+  }
+};
 
   return (
     <div
@@ -112,7 +104,23 @@ const ForgotPassword = () => {
               >
                 ENVIAR
               </Button>
+               <Box
+    sx={{
+      width: "100%",
+      display: "flex",
+      justifyContent: "flex-end",
+      mt: 1,
+    }}
+  >
+    <Typography variant="body2">
+      <a href="/reset-password" style={{ color: "#139AA0", textDecoration: "none" }}>
+        Ingresar Código de Recuperación
+      </a>
+    </Typography>
+  </Box>
+              
             </Box>
+            
           </Box>
         </Grid>
       </Grid>

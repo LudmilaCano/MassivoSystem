@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
@@ -40,7 +41,7 @@ namespace MassivoProject.Server.Middlewares
         {
             return exception switch
             {
-                SqliteException sqlEx => (500, "Error en la base de datos: " + sqlEx.Message),
+                DbUpdateException dbEx => (500, "Error en la base de datos: " + dbEx.Message),
                 JsonException jsonEx => (400, "Error al procesar los datos JSON: " + jsonEx.Message),
                 ArgumentNullException argNullEx => (400, "Argumento nulo: " + argNullEx.Message),
                 ArgumentOutOfRangeException argOutOfRangeEx => (400, "Argumento fuera de rango: " + argOutOfRangeEx.Message),

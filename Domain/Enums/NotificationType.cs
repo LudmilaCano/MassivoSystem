@@ -11,9 +11,14 @@ namespace Domain.Enums
         RegistroUsuario,
         VehiculoCreado,
         EventoCreado,
-        ReservaCreada,
+        ReservaCreadaPrestador,
+        ReservaCancelPrestador,
+        ReservaCreadaUser,
+        ReservaCancelUser,
         ReservaProxima,
         PagoConfirmado,
-        NuevaResena 
+        NuevaResena,
+        PasswordChanged,
+        CambioRol
     }
 }

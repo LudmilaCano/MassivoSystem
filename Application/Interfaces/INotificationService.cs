@@ -9,6 +9,6 @@ namespace Application.Interfaces
 {
     public interface INotificationService
     {
-        Task SendNotificationEmail(string toEmail, NotificationType type, object data);
+        Task SendNotificationEmail(string toEmail, NotificationType type, object data, byte[]? qrCodeBytes = null);
     }
 }

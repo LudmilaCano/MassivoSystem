@@ -21,9 +21,10 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { AuthenticationService } from '../api/AuthenticationEndPoints';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setToken } from '../redux/AuthSlice';
+import { setToken, initializeAuth } from '../redux/AuthSlice';
 
 import useSwalAlert from '../hooks/useSwalAlert';
+//import { showAlert } from '../hooks/AlertHelper';
 
 
 import CustomerProfile from './Customer_profile/CustomerProfile';
@@ -31,6 +32,7 @@ import CustomerProfile from './Customer_profile/CustomerProfile';
 
 
 const Login = () => {
+    const { showAlert } = useSwalAlert();
     const [showPassword, setShowPassword] = useState(false);
     const [dniOrEmail, setDniOrEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -39,7 +41,6 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { showAlert } = useSwalAlert();
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -80,17 +81,20 @@ const Login = () => {
             const token = await AuthenticationService(dniOrEmail, password);
             if (token) {
                 dispatch(setToken(token));
+                dispatch(initializeAuth(token));
                 navigate('/');
-
                 showAlert('Bienvenido', 'success');
             }
         } catch (err) {
+            console.error('Error Login: ', err);
+            setDniOrEmail('');
+            setPassword('');
+            showAlert('Credenciales inválidas', 'error');
 
-            showAlert('Usuario o contraseña incorrectos', 'error');
+        }
 
-            setDniOrEmail("");
-            setPassword("");
-        } finally {
+
+        finally {
             setLoading(false);
         }
     };
@@ -115,7 +119,7 @@ const Login = () => {
                         }}
                     >
                         <Box
-                            onClick={() =>  navigate('/')}
+                            onClick={() => navigate('/')}
                             component="img"
                             src={Logo2}
                             alt="Logo"
@@ -175,13 +179,14 @@ const Login = () => {
                         />
 
                         <Box sx={{ width: { xs: '50vw', md: '20vw' }, display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                            <Link href="#" variant="body2" sx={{ color: '#139AA0' }}>
+                            <Link href="/forgot-password" variant="body2" sx={{ color: '#139AA0' }}>
                                 Olvidé mi contraseña
                             </Link>
                         </Box>
 
                         <Button onClick={handleLogin}
                             variant="contained"
+                            disable={loading}
                             sx={{ width: { xs: '50vw', md: '20vw' }, mt: 3, mb: 2, backgroundColor: '#139AA0' }}
                             endIcon={<LoginIcon />}
                         >
@@ -191,6 +196,10 @@ const Login = () => {
 
                         <Typography variant="body2" sx={{ mt: 2 }}>
                             No tenés una cuenta? <Link href="/register" sx={{ color: '#139AA0' }}>REGISTRARME</Link>
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ mt: 2 }}>
+                            <Link href="/activate-account" sx={{ color: '#139AA0' }}>ACTIVAR CUENTA</Link>
                         </Typography>
 
                         <Divider sx={{ width: '100%', my: 2, borderColor: (theme) => theme.palette.grey[500] }}></Divider>

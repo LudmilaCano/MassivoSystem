@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid,
-    InputLabel, MenuItem, Select, TextField, Typography, Autocomplete, Tabs, Tab, Paper,
-    Container, Avatar
+    InputLabel, MenuItem, Select, TextField, Typography, Autocomplete, Tabs, Tab, Container, Avatar
 } from '@mui/material';
 import { createEvent } from '../../api/EventEndpoints';
 import { createUser } from '../../api/UserEndpoints';
-import { getAllProvince } from '../../api/ProvinceEndpoints';
-import { getCitiesByProvince } from '../../api/CityEndpoints';
+import { useSelector, useDispatch } from "react-redux";
+
 import useSwalAlert from '../../hooks/useSwalAlert';
 import Colors from '../../layout/Colors';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EventIcon from '@mui/icons-material/Event';
-import { EVENT_TYPE_ENUM, EVENT_TYPE_LABELS } from '../../constants/eventCategories';
+import useProvinceCitySelector from '../../hooks/useProvinceCitySelector';
 
-// TabPanel component for switching between user and event creation forms
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
     return (
@@ -31,9 +29,10 @@ function TabPanel(props) {
 
 const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
     const [tabValue, setTabValue] = useState(0);
-    const [provinces, setProvinces] = useState([]);
-    const [cities, setCities] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [userSelectedFile, setUserSelectedFile] = useState(null);
+    const [eventSelectedFile, setEventSelectedFile] = useState(null);
+    const auth = useSelector((state) => state.auth);
     const { showAlert } = useSwalAlert();
 
     // User form state
@@ -45,8 +44,8 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
         confirmPassword: '',
         identificationNumber: '',
         birthDate: '',
-        cityId: null,
-        provinceId: null,
+        cityId: '',
+        provinceId: '',
         role: 'Customer'
     });
 
@@ -56,79 +55,43 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
         description: '',
         eventDate: '',
         type: '',
-        locationId: null,
+        locationId: '',
+        provinceId: '',
         image: 'https://picsum.photos/200/300',
-        userId: 1 // Default admin user ID
+        userId: 1
     });
 
-    // Form errors
     const [userErrors, setUserErrors] = useState({});
     const [eventErrors, setEventErrors] = useState({});
 
-    // Selected province for each form
-    const [userProvince, setUserProvince] = useState(null);
-    const [eventProvince, setEventProvince] = useState(null);
-    const [eventCities, setEventCities] = useState([]);
+    // Hooks para selects
+    const userProvinceCity = useProvinceCitySelector();
+    const eventProvinceCity = useProvinceCitySelector();
 
-    useEffect(() => {
-        fetchProvinces();
-    }, []);
-
-    const fetchProvinces = async () => {
-        try {
-            const provincesData = await getAllProvince();
-            setProvinces(provincesData?.result || []);
-        } catch (error) {
-            console.error("Error fetching provinces:", error);
-            showAlert("Error al cargar las provincias", "error");
-        }
-    };
-
-    const handleTabChange = (event, newValue) => {
-        setTabValue(newValue);
-    };
+    const handleTabChange = (event, newValue) => setTabValue(newValue);
 
     // User form handlers
     const handleUserInputChange = (e) => {
         const { name, value } = e.target;
         setUserForm(prev => ({ ...prev, [name]: value }));
-
-        if (userErrors[name]) {
-            setUserErrors(prev => ({ ...prev, [name]: null }));
-        }
+        if (userErrors[name]) setUserErrors(prev => ({ ...prev, [name]: null }));
     };
 
-    const handleUserProvinceChange = async (event) => {
-        const provinceId = event.target.value;
-        setUserProvince(provinceId);
-        setUserForm(prev => ({ ...prev, provinceId, cityId: null }));
-
-        try {
-            const citiesData = await getCitiesByProvince(provinceId);
-            setCities(Array.isArray(citiesData) ? citiesData : []);
-        } catch (error) {
-            console.error("Error fetching cities:", error);
-            showAlert("Error al cargar las ciudades", "error");
-            setCities([]);
-        }
-
-        if (userErrors.provinceId) {
-            setUserErrors(prev => ({ ...prev, provinceId: null }));
-        }
+    const handleUserProvinceChange = (e) => {
+        const provinceId = e.target.value;
+        setUserForm(prev => ({ ...prev, provinceId, cityId: '' }));
+        userProvinceCity.handleProvinceChange(provinceId);
+        if (userErrors.provinceId) setUserErrors(prev => ({ ...prev, provinceId: null }));
     };
 
-    const handleUserCityChange = (event) => {
-        const cityId = event.target.value;
+    const handleUserCityChange = (e) => {
+        const cityId = e.target.value;
         setUserForm(prev => ({ ...prev, cityId }));
-
-        if (userErrors.cityId) {
-            setUserErrors(prev => ({ ...prev, cityId: null }));
-        }
+        if (userErrors.cityId) setUserErrors(prev => ({ ...prev, cityId: null }));
     };
 
     const validateUserForm = () => {
         const newErrors = {};
-
         if (!userForm.firstName) newErrors.firstName = "El nombre es obligatorio";
         if (!userForm.lastName) newErrors.lastName = "El apellido es obligatorio";
         if (!userForm.email) newErrors.email = "El email es obligatorio";
@@ -140,17 +103,8 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
         if (!userForm.provinceId) newErrors.provinceId = "La provincia es obligatoria";
         if (!userForm.cityId) newErrors.cityId = "La ciudad es obligatoria";
         if (!userForm.role) newErrors.role = "El rol es obligatorio";
-
-        // Validación de email
-        if (userForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userForm.email)) {
-            newErrors.email = "El formato del email no es válido";
-        }
-
-        // Validación de contraseña
-        if (userForm.password && userForm.password.length < 6) {
-            newErrors.password = "La contraseña debe tener al menos 6 caracteres";
-        }
-
+        if (userForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userForm.email)) newErrors.email = "El formato del email no es válido";
+        if (userForm.password && userForm.password.length < 6) newErrors.password = "La contraseña debe tener al menos 6 caracteres";
         setUserErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -160,9 +114,17 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
             showAlert("Por favor complete todos los campos obligatorios", "error");
             return;
         }
-
         try {
             setLoading(true);
+            let profileImageUrl = null;
+            if (userSelectedFile) {
+                const formData = new FormData();
+                formData.append('file', userSelectedFile);
+                const response = await fetch('https://localhost:7089/api/File/upload/user', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('Error al subir la imagen');
+                const data = await response.json();
+                profileImageUrl = data.url;
+            }
             const userData = {
                 firstName: userForm.firstName,
                 lastName: userForm.lastName,
@@ -172,12 +134,24 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                 birthDate: userForm.birthDate.toString().split('T')[0],
                 city: parseInt(userForm.cityId),
                 province: parseInt(userForm.provinceId),
-                //role: userForm.role
+                profileImage: profileImageUrl
             };
-
             await createUser(userData);
             showAlert("Usuario creado correctamente", "success");
             onSuccess();
+            setUserForm({
+                firstName: '',
+                lastName: '',
+                email: '',
+                password: '',
+                confirmPassword: '',
+                identificationNumber: '',
+                birthDate: '',
+                cityId: '',
+                provinceId: '',
+                role: 'Customer'
+            });
+            userProvinceCity.handleProvinceChange('');
             onClose();
         } catch (error) {
             console.error("Error creating user:", error);
@@ -191,72 +165,75 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
     const handleEventInputChange = (e) => {
         const { name, value } = e.target;
         setEventForm(prev => ({ ...prev, [name]: value }));
-
-        if (eventErrors[name]) {
-            setEventErrors(prev => ({ ...prev, [name]: null }));
-        }
+        if (eventErrors[name]) setEventErrors(prev => ({ ...prev, [name]: null }));
     };
 
-    const handleEventProvinceChange = async (event) => {
-        const provinceId = event.target.value;
-        setEventProvince(provinceId);
-        setEventForm(prev => ({ ...prev, locationId: null }));
-
-        try {
-            const citiesData = await getCitiesByProvince(provinceId);
-            setEventCities(Array.isArray(citiesData) ? citiesData : []);
-        } catch (error) {
-            console.error("Error fetching cities:", error);
-            showAlert("Error al cargar las ciudades", "error");
-            setEventCities([]);
-        }
+    const handleEventProvinceChange = (e) => {
+        const provinceId = e.target.value;
+        setEventForm(prev => ({ ...prev, provinceId, locationId: '' }));
+        eventProvinceCity.handleProvinceChange(provinceId);
+        if (eventErrors.provinceId) setEventErrors(prev => ({ ...prev, provinceId: null }));
     };
 
     const handleEventCityChange = (event, newValue) => {
         setEventForm(prev => ({
             ...prev,
-            locationId: newValue ? newValue.id : null
+            locationId: newValue ? newValue.id : ''
         }));
-
-        if (eventErrors.locationId) {
-            setEventErrors(prev => ({ ...prev, locationId: null }));
-        }
+        if (eventErrors.locationId) setEventErrors(prev => ({ ...prev, locationId: null }));
     };
 
     const validateEventForm = () => {
         const newErrors = {};
-
         if (!eventForm.name) newErrors.name = "El nombre es obligatorio";
         if (!eventForm.description) newErrors.description = "La descripción es obligatoria";
         if (!eventForm.eventDate) newErrors.eventDate = "La fecha es obligatoria";
         if (eventForm.type === undefined || eventForm.type === '') newErrors.type = "El tipo es obligatorio";
         if (!eventForm.locationId) newErrors.locationId = "La ciudad es obligatoria";
-        if (!eventProvince) newErrors.provinceId = "La provincia es obligatoria";
-
+        if (!eventForm.provinceId) newErrors.provinceId = "La provincia es obligatoria";
         setEventErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleCreateEvent = async () => {
+    const handleCreateEvent = async e => {
+        e.preventDefault();
         if (!validateEventForm()) {
             showAlert("Por favor complete todos los campos obligatorios", "error");
             return;
         }
-
         try {
             setLoading(true);
-            console.log("Creating event with data:", eventForm);
+            let imageUrl = eventForm.image;
+            if (eventSelectedFile) {
+                const formData = new FormData();
+                formData.append('file', eventSelectedFile);
+                const response = await fetch('https://localhost:7089/api/File/upload/event', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('Error al subir la imagen');
+                const data = await response.json();
+                imageUrl = data.url;
+            }
             const payload = {
-                userId: 1,
+                userId: auth.userId,
                 locationId: Number(eventForm.locationId),
                 name: eventForm.name,
                 description: eventForm.description,
                 eventDate: eventForm.eventDate,
                 type: Number(eventForm.type),
-                image: eventForm.image || "https://picsum.photos/200/300" //esto es un placeholder, revisar dps como se van a manejar las imagenes.
+                image: imageUrl
             };
+            console.log(auth);
             await createEvent(payload);
             showAlert("Evento creado correctamente", "success");
+            setEventForm({
+                name: '',
+                eventDate: '',
+                type: '',
+                description: '',
+                provinceId: '',
+                locationId: '',
+                image: ''
+            });
+            eventProvinceCity.handleProvinceChange('');
             onSuccess();
             onClose();
         } catch (error) {
@@ -278,16 +255,10 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                     </Tabs>
                 </Box>
 
-                {/* User Creation Form - Similar to SignUp */}
+                {/* User Creation Form */}
                 <TabPanel value={tabValue} index={0}>
                     <Container component="main" maxWidth="md">
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                            }}
-                        >
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <Avatar sx={{ m: 1, bgcolor: Colors.azul }}>
                                 <LockOutlinedIcon />
                             </Avatar>
@@ -405,8 +376,9 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                                 value={userForm.provinceId || ''}
                                                 onChange={handleUserProvinceChange}
                                                 label="Provincia"
+                                                disabled={userProvinceCity.loadingProvinces}
                                             >
-                                                {Array.isArray(provinces) && provinces.map((province) => (
+                                                {Array.isArray(userProvinceCity.provinces) && userProvinceCity.provinces.map((province) => (
                                                     <MenuItem key={province.id} value={province.id}>
                                                         {province.name}
                                                     </MenuItem>
@@ -416,7 +388,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                         </FormControl>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <FormControl fullWidth required error={!!userErrors.cityId} disabled={!userForm.provinceId}>
+                                        <FormControl fullWidth required error={!!userErrors.cityId} disabled={!userForm.provinceId || userProvinceCity.loadingCities}>
                                             <InputLabel>Ciudad</InputLabel>
                                             <Select
                                                 name="cityId"
@@ -424,7 +396,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                                 onChange={handleUserCityChange}
                                                 label="Ciudad"
                                             >
-                                                {Array.isArray(cities) && cities.map((city) => (
+                                                {Array.isArray(userProvinceCity.cities) && userProvinceCity.cities.map((city) => (
                                                     <MenuItem key={city.id} value={city.id}>
                                                         {city.name}
                                                     </MenuItem>
@@ -432,6 +404,42 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                             </Select>
                                             {userErrors.cityId && <Typography color="error" variant="caption">{userErrors.cityId}</Typography>}
                                         </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle1">Foto de Perfil</Typography>
+                                        {userSelectedFile && (
+                                            <Box sx={{ textAlign: 'center', mb: 2 }}>
+                                                <img
+                                                    src={URL.createObjectURL(userSelectedFile)}
+                                                    alt="Vista previa"
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '200px',
+                                                        objectFit: 'contain',
+                                                        borderRadius: '4px'
+                                                    }}
+                                                />
+                                            </Box>
+                                        )}
+                                        <input
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id="user-image-upload"
+                                            type="file"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) setUserSelectedFile(file);
+                                            }}
+                                        />
+                                        <label htmlFor="user-image-upload">
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                fullWidth
+                                            >
+                                                Seleccionar Imagen de Perfil
+                                            </Button>
+                                        </label>
                                     </Grid>
                                     <Grid item xs={12}>
                                         <FormControl fullWidth required error={!!userErrors.role}>
@@ -464,16 +472,10 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                     </Container>
                 </TabPanel>
 
-                {/* Event Creation Form - Similar to CreateEvent */}
+                {/* Event Creation Form */}
                 <TabPanel value={tabValue} index={1}>
                     <Container component="main" maxWidth="md">
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                            }}
-                        >
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <Avatar sx={{ m: 1, bgcolor: Colors.azul }}>
                                 <EventIcon />
                             </Avatar>
@@ -517,7 +519,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                             id="eventDate"
                                             label="Fecha y Hora"
                                             name="eventDate"
-                                            type="datetime-local"
+                                            type="date"
                                             InputLabelProps={{ shrink: true }}
                                             value={eventForm.eventDate}
                                             onChange={handleEventInputChange}
@@ -547,11 +549,13 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                         <FormControl fullWidth required error={!!eventErrors.provinceId}>
                                             <InputLabel>Provincia</InputLabel>
                                             <Select
-                                                value={eventProvince || ''}
+                                                name="provinceId"
+                                                value={eventForm.provinceId || ''}
                                                 onChange={handleEventProvinceChange}
                                                 label="Provincia"
+                                                disabled={eventProvinceCity.loadingProvinces}
                                             >
-                                                {Array.isArray(provinces) && provinces.map((province) => (
+                                                {Array.isArray(eventProvinceCity.provinces) && eventProvinceCity.provinces.map((province) => (
                                                     <MenuItem key={province.id} value={province.id}>
                                                         {province.name}
                                                     </MenuItem>
@@ -562,12 +566,12 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <Autocomplete
-                                            options={eventCities}
+                                            options={eventProvinceCity.cities}
                                             getOptionLabel={(option) => option.name || ''}
                                             isOptionEqualToValue={(option, value) => option.id === value.id}
-                                            value={eventCities.find(city => city.id === eventForm.locationId) || null}
+                                            value={eventProvinceCity.cities.find(city => city.id === eventForm.locationId) || null}
                                             onChange={handleEventCityChange}
-                                            disabled={!eventProvince}
+                                            disabled={!eventForm.provinceId || eventProvinceCity.loadingCities}
                                             renderInput={(params) => (
                                                 <TextField
                                                     {...params}
@@ -580,14 +584,40 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                         />
                                     </Grid>
                                     <Grid item xs={12}>
-                                        <TextField
-                                            fullWidth
-                                            id="image"
-                                            label="URL de Imagen"
-                                            name="image"
-                                            value={eventForm.image}
-                                            onChange={handleEventInputChange}
+                                        <Typography variant="subtitle1">Imagen del Evento</Typography>
+                                        {eventSelectedFile && (
+                                            <Box sx={{ textAlign: 'center', mb: 2 }}>
+                                                <img
+                                                    src={URL.createObjectURL(eventSelectedFile)}
+                                                    alt="Vista previa"
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '200px',
+                                                        objectFit: 'contain',
+                                                        borderRadius: '4px'
+                                                    }}
+                                                />
+                                            </Box>
+                                        )}
+                                        <input
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id="event-image-upload"
+                                            type="file"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) setEventSelectedFile(file);
+                                            }}
                                         />
+                                        <label htmlFor="event-image-upload">
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                fullWidth
+                                            >
+                                                Seleccionar Imagen del Evento
+                                            </Button>
+                                        </label>
                                     </Grid>
                                 </Grid>
                                 <Button

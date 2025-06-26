@@ -1,24 +1,15 @@
 import { useState } from 'react';
-import Swal from 'sweetalert2';
+import { showAlert as alertHelper } from './AlertHelper'; 
 
 const useSwalAlert = () => {
-  const [alertState, setAlertState] = useState({
-    text: '',
-    type: 'success', // default to success
-  });
+    const [alertState, setAlertState] = useState({ text: '', type: 'success' });
 
-  const showAlert = (text, type = 'success') => {
-    setAlertState({ text, type });
-    Swal.fire({
-      title: type === 'success' ? 'Éxito' : 'Error',
-      text,
-      icon: type,
-    });
-  };
+    const showAlert = (text, type = 'success') => {
+        setAlertState({ text, type });
+        alertHelper(text, type);
+    };
 
-  return {
-    showAlert,
-  };
+    return { showAlert };
 };
 
 export default useSwalAlert;

@@ -28,11 +28,13 @@ namespace Domain.Entities
         public Province Province { get; set; }
 
         public string Role { get; set; }
-
+        public string ProfileImage { get; set; }
         public EntityState IsActive { get; set; } = EntityState.Inactive;
         public ICollection<Event> Events { get; set; }
         public string? RecoveryCode { get; set; }
         public bool MustChangePassword { get; set; } = false;
+        public string? MercadoPagoAccessToken { get; set; }
+
 
 
 
@@ -42,7 +44,7 @@ namespace Domain.Entities
             Role = "User";
             Events = new List<Event>();
         }
-        public User(string firstName, string lastName, DateOnly birthDate, string identificationNumber, string email, string password, int city, int province, string userType)
+        public User(string firstName, string lastName, DateOnly birthDate, string identificationNumber, string email, string password, int city, int province, string userType, string profileImage)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -53,6 +55,7 @@ namespace Domain.Entities
             CityId = city;
             ProvinceId = province;
             Role = userType ?? "User";
+            ProfileImage = profileImage;
             Events = new List<Event>();
 
 

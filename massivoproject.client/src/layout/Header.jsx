@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import Collapse from "@mui/material/Collapse";
@@ -11,74 +11,70 @@ import {
   ListItem,
   ListItemText,
   Divider,
+  TextField,
+  Box,
+  InputAdornment,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/AuthSlice";
+import {
+  setSearchName,
+  setSearchDate,
+  filterEventsThunk,
+} from "../redux/SearchSlice"; // Importa las acciones de búsqueda
 import Colors from "./Colors.jsx";
 import logo from "../Images/logo2.png";
 import useChangeRol from "../hooks/useChangeRol.jsx";
+import { sendUpcomingBookingNotifications } from "../api/BookingEndpoints.jsx";
 
 const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const [openOpciones, setOpenOpciones] = useState(false);
 
   const token = useSelector((state) => state.auth.token);
   const fullName = useSelector((state) => state.auth.fullName);
   const role = useSelector((state) => state.auth.role);
-
   const logueado = !!token;
-  const enPerfil = location.pathname === "/profile";
 
-  const [openOpciones, setOpenOpciones] = useState(false);
+  // Obtener el estado de búsqueda de Redux
+  const { searchName, searchDate } = useSelector((state) => state.search);
+
+  // Determinar si estamos en la página de inicio
+  const isHomePage = location.pathname === "/";
 
   const handleChangeRol = useChangeRol();
 
-  const toggleOpciones = () => {
-    setOpenOpciones(!openOpciones);
+  const handleSendReminders = async () => {
+    try {
+      const mensaje = await sendUpcomingBookingNotifications();
+      console.log(mensaje);
+    } catch (error) {
+      console.error("Error al enviar recordatorios:", error);
+      alert("Hubo un error al intentar enviar los recordatorios.");
+    }
   };
 
-  const toggleDrawer = (open) => () => {
-    setDrawerOpen(open);
-  };
-
+  const toggleOpciones = () => setOpenOpciones(!openOpciones);
+  const toggleDrawer = (open) => () => setDrawerOpen(open);
   const handleLogout = () => {
     dispatch(logout());
     navigate("/");
   };
 
-  const handleProfile = () => {
-    navigate("/profile");
-  };
-
-  const handleHome = () => {
-    navigate("/");
-  };
-
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
-  const handleRegister = () => {
-    navigate("/register");
-  };
-
-  const handleAdminPanel = () => {
-    navigate("/admin");
-  };
-
-  const handleAboutUs = () => {
-    navigate("/about-us");
-  };
-
-  const handleContacto = () => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   const handleNavigate = (path) => {
     navigate(path);
     setDrawerOpen(false);
+  };
+
+  // Manejar la búsqueda
+  const handleSearch = () => {
+    dispatch(filterEventsThunk());
   };
 
   return (
@@ -103,7 +99,8 @@ const Header = () => {
           style={{ width: "auto", height: "7vh", marginLeft: 10 }}
         />
       </div>
-      <div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         {!logueado ? (
           <>
             <Button
@@ -148,6 +145,7 @@ const Header = () => {
           </Button>
         )}
       </div>
+
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         <div style={{ width: 250 }} role="presentation">
           <List>
@@ -161,6 +159,7 @@ const Header = () => {
             <ListItem button onClick={() => handleNavigate("/")}>
               <ListItemText primary="Inicio" />
             </ListItem>
+            <Divider />
 
             {logueado && (
               <ListItem button onClick={() => handleNavigate("/profile")}>
@@ -179,28 +178,38 @@ const Header = () => {
             >
               <ListItemText primary="Contacto" />
             </ListItem>
+            <Divider />
 
-            <ListItem button onClick={() => handleNavigate("about-us")}>
+            <ListItem button onClick={() => handleNavigate("/about-us")}>
               <ListItemText primary="Nosotros" />
             </ListItem>
+            <Divider />
+
             {role === "Admin" && (
               <ListItem button onClick={() => handleNavigate("/admin")}>
                 <ListItemText primary="Panel Admin" />
               </ListItem>
             )}
-            <>
-              <ListItem button onClick={toggleOpciones}>
-                <ListItemText primary="Opciones" />
-                {openOpciones ? <ExpandLess /> : <ExpandMore />}
-              </ListItem>
-              <Collapse in={openOpciones} timeout="auto" unmountOnExit>
-                <List component="div" disablePadding>
-                  {role === "User" && (
-                    <ListItem button onClick={handleChangeRol} sx={{ pl: 4 }}>
-                      <ListItemText primary="Quiero ser Prestador" />
-                    </ListItem>
-                  )}
-                  {role === "Prestador" && (
+            <Divider />
+
+            <ListItem button onClick={toggleOpciones}>
+              <ListItemText primary="Opciones" />
+              {openOpciones ? <ExpandLess /> : <ExpandMore />}
+            </ListItem>
+            <Collapse in={openOpciones} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {role === "User" && (
+                  <ListItem button onClick={handleChangeRol} sx={{ pl: 4 }}>
+                    <ListItemText primary="Quiero ser Prestador" />
+                  </ListItem>
+                )}
+                {role === "Admin" && (
+                  <ListItem button onClick={handleSendReminders} sx={{ pl: 4 }}>
+                    <ListItemText primary="Enviar recordatorios de eventos" />
+                  </ListItem>
+                )}
+                {role === "Prestador" && (
+                  <>
                     <ListItem
                       button
                       onClick={() => handleNavigate("/add-vehicle")}
@@ -208,8 +217,6 @@ const Header = () => {
                     >
                       <ListItemText primary="Agregar Vehículo" />
                     </ListItem>
-                  )}
-                  {role === "Prestador" && (
                     <ListItem
                       button
                       onClick={() => handleNavigate("/add-event")}
@@ -217,8 +224,6 @@ const Header = () => {
                     >
                       <ListItemText primary="Agregar Evento" />
                     </ListItem>
-                  )}
-                  {role === "Prestador" && (
                     <ListItem
                       button
                       onClick={() => handleNavigate("/")}
@@ -226,16 +231,15 @@ const Header = () => {
                     >
                       <ListItemText primary="Agregar Vehículo a Evento" />
                     </ListItem>
-                  )}
-                </List>
-              </Collapse>
-            </>
+                  </>
+                )}
+              </List>
+            </Collapse>
           </List>
         </div>
       </Drawer>
     </div>
   );
-}
 };
 
 export default Header;

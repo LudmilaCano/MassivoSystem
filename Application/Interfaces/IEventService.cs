@@ -19,7 +19,7 @@ namespace Application.Interfaces
         Task<bool> AdminUpdateEventAsync(int eventId, AdminEventUpdateRequest request);
         Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId);
         Task<bool> ToggleStatusAsync(int eventId);
-
+        Task<List<EventDto>> GetAllActiveEventsWithVehiclesIncludedAsync();
 
     }
 }

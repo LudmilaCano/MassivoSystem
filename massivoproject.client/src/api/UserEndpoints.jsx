@@ -22,6 +22,11 @@ export const updateUser = async (id, updatedUserData) => {
     return response.data;
 };
 
+export const updateMyOwnProfile = async (profileData) => {
+    const response = await api.put('Users/me', profileData);
+    return response.data;
+};
+
 export const deleteUser = async (id) => {
     const response = await api.delete(`Use/${id}`);
     return response.data;
@@ -33,8 +38,8 @@ export const updateUserRole = async (id, roleUpdateRequest) => {
 };
 
 export const adminUpdateUser = async (userId, userData) => {
-  const response = await api.put(`Users/admin/${userId}`, userData);
-  return response.data;
+    const response = await api.put(`Users/admin/${userId}`, userData);
+    return response.data;
 };
 
 export const hardDeleteUser = async (id) => {
@@ -49,6 +54,6 @@ export const cambiarRolAPrestador = async () => {
 
 
 export const toggleUserStatus = async (userId) => {
-  const response = await api.put(`/Users/toggle-status/${userId}`);
-  return response.data;
+    const response = await api.put(`/Users/toggle-status/${userId}`);
+    return response.data;
 };
