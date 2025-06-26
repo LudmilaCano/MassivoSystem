@@ -319,33 +319,40 @@ const ProviderEventPanel = ({ userId }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {events.map((event) => (
-              <TableRow key={event.eventId}>
-                <TableCell>{event.eventId}</TableCell>
-                <TableCell>{event.name}</TableCell>
-                <TableCell>{event.location}</TableCell>
-                <TableCell>{new Date(event.eventDate).toLocaleDateString()}</TableCell>
-                <TableCell>{getEventTypeName(event.type)}</TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => handleEditEvent(event)}
-                    sx={{ mr: 1 }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="info"
-                    onClick={() => handleViewEventDetails(event)}
-                  >
-                    Detalles
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {
+              events.length === 0 ? (
+                <Typography color="textSecondary" align="center" sx={{ mt: 2 }}>
+                  No tienes eventos disponibles
+                </Typography>
+              ) : (
+                events.map((event) => (
+                  <TableRow key={event.eventId}>
+                    <TableCell>{event.eventId}</TableCell>
+                    <TableCell>{event.name}</TableCell>
+                    <TableCell>{event.location}</TableCell>
+                    <TableCell>{new Date(event.eventDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{getEventTypeName(event.type)}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleEditEvent(event)}
+                        sx={{ mr: 1 }}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="info"
+                        onClick={() => handleViewEventDetails(event)}
+                      >
+                        Detalles
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+                ))}
           </TableBody>
         </Table>
       </TableContainer>

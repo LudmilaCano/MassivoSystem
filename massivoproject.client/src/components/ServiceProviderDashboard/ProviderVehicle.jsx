@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, FormControl, InputLabel, Select, MenuItem, Box, Grid,Typography, CircularProgress
+  TextField, FormControl, InputLabel, Select, MenuItem, Box, Grid, Typography, CircularProgress
 } from '@mui/material';
 import { getVehiclesByUserId } from '../../api/VehicleEndpoints';
 import { adminUpdateVehicle } from '../../api/VehicleEndpoints';
@@ -31,7 +31,7 @@ const ProviderVehicle = ({ userId }) => {
       setVehicles(data);
     } catch (error) {
       console.error('Error fetching  vehicles:', error);
-      showAlert('Error al cargar los vehiculos', 'error');
+      //showAlert('Error al cargar los vehiculos', 'error');
     } finally {
       setLoading(false);
     }
@@ -168,33 +168,40 @@ const ProviderVehicle = ({ userId }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {vehicles.map((vehicle) => (
-              <TableRow key={vehicle.licensePlate}>
-                <TableCell>{vehicle.licensePlate}</TableCell>
-                <TableCell>{vehicle.name}</TableCell>
-                <TableCell>{getVehicleTypeName(vehicle.type)}</TableCell>
-                <TableCell>{vehicle.capacity}</TableCell>
-                <TableCell>{vehicle.driverName}</TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => handleEditVehicle(vehicle)}
-                    sx={{ mr: 1 }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="info"
-                    onClick={() => handleViewVehicleDetails(vehicle)}
-                  >
-                    Detalles
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {
+              vehicles.length === 0 ? (
+                <Typography color="textSecondary" align="center" sx={{ mt: 2 }}>
+                  No tienes vehículos disponibles
+                </Typography>
+              ) : (
+                vehicles.map((vehicle) => (
+                  <TableRow key={vehicle.licensePlate}>
+                    <TableCell>{vehicle.licensePlate}</TableCell>
+                    <TableCell>{vehicle.name}</TableCell>
+                    <TableCell>{getVehicleTypeName(vehicle.type)}</TableCell>
+                    <TableCell>{vehicle.capacity}</TableCell>
+                    <TableCell>{vehicle.driverName}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleEditVehicle(vehicle)}
+                        sx={{ mr: 1 }}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="info"
+                        onClick={() => handleViewVehicleDetails(vehicle)}
+                      >
+                        Detalles
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+                ))}
           </TableBody>
         </Table>
       </TableContainer>
