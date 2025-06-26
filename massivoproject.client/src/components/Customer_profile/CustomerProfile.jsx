@@ -77,14 +77,14 @@ const CustomerProfile = () => {
 
   const handleCambiarRol = async () => {
     try {
-      showAlert("¡Tu rol ha sido actualizado a Prestador!", "success");
       await cambiarRolAPrestador();
+      showAlert("¡Tu rol ha sido actualizado a Prestador!", "success");
       const updatedUser = await getUserById(userId);
       setUserData(updatedUser);
       navigate("/add-vehicle");
     } catch (error) {
       console.error("Error al cambiar el rol:", error);
-      alert("Ocurrió un error al cambiar el rol.");
+      showAlert("Ocurrió un error al cambiar el rol.", "error");
     }
   };
 

@@ -55,6 +55,7 @@ const VehicleList = () => {
                 setEvent(data);
             } catch (error) {
                 setEvent(null);
+                console.error("Error: ", error);
             }
             setLoadingEvent(false);
         };
@@ -95,6 +96,7 @@ const VehicleList = () => {
                 setVehicles(data);
                 setFilteredVehicles(data);
             } catch (error) {
+                console.error("Error: ", error)
                 setVehicles([]);
                 setFilteredVehicles([]);
             }

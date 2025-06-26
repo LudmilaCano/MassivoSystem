@@ -24,6 +24,7 @@ import { useDispatch } from 'react-redux';
 import { setToken, initializeAuth } from '../redux/AuthSlice';
 
 import useSwalAlert from '../hooks/useSwalAlert';
+//import { showAlert } from '../hooks/AlertHelper';
 
 
 import CustomerProfile from './Customer_profile/CustomerProfile';
@@ -31,6 +32,7 @@ import CustomerProfile from './Customer_profile/CustomerProfile';
 
 
 const Login = () => {
+    const { showAlert } = useSwalAlert();
     const [showPassword, setShowPassword] = useState(false);
     const [dniOrEmail, setDniOrEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -39,8 +41,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { showAlert } = useSwalAlert();
-    
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             handleLogin(e);
@@ -80,16 +81,20 @@ const Login = () => {
             const token = await AuthenticationService(dniOrEmail, password);
             if (token) {
                 dispatch(setToken(token));
-                dispatch(initializeAuth(token)); 
+                dispatch(initializeAuth(token));
                 navigate('/');
                 showAlert('Bienvenido', 'success');
             }
         } catch (err) {
-            const errorMsg = err?.response?.data?.error || 'Error inesperado';
-            showAlert(errorMsg, 'error');
+            console.error('Error Login: ', err);
             setDniOrEmail('');
             setPassword('');
-        } finally {
+            showAlert('Credenciales inválidas', 'error');
+
+        }
+
+
+        finally {
             setLoading(false);
         }
     };
@@ -181,6 +186,7 @@ const Login = () => {
 
                         <Button onClick={handleLogin}
                             variant="contained"
+                            disable={loading}
                             sx={{ width: { xs: '50vw', md: '20vw' }, mt: 3, mb: 2, backgroundColor: '#139AA0' }}
                             endIcon={<LoginIcon />}
                         >

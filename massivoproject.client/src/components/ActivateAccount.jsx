@@ -25,6 +25,7 @@ const ActivateAccount = () => {
           setEmail("");
         } catch (error) {
           showAlert("Código inválido o usuario no encontrado ❌", "error");
+          console.error("Error: ", error);
         }
          };
 

@@ -22,7 +22,7 @@ const AddEvent = () => {
     } = useProvinceCitySelector();
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState(null);
-    
+
 
     const [form, setForm] = useState({
         name: '',
@@ -70,16 +70,17 @@ const AddEvent = () => {
 
     const handleSubmit = async e => {
         e.preventDefault();
-        setLoading(true);
-        try {
 
+        setLoading(true);
+
+        try {
             let eventImageUrl = null;
 
-            // Si hay un archivo seleccionado, súbelo primero
             if (selectedFile) {
                 const data = await uploadFile(selectedFile, 'event');
                 eventImageUrl = data.url;
             }
+
             const payload = {
                 userId: Number(userId),
                 locationId: Number(form.locationId),
@@ -87,10 +88,14 @@ const AddEvent = () => {
                 description: form.description,
                 eventDate: form.eventDate,
                 type: Number(form.type),
-                image: eventImageUrl || "https://picsum.photos/200/300" //esto es un placeholder, revisar dps como se van a manejar las imagenes.
+                image: eventImageUrl || "https://picsum.photos/200/300"
             };
+            console.log('Payload de evento: (este mensaje es solo para probar y debe ser comentado luego)', payload)
+
             await createEvent(payload);
-            showAlert('Evento creado correctamente', 'success');
+
+            showAlert('Evento creado correctamente!', 'success');
+
             setForm({
                 name: '',
                 eventDate: '',
@@ -100,12 +105,19 @@ const AddEvent = () => {
                 locationId: '',
                 image: ''
             });
+
+            setSelectedFile(null);
+            setPreview(null);
+
         } catch (err) {
-            const errorMsg = err?.response?.data?.error || err?.response?.data?.message || 'Error al crear evento';
-            showAlert(errorMsg, 'error');
+            console.error('Error: ', err);
+            showAlert('Hubo un problema al intentar crear el evento, por favor intentalo más tarde!', 'warning');
+
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
+
 
     return (
         <Box sx={{ backgroundColor: '#F5F5F5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

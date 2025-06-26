@@ -31,6 +31,7 @@ const BookingDetail = () => {
                 setBooking(data);
             } catch (error) {
                 setBooking(null);
+                console.error("Error: ", error)
             }
             setLoading(false);
         };
@@ -78,6 +79,7 @@ const handleCancelBooking = async () => {
 
            window.location.reload();
         } catch (error) {
+            console.error("Error: ", error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error al cancelar',
