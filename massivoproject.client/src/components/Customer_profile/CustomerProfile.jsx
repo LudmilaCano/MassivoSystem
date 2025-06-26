@@ -330,7 +330,7 @@ const CustomerProfile = () => {
               Editar perfil
             </Button>
 
-            {userData.role !== "Prestador" && (
+            {userData.role === "User" && (
               <Button
                 variant="outlined"
                 onClick={handleCambiarRol}

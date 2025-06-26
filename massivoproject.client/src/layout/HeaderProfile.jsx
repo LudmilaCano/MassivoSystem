@@ -334,6 +334,10 @@ const HeaderPerfil = () => {
           <ListItem button onClick={() => handleNavigate("/contact")}>
             <ListItemText primary="Contacto" />
           </ListItem>
+
+          <ListItem button onClick={() => handleNavigate("/instructivo")}>
+            <ListItemText primary="Cómo funciona?" />
+          </ListItem>
         </List>
       </Drawer>
     </div>

@@ -21,10 +21,7 @@ import { Carousel } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  getRandomEvents,
-  getAllEvents,
-} from "../api/EventEndpoints";
+import { getRandomEvents, getAllEvents } from "../api/EventEndpoints";
 import { getEventTypeLabel } from "../constants/eventCategories";
 import { useBusyDialog } from "../hooks/useBusyDialog";
 import { setShowInNavbar, setEvents } from "../redux/SearchSlice";
@@ -39,7 +36,8 @@ const infoSlides = [
     title: "Hacete prestador",
     subtitle: "Ofrecé tu vehículo para eventos y generá ingresos.",
     buttonText: "Quiero ser prestador",
-    buttonAction: (navigate) => () => navigate("/profile"),
+    buttonAction: (navigate, auth) => () =>
+      navigate(auth.isAuthenticated ? "/profile" : "/login"),
     key: "info-1",
   },
   {
@@ -47,7 +45,8 @@ const infoSlides = [
     title: "Pagá fácil y seguro",
     subtitle: "Usá Mercado Pago para tus reservas sin complicaciones.",
     buttonText: "Reservá ahora",
-    buttonAction: (navigate, auth) => () => navigate(auth.isAuthenticated ? "/events" : "/login"),
+    buttonAction: (navigate, auth) => () =>
+      navigate(auth.isAuthenticated ? "/events" : "/login"),
     key: "info-2",
   },
   {
@@ -55,7 +54,7 @@ const infoSlides = [
     title: "Seguridad ante todo",
     subtitle: "Validamos cada viaje con QR único.",
     buttonText: "Cómo funciona",
-    buttonAction: (navigate) => () => navigate("/como-funciona"),
+    buttonAction: (navigate) => () => navigate("/instructivo"),
     key: "info-3",
   },
   {
@@ -63,7 +62,8 @@ const infoSlides = [
     title: "Gestioná todo desde tu perfil",
     subtitle: "Eventos, vehículos, reservas y más en un solo lugar.",
     buttonText: "Ir al perfil",
-    buttonAction: (navigate) => () => navigate("/profile"),
+    buttonAction: (navigate, auth) => () =>
+      navigate(auth.isAuthenticated ? "/profile" : "/login"),
     key: "info-4",
   },
 ];
@@ -131,7 +131,9 @@ const Home = () => {
       key: slide.key,
     })),
     ...randomEvents.map((event) => ({
-      image: event.image || "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
+      image:
+        event.image ||
+        "https://qawerk.es/wp-content/uploads/2019/11/iOS_App_Testing.svg",
       title: event.name || "Evento destacado",
       subtitle: event.description || "Únete a este increíble evento",
       buttonText: "Ver detalles",
@@ -201,8 +203,9 @@ const Home = () => {
                           icon={<CalendarTodayIcon />}
                           label={
                             formatDate(
-                              randomEvents.find((e) => e.eventId === item.eventId)
-                                ?.eventDate
+                              randomEvents.find(
+                                (e) => e.eventId === item.eventId
+                              )?.eventDate
                             ) || "Fecha próxima"
                           }
                           sx={{
