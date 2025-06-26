@@ -16,6 +16,7 @@ import AdminEventPanel from './AdminEventPanel';
 import AdminCreatePanel from './AdminCreatePanel';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
+import {useBusyDialog } from '../../hooks/useBusyDialog'; 
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -34,6 +35,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [openCreatePanel, setOpenCreatePanel] = useState(false);
   const navigate = useNavigate();
+  const [busy, setBusy, BusyDialog] = useBusyDialog();
   
   // Alert functions
   const showSuccessAlert = (message) => {
@@ -60,21 +62,20 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
+      setBusy(true); // Mostrar el BusyDialog
       setLoading(true);
       const usersData = await getAllUsers();
       const vehiclesData = await getAllVehicles();
       const eventsData = await getAllEvents();
-      
       setUsers(usersData);
       setVehicles(vehiclesData);
-      console.log(vehiclesData);
-      console.log(eventsData)
       setEvents(eventsData);
     } catch (error) {
+      console.error("Error fetching dashboard data:", error);
       showErrorAlert("Error al cargar los datos");
-      navigate("/");
     } finally {
       setLoading(false);
+      setBusy(false); // Ocultar el BusyDialog
     }
   };
 
@@ -84,6 +85,7 @@ const AdminDashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {BusyDialog}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Panel de Administración
