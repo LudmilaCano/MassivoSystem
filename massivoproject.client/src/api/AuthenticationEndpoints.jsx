@@ -2,20 +2,13 @@ import api from "./AxiosBaseConnection";
 
 //conexion a los endpoints de AuthenticationController.cs
 
+// AuthenticationService.js
 export const AuthenticationService = async (dniOrEmail, password) => {
-  const response = await api.post("/authentication/Authenticate", {
-    dniOrEmail: dniOrEmail,
-    password: password,
-  });
-  if (response.status === 200) {
-    return response.data;
-  } else {
-    return {
-      token: "",
-      recoveryMode: false,
-      message: "Error de autenticación",
-    };
-  }
+    const response = await api.post('/authentication/Authenticate', {
+        dniOrEmail,
+        password,
+    });
+    return response.data; 
 };
 
 export const ForgotPasswordService = async (email) => {

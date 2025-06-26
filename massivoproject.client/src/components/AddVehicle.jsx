@@ -149,7 +149,7 @@ const AddVehicle = () => {
         console.log("payload content: ", payload);
         await createVehicle(payload);
         showAlert(
-          "Vehicle registered successfully. You will be redirected to the homepage.",
+          "El vehículo se registró correctamente!",
           "success"
         );
         setFormData({
@@ -166,7 +166,7 @@ const AddVehicle = () => {
         navigate("/");
       } catch (err) {
         console.error("Error: ", err.message);
-        showAlert("Something went wrong!", "error");
+        showAlert("Algo salió mal...no se puede registrar el vehículo, intentalo más tarde!", "warning");
       }
     }
   };

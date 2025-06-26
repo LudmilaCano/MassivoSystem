@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, Typography, Paper, Container, Grid, Card, CardContent,
-  Tabs, Tab,Button
+import {
+    Box, Typography, Paper, Container, Grid, Card, CardContent,
+    Tabs, Tab, Button
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PeopleIcon from '@mui/icons-material/People';
@@ -19,166 +19,166 @@ import { useNavigate } from 'react-router-dom';
 import {useBusyDialog } from '../../hooks/useBusyDialog'; 
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} {...other}>
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
+    const { children, value, index, ...other } = props;
+    return (
+        <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} {...other}>
+            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+        </div>
+    );
 }
 
 const AdminDashboard = () => {
-  const [tabValue, setTabValue] = useState(0);
-  const [users, setUsers] = useState([]);
-  const [vehicles, setVehicles] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [openCreatePanel, setOpenCreatePanel] = useState(false);
-  const navigate = useNavigate();
-  const [busy, setBusy, BusyDialog] = useBusyDialog();
-  
-  // Alert functions
-  const showSuccessAlert = (message) => {
-    Swal.fire({
-      icon: 'success',
-      title: 'Éxito',
-      text: message,
-      timer: 2000,
-      showConfirmButton: false
-    });
-  };
+    const [tabValue, setTabValue] = useState(0);
+    const [users, setUsers] = useState([]);
+    const [vehicles, setVehicles] = useState([]);
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [openCreatePanel, setOpenCreatePanel] = useState(false);
+    const navigate = useNavigate();
 
-  const showErrorAlert = (message) => {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: message
-    });
-  };
+    // Alert functions
+    const showSuccessAlert = (message) => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: message,
+            timer: 2000,
+            showConfirmButton: false
+        });
+    };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+    const showErrorAlert = (message) => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: message
+        });
+    };
 
-  const fetchData = async () => {
-    try {
-      setBusy(true); // Mostrar el BusyDialog
-      setLoading(true);
-      const usersData = await getAllUsers();
-      const vehiclesData = await getAllVehicles();
-      const eventsData = await getAllEvents();
-      setUsers(usersData);
-      setVehicles(vehiclesData);
-      setEvents(eventsData);
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      showErrorAlert("Error al cargar los datos");
-    } finally {
-      setLoading(false);
-      setBusy(false); // Ocultar el BusyDialog
-    }
-  };
+    useEffect(() => {
+        fetchData();
+    }, []);
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const usersData = await getAllUsers();
+            const vehiclesData = await getAllVehicles();
+            const eventsData = await getAllEvents();
 
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {BusyDialog}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
-          Panel de Administración
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenCreatePanel(true)}
-          
-        >
-          Crear Nuevo
-        </Button>
-      </Box>
+            setUsers(usersData);
+            setVehicles(vehiclesData);
+            console.log(vehiclesData);
+            console.log(eventsData)
+            setEvents(eventsData);
+        } catch (error) {
+            showErrorAlert("Error al cargar los datos");
+            console.error("Error: ", error);
+            navigate("/");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
-              <PeopleIcon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
-              <Box>
-                <Typography variant="h5">{users.length}</Typography>
-                <Typography variant="body2" color="text.secondary">Usuarios</Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
-              <DirectionsCarIcon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
-              <Box>
-                <Typography variant="h5">{vehicles.length}</Typography>
-                <Typography variant="body2" color="text.secondary">Vehículos</Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
-              <EventIcon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
-              <Box>
-                <Typography variant="h5">{events.length}</Typography>
-                <Typography variant="body2" color="text.secondary">Eventos</Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue);
+    };
 
-      {/* Tabs */}
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <Tabs value={tabValue} onChange={handleTabChange} centered>
-          <Tab label="Usuarios" />
-          <Tab label="Vehículos" />
-          <Tab label="Eventos" />
-        </Tabs>
+    return (
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h4" component="h1">
+                    Panel de Administración
+                </Typography>
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setOpenCreatePanel(true)}
 
-        <TabPanel value={tabValue} index={0}>
-          <AdminUserPanel 
-            users={users} 
-            onRefresh={fetchData} 
-            showSuccessAlert={showSuccessAlert}
-            showErrorAlert={showErrorAlert}
-          />
-        </TabPanel>
+                >
+                    Crear Nuevo
+                </Button>
+            </Box>
 
-        <TabPanel value={tabValue} index={1}>
-          <AdminVehiclePanel 
-            vehicles={vehicles} 
-            onRefresh={fetchData}
-            showSuccessAlert={showSuccessAlert}
-            showErrorAlert={showErrorAlert}
-          />
-        </TabPanel>
+            {/* Summary Cards */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid item xs={12} md={4}>
+                    <Card>
+                        <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
+                            <PeopleIcon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
+                            <Box>
+                                <Typography variant="h5">{users.length}</Typography>
+                                <Typography variant="body2" color="text.secondary">Usuarios</Typography>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                    <Card>
+                        <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
+                            <DirectionsCarIcon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
+                            <Box>
+                                <Typography variant="h5">{vehicles.length}</Typography>
+                                <Typography variant="body2" color="text.secondary">Vehículos</Typography>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                    <Card>
+                        <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
+                            <EventIcon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
+                            <Box>
+                                <Typography variant="h5">{events.length}</Typography>
+                                <Typography variant="body2" color="text.secondary">Eventos</Typography>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
 
-        <TabPanel value={tabValue} index={2}>
-          <AdminEventPanel 
-            events={events} 
-            onRefresh={fetchData}
-            showSuccessAlert={showSuccessAlert}
-            showErrorAlert={showErrorAlert}
-          />
-        </TabPanel>
-      </Paper>
-<AdminCreatePanel
-        open={openCreatePanel}
-        onClose={() => setOpenCreatePanel(false)}
-        onSuccess={fetchData}
-      />
-    </Container>
-  );
+            {/* Tabs */}
+            <Paper sx={{ width: '100%', mb: 2 }}>
+                <Tabs value={tabValue} onChange={handleTabChange} centered>
+                    <Tab label="Usuarios" />
+                    <Tab label="Vehículos" />
+                    <Tab label="Eventos" />
+                </Tabs>
+
+                <TabPanel value={tabValue} index={0}>
+                    <AdminUserPanel
+                        users={users}
+                        onRefresh={fetchData}
+                        showSuccessAlert={showSuccessAlert}
+                        showErrorAlert={showErrorAlert}
+                    />
+                </TabPanel>
+
+                <TabPanel value={tabValue} index={1}>
+                    <AdminVehiclePanel
+                        vehicles={vehicles}
+                        onRefresh={fetchData}
+                        showSuccessAlert={showSuccessAlert}
+                        showErrorAlert={showErrorAlert}
+                    />
+                </TabPanel>
+
+                <TabPanel value={tabValue} index={2}>
+                    <AdminEventPanel
+                        events={events}
+                        onRefresh={fetchData}
+                        showSuccessAlert={showSuccessAlert}
+                        showErrorAlert={showErrorAlert}
+                    />
+                </TabPanel>
+            </Paper>
+            <AdminCreatePanel
+                open={openCreatePanel}
+                onClose={() => setOpenCreatePanel(false)}
+                onSuccess={fetchData}
+            />
+        </Container>
+    );
 };
 
 export default AdminDashboard;

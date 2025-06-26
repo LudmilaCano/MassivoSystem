@@ -15,7 +15,7 @@ namespace Application.Models.Requests
         [Required(ErrorMessage = "event description is required.")]
         [StringLength(200, MinimumLength = 4, ErrorMessage = "la descripcion del evento debe tener entre 4 y 200 caracteres")]
         public string Description { get; set; }
-        [Required(ErrorMessage = "Date is required.")]
+        [Required(ErrorMessage = "La Fecha es inválida o está incompleta...")]
         public DateTime EventDate { get; set; }
         [Required(ErrorMessage = "Type is required.")]
         public EventType Type { get; set; }

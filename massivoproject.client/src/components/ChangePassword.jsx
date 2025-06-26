@@ -29,8 +29,9 @@ const ChangePassword = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
-    } catch (error) {
-      showAlert("Error al cambiar la contraseña.", "error");
+    } catch (err) {
+        showAlert("Error al cambiar la contraseña.", "error");
+      console.error('Error', err)
     }
   };
 

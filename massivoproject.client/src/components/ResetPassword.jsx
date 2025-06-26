@@ -31,8 +31,9 @@ const ResetPasswordWithCode = () => {
           "success"
         );
         setEmail("");
-      } catch (error) {
+      } catch (err) {
         showAlert("Error al cambiar la contraseña.", "error");
+        console.error('Error: ', err)
       }
        };
 

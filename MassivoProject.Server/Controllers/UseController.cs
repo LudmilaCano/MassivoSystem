@@ -31,31 +31,24 @@ namespace MassivoApp.Server.Controllers
             _userRepository = userRepository;
         }
 
-        // Regitrar nuevo usuario
         [HttpPost("signup")]
         public async Task<IActionResult> SignUp([FromBody] UserSignUpRequest request)
         {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
 
-                var (isIdUnique, isEmailUnique) = await _uniquenessChecker.ValidateUniqueness(request.DniNumber, request.Email!);
-                if (!isIdUnique)
-                    return Conflict(new { Message = "El DNI ya está registrado." });
-                if (!isEmailUnique)
-                    return Conflict(new { Message = "El email ya está registrado." });
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-                await _userService.SignUpUser(request);
-                return StatusCode(StatusCodes.Status201Created, new { Message = "Usuario registrado correctamente." });
-            }catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            
+            var (isIdUnique, isEmailUnique) = await _uniquenessChecker.ValidateUniqueness(request.DniNumber, request.Email!);
+            if (!isIdUnique)
+                return Conflict(new { Message = "El DNI ya está registrado." });
+            if (!isEmailUnique)
+                return Conflict(new { Message = "El email ya está registrado." });
+
+            await _userService.SignUpUser(request);
+            return Ok();
+
         }
 
-        // Actualizar datos de un usuario existente
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UserUpdateRequest request)
@@ -179,23 +172,35 @@ namespace MassivoApp.Server.Controllers
         }
         [Authorize(Roles = "Admin")]
         [HttpPut("admin/{id}")]
+        //public async Task<IActionResult> AdminUpdateUser(int id, [FromBody] AdminUserUpdateRequest request)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);
+
+        //    try
+        //    {
+        //        var result = await _userService.AdminUpdateUserAsync(id, request);
+        //        if (!result)
+        //            return NotFound(new { Message = "Usuario no encontrado." });
+
+        //        return Ok(new { Message = "Usuario actualizado correctamente." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { Message = $"Error al actualizar el usuario: {ex.Message}" });
+        //    }
+        //}
+
         public async Task<IActionResult> AdminUpdateUser(int id, [FromBody] AdminUserUpdateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var result = await _userService.AdminUpdateUserAsync(id, request);
-                if (!result)
-                    return NotFound(new { Message = "Usuario no encontrado." });
+            var result = await _userService.AdminUpdateUserAsync(id, request);
 
-                return Ok(new { Message = "Usuario actualizado correctamente." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = $"Error al actualizar el usuario: {ex.Message}" });
-            }
+            if (!result)
+                throw new KeyNotFoundException("Usuario no encontrado.");
+            return Ok(new { Message = "Usuario actualizado correctamente." });
         }
 
         [HttpPut("toggle-status/{id}")]
@@ -204,23 +209,22 @@ namespace MassivoApp.Server.Controllers
         {
             var result = await _userService.ToggleStatusAsync(id);
             if (!result)
-                return NotFound($"Usuario con ID {id} no encontrado");
-
+                return NotFound(new { error = $"Usuario con ID {id} no encontrado" });
             return Ok(new { message = "Estado del usuario actualizado correctamente" });
         }
+        //descartado
+        //[Authorize]
+        //[HttpPut("me")]
+        //public async Task<IActionResult> UpdateOwnUser([FromBody] UpdateOwnUserDto dto)
+        //{
+        //    var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "");
+        //    var response = await _userService.UpdateOwnProfileAsync(userId, dto);
 
-        [Authorize]
-        [HttpPut("me")]
-        public async Task<IActionResult> UpdateOwnUser([FromBody] UpdateOwnUserDto dto)
-        {
-            var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "");
-            var response = await _userService.UpdateOwnProfileAsync(userId, dto);
+        //    if (!response)
+        //        return NotFound("No se encontró el usuario o no se pudo actualizar");
 
-            if (!response)
-                return NotFound("No se encontró el usuario o no se pudo actualizar");
-
-            return Ok("Perfil actualizado correctamente");
-        }
+        //    return Ok("Perfil actualizado correctamente");
+        //}
 
 
     }

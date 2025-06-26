@@ -58,7 +58,8 @@ const TripDetail = () => {
         const data = await getEventVehicleById(tripId);
         setEventVehicle(data);
       } catch (error) {
-        setEventVehicle(null);
+          setEventVehicle(null);
+          console.error("Error: ", error);
       }
       setLoading(false);
     };

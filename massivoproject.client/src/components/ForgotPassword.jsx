@@ -28,8 +28,9 @@ const ForgotPassword = () => {
       "success"
     );
     setEmail("");
-  } catch (error) {
-    showAlert("Error al procesar la solicitud de recuperación.", "error");
+  } catch (err) {
+        showAlert("Error al procesar la solicitud de recuperación.", "error");
+    console.error("Error: ", err)
   }
 };
 
