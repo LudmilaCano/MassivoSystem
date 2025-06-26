@@ -35,6 +35,7 @@ import {
 import ReviewList from "./ReviewList";
 import { useSelector } from "react-redux";
 import { fetchRoute } from "../api/OpenRouteService";
+import { getVehicleTypeImage } from '../constants/vehicleType';
 
 const TripDetail = () => {
   const { tripId } = useParams();
@@ -58,8 +59,8 @@ const TripDetail = () => {
         const data = await getEventVehicleById(tripId);
         setEventVehicle(data);
       } catch (error) {
-          setEventVehicle(null);
-          console.error("Error: ", error);
+        setEventVehicle(null);
+        console.error("Error: ", error);
       }
       setLoading(false);
     };
@@ -172,16 +173,19 @@ const TripDetail = () => {
               }}
             >
               <img
-                src={eventVehicle.image || "/sedan.jpg"}
-                alt={eventVehicle.name}
+                src={
+                  eventVehicle.vehicle?.imagePath ||
+                  getVehicleTypeImage(eventVehicle.vehicleType)
+                }
+                alt={eventVehicle.vehicle?.name || eventVehicle.name}
                 style={{
-                  width: "100%",
-                  maxWidth: 180,
-                  height: 120,
+                  width: 120,
+                  height: 80,
                   objectFit: "cover",
                   borderRadius: 8,
                   marginBottom: 12,
                 }}
+                loading="lazy"
               />
               <Typography
                 variant="h6"
