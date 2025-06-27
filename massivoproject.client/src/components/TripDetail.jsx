@@ -57,6 +57,8 @@ const TripDetail = () => {
     const fetchEventVehicle = async () => {
       try {
         const data = await getEventVehicleById(tripId);
+        console.log("🚐 Event vehicles recibidos:", data); // 👈 Agregá este console.log
+
         setEventVehicle(data);
       } catch (error) {
         setEventVehicle(null);
@@ -222,7 +224,7 @@ const TripDetail = () => {
                     sx={{ fontWeight: "bold" }}
                   />
                   <Chip
-                    label={`Capacidad máxima: ${eventVehicle.vehicle.capacity} personas`}
+                    label={`Capacidad máxima: ${eventVehicle.capacity} personas`}
                     color="default"
                   />
                 </Box>
@@ -390,15 +392,29 @@ const TripDetail = () => {
                   variant="contained"
                   color="warning"
                   size="large"
+                  disabled={
+                    !eventVehicle.vehicle?.available ||
+                    eventVehicle.vehicle.available <= 0 ||
+                    !eventVehicle.available ||
+                    eventVehicle.available <= 0
+                  }
                   sx={{
                     minWidth: 180,
                     py: 1.5,
                     fontSize: "1.1rem",
                     fontWeight: "bold",
-                    textTransform: "none",
+                    '&.Mui-disabled': {
+                      backgroundColor: 'grey.300 !important',
+                      color: 'grey.600 !important',
+                      opacity: '0.8 !important'
+                    }
                   }}
                 >
-                  Reservar Ya
+                  {((!eventVehicle.vehicle?.available || eventVehicle.vehicle.available <= 0) ||
+                    (!eventVehicle.available || eventVehicle.available <= 0))
+                    ? "Reservar Ya"
+                    : "Reservar Ya"
+                  }
                 </Button>
               </Box>
             </Box>
