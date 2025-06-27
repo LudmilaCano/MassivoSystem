@@ -17,7 +17,7 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
-        
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -55,9 +55,24 @@ api.interceptors.response.use(
             case 403:
                 showAlert('No tenés permisos para acceder a este recurso.', 'error');
                 break;
-            case 404:
-                showAlert('Recurso no encontrado.', 'error');
+            case 404: {
+                const knownHandledUrls = [
+                    "/EventVehicle/", 
+                    "/Event/", 
+                    "/Booking/",      
+                ];
+
+                const isKnownDetailRoute = knownHandledUrls.some(fragment =>
+                    response.config.url.includes(fragment)
+                );
+
+                if (isKnownDetailRoute) {
+                    window.location.href = "/notfound";
+                } else {
+                    showAlert("Recurso no encontrado.", "error");
+                }
                 break;
+            }
             case 408:
                 showAlert('Tiempo de espera agotado. Intentalo nuevamente.', 'error');
                 break;
