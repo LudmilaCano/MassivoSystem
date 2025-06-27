@@ -1,5 +1,5 @@
 export const fetchRoute = async (from, to) => {
-    const response = await fetch('https://localhost:7089/api/route', {
+    const response = await fetch('/api/route', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

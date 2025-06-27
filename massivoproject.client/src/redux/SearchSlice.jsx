@@ -37,7 +37,7 @@ export const filterEventsThunk = () => async (dispatch, getState) => {
   const { searchName, searchDate } = getState().search;
   
   try {
-    const response = await fetch(`https://localhost:7089/api/Event/filter?name=${searchName}&date=${searchDate}`);
+    const response = await fetch(`/api/Event/filter?name=${searchName}&date=${searchDate}`);
     if (!response.ok) {
       throw new Error('Error filtrando eventos');
     }

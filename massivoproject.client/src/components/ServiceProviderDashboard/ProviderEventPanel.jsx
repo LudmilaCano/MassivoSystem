@@ -229,7 +229,7 @@ const ProviderEventPanel = ({ userId }) => {
         const formData = new FormData();
         formData.append('file', eventSelectedFile);
 
-        const response = await fetch('https://localhost:7089/api/File/upload/event', {
+        const response = await fetch('/api/File/upload/event', {
           method: 'POST',
           body: formData
         });

@@ -122,7 +122,7 @@ const AddVehicle = () => {
           const formData = new FormData();
           formData.append('file', vehicleSelectedFile);
 
-          const response = await fetch('https://localhost:7089/api/File/upload/vehicle', {
+            const response = await fetch('/api/File/upload/vehicle', {
             method: 'POST',
             body: formData
           });

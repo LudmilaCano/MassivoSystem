@@ -90,7 +90,7 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
         const formData = new FormData();
         formData.append('file', selectedFile);
 
-        const response = await fetch('https://localhost:7089/api/File/upload/vehicle', {
+        const response = await fetch('/api/File/upload/vehicle', {
           method: 'POST',
           body: formData
         });

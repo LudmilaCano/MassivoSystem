@@ -40,7 +40,7 @@ const FileUploader = ({ onFileUploaded = () => {}, initialImage = null, entityTy
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      const response = await fetch(`https://localhost:7089/api/File/upload/${entityType}`, {
+      const response = await fetch(`/api/File/upload/${entityType}`, {
         method: 'POST',
         body: formData
       });

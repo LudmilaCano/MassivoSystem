@@ -120,7 +120,7 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
         const formData = new FormData();
         formData.append('file', selectedFile);
 
-        const response = await fetch('https://localhost:7089/api/File/upload/event', {
+        const response = await fetch('/api/File/upload/event', {
           method: 'POST',
           body: formData
         });

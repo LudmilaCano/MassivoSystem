@@ -161,7 +161,7 @@ const CustomerProfile = () => {
         formData.append("file", selectedFile);
 
         const response = await fetch(
-          "https://localhost:7089/api/File/upload/user",
+          "/api/File/upload/user",
           {
             method: "POST",
             body: formData,

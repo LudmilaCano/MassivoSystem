@@ -120,7 +120,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
             if (userSelectedFile) {
                 const formData = new FormData();
                 formData.append('file', userSelectedFile);
-                const response = await fetch('https://localhost:7089/api/File/upload/user', { method: 'POST', body: formData });
+                const response = await fetch('/api/File/upload/user', { method: 'POST', body: formData });
                 if (!response.ok) throw new Error('Error al subir la imagen');
                 const data = await response.json();
                 profileImageUrl = data.url;
@@ -207,7 +207,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
             if (eventSelectedFile) {
                 const formData = new FormData();
                 formData.append('file', eventSelectedFile);
-                const response = await fetch('https://localhost:7089/api/File/upload/event', { method: 'POST', body: formData });
+                const response = await fetch('/api/File/upload/event', { method: 'POST', body: formData });
                 if (!response.ok) throw new Error('Error al subir la imagen');
                 const data = await response.json();
                 imageUrl = data.url;

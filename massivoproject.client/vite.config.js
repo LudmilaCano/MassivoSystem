@@ -1,5 +1,4 @@
 import { fileURLToPath, URL } from 'node:url';
-
 import { defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-react';
 import fs from 'fs';
@@ -7,8 +6,6 @@ import path from 'path';
 import child_process from 'child_process';
 import { env } from 'process';
 import svgr from 'vite-plugin-svgr';
-
-
 
 const baseFolder =
     env.APPDATA !== undefined && env.APPDATA !== ''
@@ -44,9 +41,17 @@ export default defineConfig({
             '@': fileURLToPath(new URL('./src', import.meta.url))
         }
     },
+    build: {
+        outDir: 'dist',
+        emptyOutDir: true
+    },
     server: {
         proxy: {
             '^/weatherforecast': {
+                target,
+                secure: false
+            },
+            '^/api': {
                 target,
                 secure: false
             }
@@ -57,5 +62,4 @@ export default defineConfig({
             cert: fs.readFileSync(certFilePath),
         }
     }
-    
-})
+});
