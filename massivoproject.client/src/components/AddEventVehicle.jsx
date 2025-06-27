@@ -11,7 +11,7 @@ import {
     MenuItem,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { addVehicleToEvent } from "../api/EventEndpoints";
+import { addVehicleToEvent } from "../api/EventVehicleEndpoints";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getVehiclesByUserId } from "../api/VehicleEndpoints";
 import { useParams } from "react-router-dom";

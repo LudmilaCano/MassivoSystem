@@ -56,7 +56,9 @@ const TripDetail = () => {
   useEffect(() => {
     const fetchEventVehicle = async () => {
       try {
-        const data = await getEventVehicleById(tripId);
+          const data = await getEventVehicleById(tripId);
+          console.log("🚐 Event vehicles recibidos:", data); // 👈 Agregá este console.log
+
         setEventVehicle(data);
       } catch (error) {
         setEventVehicle(null);
@@ -222,7 +224,7 @@ const TripDetail = () => {
                     sx={{ fontWeight: "bold" }}
                   />
                   <Chip
-                    label={`Capacidad máxima: ${eventVehicle.vehicle.capacity} personas`}
+                    label={`Capacidad máxima: ${eventVehicle.capacity} personas`}
                     color="default"
                   />
                 </Box>

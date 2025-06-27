@@ -15,6 +15,8 @@ namespace Application.Models.Responses
         public string LicensePlate { get; set; }
         public DateTime Date { get; set; }
         public int Occupation { get; set; }
+        public int Capacity { get; set; }
+
         public string Description { get; set; }
         public int Price { get; set; }
         public string VehicleType { get; set; }
@@ -30,6 +32,7 @@ namespace Application.Models.Responses
                 LicensePlate = eventVehicleEntity.LicensePlate,
                 Date = eventVehicleEntity.Date,
                 Occupation = eventVehicleEntity.Occupation,
+                Capacity = eventVehicleEntity.Capacity,
                 Description = eventVehicleEntity.Description,
                 Price = eventVehicleEntity.Price,
                 VehicleType = eventVehicleEntity.Vehicle?.Type.ToString(),
