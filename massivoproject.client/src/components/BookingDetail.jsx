@@ -32,6 +32,7 @@ const BookingDetail = () => {
             } catch (error) {
                 setBooking(null);
                 console.error("Error: ", error)
+                throw error;
             }
             setLoading(false);
         };

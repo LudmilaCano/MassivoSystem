@@ -62,7 +62,8 @@ const TripDetail = () => {
         setEventVehicle(data);
       } catch (error) {
         setEventVehicle(null);
-        console.error("Error: ", error);
+          console.error("Error: ", error);
+          throw error; 
       }
       setLoading(false);
     };

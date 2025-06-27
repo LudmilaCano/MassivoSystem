@@ -167,6 +167,7 @@ const AddVehicleEvent = () => {
         } catch (err) {
             showAlert("Error al agregar vehículo al evento", "error");
             console.error("Error: ", err);
+            throw err;
         }
 
         setLoading(false);
@@ -182,6 +183,7 @@ const AddVehicleEvent = () => {
                 }
             } catch (err) {
                 console.error("Error al obtener vehículos", err);
+                throw err;
             }
         };
         fetchVehicles();
@@ -194,6 +196,7 @@ const AddVehicleEvent = () => {
                 setEventDate(event.eventDate);
             } catch (err) {
                 console.error("Error al obtener el evento", err);
+                throw err;
             }
         };
 
