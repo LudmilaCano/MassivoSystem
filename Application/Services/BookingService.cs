@@ -105,7 +105,7 @@ namespace Application.Services
 
             var ownerUser = await _userRepository.GetByIdAsync(vehicle.UserId.Value)
                 ?? throw new KeyNotFoundException($"El vehículo {vehicle.LicensePlate} no tiene un usuario asignado.");
-            if (vehicle.Available < addBookingRequest.SeatNumber)
+            if (eventVehicle.Capacity < addBookingRequest.SeatNumber)
             {
                 throw new InvalidOperationException("No hay suficientes asientos disponibles para esta reserva.");
             }
@@ -201,7 +201,7 @@ namespace Application.Services
 
             var bookingSaved = await _bookingRepository.AddAsync(booking);
             //vehicle.Available += booking.SeatNumber;
-            vehicle.Available -= booking.SeatNumber;
+            eventVehicle.Capacity -= booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
 
             bookingSaved.Payment = paymentSaved;
@@ -315,6 +315,8 @@ namespace Application.Services
                ?? throw new KeyNotFoundException($"Evento con ID {booking.EventVehicle.EventId} no fue encontrado.");
             var vehicle = await _vehicleRepository.GetByIdAsync(booking.EventVehicle.LicensePlate)
                 ?? throw new KeyNotFoundException($"Vehículo con matrícula {booking.EventVehicle.LicensePlate} no fue encontrado.");
+            var eventVehicle = eventEntity.EventVehicles.FirstOrDefault(ev => ev.LicensePlate == vehicle.LicensePlate)
+              ?? throw new KeyNotFoundException($"El vehículo con matrícula {vehicle.LicensePlate} no se asignó a este evento.");
 
             if (DateTime.Now > eventEntity.EventDate.AddDays(-1))
             {
@@ -327,7 +329,7 @@ namespace Application.Services
 
             // Se libera los espacio del vehiculo
             //vehicle.Available -= booking.SeatNumber;
-            vehicle.Available += booking.SeatNumber;
+            eventVehicle.Capacity += booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
 
             // Se realiza el reembolso del pago
