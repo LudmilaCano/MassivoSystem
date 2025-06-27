@@ -368,117 +368,129 @@ const VehicleList = () => {
                 gap: 2
             }}>
                 {currentItems.length !== 0 ? (
-                    currentItems.map((item, index) => (
-                        <Paper
-                            key={index}
-                            elevation={selectedVehicles.includes(item.eventVehicleId) ? 8 : 3}
-                            sx={{
-                                p: 2,
-                                borderRadius: 3,
-                                border: selectedVehicles.includes(item.eventVehicleId) ? '2px solid #139AA0' : 'none',
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                    elevation: 6,
-                                    transform: 'translateY(-2px)'
-                                }
-                            }}
-                        >
-                            <Box sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 2,
-                                width: '100%'
-                            }}>
-                                <Tooltip title="Seleccionar para comparar">
-                                    <Checkbox
-                                        checked={selectedVehicles.includes(item.eventVehicleId)}
-                                        onChange={() => handleSelectVehicle(item.eventVehicleId)}
-                                        sx={{
-                                            color: '#139AA0',
-                                            '&.Mui-checked': {
-                                                color: '#139AA0',
-                                            },
-                                            '& .MuiSvgIcon-root': { fontSize: 28 }
-                                        }}
-                                    />
-                                </Tooltip>
+                    currentItems.map((item, index) => {
+                        const lugaresDisponibles = item.capacity - item.occupation;
 
-                                {/* Imagen  */}
-                                <Box sx={{ flexShrink: 0 }}>
-                                    <img
-                                        src={item.vehicle?.imagePath || getVehicleTypeImage(item.vehicleType)}
-                                        alt={item.vehicle?.name}
-                                        style={{
-                                            width: 120,
-                                            height: 80,
-                                            objectFit: 'cover',
-                                            borderRadius: 8
-                                        }}
-                                    />
-                                </Box>
-
-                                {/* Info*/}
-                                <Box sx={{ flexGrow: 1 }}>
-                                    <Typography variant="h6" fontWeight="bold">
-                                        {item.vehicle.name}
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                                        <Typography variant="body2" color="text.secondary">
-                                            👥 {item.vehicle.capacity} personas máximo
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                                        <LocationOnIcon fontSize="small" color="action" />
-                                        <Typography variant="body2">
-                                            <strong>{item.from}</strong>
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                                        <AccessTimeIcon fontSize="small" color="action" />
-                                        <Typography variant="body2" color="text.secondary">
-                                            {new Date(item.date).toLocaleDateString()} - {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-
+                        return (
+                            <Paper
+                                key={index}
+                                elevation={selectedVehicles.includes(item.eventVehicleId) ? 8 : 3}
+                                sx={{
+                                    p: 2,
+                                    borderRadius: 3,
+                                    border: selectedVehicles.includes(item.eventVehicleId) ? '2px solid #139AA0' : 'none',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        elevation: 6,
+                                        transform: 'translateY(-2px)'
+                                    }
+                                }}
+                            >
                                 <Box sx={{
-                                    textAlign: 'right',
                                     display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'flex-end',
-                                    gap: 1,
-                                    flexShrink: 0
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    width: '100%'
                                 }}>
-                                    <Chip
-                                        label={item.vehicle.available <= 0 ? "Sin disponibilidad" :
-                                            item.vehicle.available < 2
-                                                ? `${item.vehicle.available} lugar disponible`
-                                                : `${item.vehicle.available} lugares disponibles`}
-                                        color={item.vehicle.available <= 0 ? "error" :
-                                            item.vehicle.available < 2 ? "warning" : "success"}
-                                        size="small"
-                                    />
-                                    <Typography variant="h5" color="primary" fontWeight="bold">
-                                        ${item.price.toLocaleString()}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        por persona
-                                    </Typography>
-                                    <Button
-                                        onClick={() => navigate(`/trip-detail/${item.eventVehicleId}`, {
-                                            state: { destination: event.location }
-                                        })}
-                                        variant="contained"
-                                        color="warning"
-                                        size="small"
-                                        sx={{ borderRadius: 3 }}
-                                    >
-                                        Ver detalles
-                                    </Button>
+                                    <Tooltip title="Seleccionar para comparar">
+                                        <Checkbox
+                                            checked={selectedVehicles.includes(item.eventVehicleId)}
+                                            onChange={() => handleSelectVehicle(item.eventVehicleId)}
+                                            sx={{
+                                                color: '#139AA0',
+                                                '&.Mui-checked': {
+                                                    color: '#139AA0',
+                                                },
+                                                '& .MuiSvgIcon-root': { fontSize: 28 }
+                                            }}
+                                        />
+                                    </Tooltip>
+
+                                    {/* Imagen */}
+                                    <Box sx={{ flexShrink: 0 }}>
+                                        <img
+                                            src={item.vehicle?.imagePath || getVehicleTypeImage(item.vehicleType)}
+                                            alt={item.vehicle?.name}
+                                            style={{
+                                                width: 120,
+                                                height: 80,
+                                                objectFit: 'cover',
+                                                borderRadius: 8
+                                            }}
+                                        />
+                                    </Box>
+
+                                    {/* Info */}
+                                    <Box sx={{ flexGrow: 1 }}>
+                                        <Typography variant="h6" fontWeight="bold">
+                                            {item.vehicle.name}
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                👥 {item.capacity} personas máximo
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                            <LocationOnIcon fontSize="small" color="action" />
+                                            <Typography variant="body2">
+                                                <strong>{item.from}</strong>
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                            <AccessTimeIcon fontSize="small" color="action" />
+                                            <Typography variant="body2" color="text.secondary">
+                                                {new Date(item.date).toLocaleDateString()} - {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+
+                                    <Box sx={{
+                                        textAlign: 'right',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'flex-end',
+                                        gap: 1,
+                                        flexShrink: 0
+                                    }}>
+                                        <Chip
+                                            label={
+                                                lugaresDisponibles <= 0
+                                                    ? "Sin disponibilidad"
+                                                    : lugaresDisponibles < 2
+                                                        ? `${lugaresDisponibles} lugar disponible`
+                                                        : `${lugaresDisponibles} lugares disponibles`
+                                            }
+                                            color={
+                                                lugaresDisponibles <= 0
+                                                    ? "error"
+                                                    : lugaresDisponibles < 2
+                                                        ? "warning"
+                                                        : "success"
+                                            }
+                                            size="small"
+                                        />
+                                        <Typography variant="h5" color="primary" fontWeight="bold">
+                                            ${item.price.toLocaleString()}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            por persona
+                                        </Typography>
+                                        <Button
+                                            onClick={() => navigate(`/trip-detail/${item.eventVehicleId}`, {
+                                                state: { destination: event.location }
+                                            })}
+                                            variant="contained"
+                                            color="warning"
+                                            size="small"
+                                            sx={{ borderRadius: 3 }}
+                                        >
+                                            Ver detalles
+                                        </Button>
+                                    </Box>
                                 </Box>
-                            </Box>
-                        </Paper>
-                    ))
+                            </Paper>
+                        );
+                    })
                 ) : (
                     <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
                         <Typography variant="h5" fontWeight="bold" mb={2}>
@@ -509,6 +521,7 @@ const VehicleList = () => {
                     </Fab>
                 </Tooltip>
             )}
+
 
             {/* Modal*/}
             <Dialog

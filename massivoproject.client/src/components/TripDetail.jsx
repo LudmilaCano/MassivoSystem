@@ -222,7 +222,7 @@ const TripDetail = () => {
                     sx={{ fontWeight: "bold" }}
                   />
                   <Chip
-                    label={`Capacidad máxima: ${eventVehicle.vehicle.capacity} personas`}
+                    label={`Capacidad máxima: ${eventVehicle.capacity} personas`}
                     color="default"
                   />
                 </Box>

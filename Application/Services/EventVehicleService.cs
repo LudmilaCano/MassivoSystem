@@ -47,6 +47,7 @@ namespace Application.Services
                 LicensePlate = request.LicensePlate,
                 Date = request.Date,
                 Occupation = 0,
+                Capacity = vehicle.Capacity,
                 Price = request.Price,
                 Description = request.Description
             };
@@ -61,6 +62,7 @@ namespace Application.Services
                 LicensePlate = eventVehicle.LicensePlate,
                 Date = eventVehicle.Date,
                 Occupation = eventVehicle.Occupation,
+                Capacity = eventVehicle.Capacity,
                 Price = eventVehicle.Price,
                 Description = eventVehicle.Description
             };
@@ -112,6 +114,7 @@ namespace Application.Services
                     LicensePlate = ev.LicensePlate,
                     Date = ev.Date,
                     Occupation = ev.Occupation,
+                    Capacity = ev.Capacity,
                     Price = ev.Price
                 });
             }
