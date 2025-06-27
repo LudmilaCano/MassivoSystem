@@ -51,9 +51,12 @@ namespace Infraestructure.Data
                 .WithMany()
                 .HasForeignKey(v => v.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
-
             modelBuilder.Entity<EventVehicle>()
                 .HasKey(ev => ev.EventVehicleId);
+
+            //modelBuilder.Entity<EventVehicle>()
+            //    .Property(ev => ev.Capacity)
+            //    .HasDefaultValue(0); 
 
             modelBuilder.Entity<EventVehicle>()
                 .HasOne(ev => ev.Event)

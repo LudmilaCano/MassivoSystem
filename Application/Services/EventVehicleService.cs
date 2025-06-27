@@ -3,6 +3,9 @@ using Application.Models.Requests;
 using Application.Models.Responses;
 using Domain.Entities;
 using Domain.Interfaces;
+using System.Diagnostics;
+
+
 
 namespace Application.Services
 {
@@ -32,6 +35,7 @@ namespace Application.Services
 
             // Validar existencia del vehículo
             var vehicle = await _vehicleRepository.GetByLicensePlateAsync(request.LicensePlate);
+            System.Diagnostics.Debugger.Break();
             if (vehicle == null)
                 throw new KeyNotFoundException($"Vehicle with license plate {request.LicensePlate} not found.");
 
@@ -39,6 +43,7 @@ namespace Application.Services
             var existing = await _eventVehicleRepository.GetByEventIdAndLicensePlateAsync(request.EventId, request.LicensePlate);
             if (existing != null)
                 throw new InvalidOperationException("Vehicle is already assigned to this event.");
+            Debug.WriteLine($"[DEBUG] Vehicle Capacity: {vehicle.Capacity}");
 
             // Crear la entidad
             var eventVehicle = new EventVehicle
