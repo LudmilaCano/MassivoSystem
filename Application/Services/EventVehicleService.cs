@@ -35,7 +35,6 @@ namespace Application.Services
 
             // Validar existencia del vehículo
             var vehicle = await _vehicleRepository.GetByLicensePlateAsync(request.LicensePlate);
-            System.Diagnostics.Debugger.Break();
             if (vehicle == null)
                 throw new KeyNotFoundException($"Vehicle with license plate {request.LicensePlate} not found.");
 

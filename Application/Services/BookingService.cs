@@ -202,6 +202,7 @@ namespace Application.Services
             var bookingSaved = await _bookingRepository.AddAsync(booking);
             //vehicle.Available += booking.SeatNumber;
             eventVehicle.Capacity -= booking.SeatNumber;
+            eventVehicle.Occupation += booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
 
             bookingSaved.Payment = paymentSaved;
