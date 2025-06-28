@@ -62,11 +62,14 @@ const TripDetail = () => {
         setEventVehicle(data);
       } catch (error) {
         setEventVehicle(null);
-          console.error("Error: ", error);
-          throw error; 
+        console.error("Error: ", error);
+        throw error;
       }
       setLoading(false);
     };
+    if (!(/^\d+$/.test(tripId ?? ""))) {
+      navigate('/not-found');
+    }
     fetchEventVehicle();
   }, [tripId]);
 

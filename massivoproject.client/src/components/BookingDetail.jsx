@@ -36,6 +36,9 @@ const BookingDetail = () => {
             }
             setLoading(false);
         };
+        if (!(/^\d+$/.test(bookingId ?? ""))) {
+            navigate('/not-found');
+        }
         fetchBooking();
     }, [bookingId]);
 
@@ -56,39 +59,39 @@ const BookingDetail = () => {
     }, []);
 
 
-const handleCancelBooking = async () => {
-    const result = await Swal.fire({
-        title: '¿Cancelar reserva?',
-        text: 'Esta acción no se puede deshacer.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sí, cancelar',
-        cancelButtonText: 'No'
-    });
+    const handleCancelBooking = async () => {
+        const result = await Swal.fire({
+            title: '¿Cancelar reserva?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'No'
+        });
 
-    if (result.isConfirmed) {
-        try {
-            await deleteBooking(bookingId);
-            Swal.fire({
-                icon: 'success',
-                title: 'Reserva cancelada',
-                showConfirmButton: false,
-                timer: 1500
-            });
+        if (result.isConfirmed) {
+            try {
+                await deleteBooking(bookingId);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reserva cancelada',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
 
-           window.location.reload();
-        } catch (error) {
-            console.error("Error: ", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error al cancelar',
-                text: 'Intenta nuevamente más tarde.'
-            });
+                window.location.reload();
+            } catch (error) {
+                console.error("Error: ", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al cancelar',
+                    text: 'Intenta nuevamente más tarde.'
+                });
+            }
         }
-    }
-};
+    };
 
     if (loading) {
         return (

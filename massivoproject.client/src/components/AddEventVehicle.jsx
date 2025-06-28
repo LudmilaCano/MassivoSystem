@@ -199,7 +199,9 @@ const AddVehicleEvent = () => {
                 throw err;
             }
         };
-
+        if (!(/^\d+$/.test(eventId ?? ""))) {
+            navigate('/not-found');
+        }
         fetchEvent();
     }, [eventId]);
 

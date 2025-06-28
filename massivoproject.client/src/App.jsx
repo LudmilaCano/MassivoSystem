@@ -249,6 +249,14 @@ function App() {
       ),
     },
     {
+      path: "/not-found",
+      element: (
+        <MainLayout>
+          <NotFound />
+        </MainLayout>
+      ),
+    },
+    {
       path: "*",
       element: (
         <MainLayout>

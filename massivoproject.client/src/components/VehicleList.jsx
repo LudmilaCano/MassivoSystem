@@ -59,6 +59,9 @@ const VehicleList = () => {
             }
             setLoadingEvent(false);
         };
+        if (!(/^\d+$/.test(eventId ?? ""))) {
+            navigate('/not-found');
+        }
         fetchEvent();
     }, [eventId]);
 
@@ -101,7 +104,10 @@ const VehicleList = () => {
                 setFilteredVehicles([]);
             }
         };
-        if (eventId) fetchVehicles();
+        if (!(/^\d+$/.test(eventId ?? ""))) {
+            navigate('/not-found');
+        }
+        fetchVehicles();
     }, [eventId]);
 
     const handleSelectVehicle = (vehicleId) => {
