@@ -30,8 +30,9 @@ import {
 } from "../redux/SearchSlice";
 import Colors from "./Colors.jsx";
 import logo from "../Images/logo2.png";
-import useChangeRol from "../hooks/useChangeRol.jsx";
 import { sendUpcomingBookingNotifications } from "../api/BookingEndpoints.jsx";
+import { cambiarRolAPrestador, getUserById } from "../api/UserEndpoints";
+import useSwalAlert from "../hooks/useSwalAlert";
 
 const HeaderPerfil = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -62,7 +63,19 @@ const HeaderPerfil = () => {
     dispatch(filterEventsThunk());
   };
 
-  const handleChangeRol = useChangeRol();
+    const { showAlert } = useSwalAlert();
+    const userId = useSelector((state) => state.auth.userId);
+
+    const handleChangeRol = async () => {
+        try {
+            await cambiarRolAPrestador();
+            showAlert("¡Tu rol ha sido actualizado a Prestador!", "success");
+            navigate("/add-vehicle");
+        } catch (error) {
+            console.error("Error al cambiar el rol:", error);
+            showAlert("Ocurrió un error al cambiar el rol.", "error");
+        }
+    };
 
   const handleSendReminders = async () => {
     try {

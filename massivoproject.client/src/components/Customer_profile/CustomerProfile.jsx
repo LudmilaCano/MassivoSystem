@@ -27,9 +27,7 @@ import {
 } from "../../api/UserEndpoints";
 import { useNavigate } from "react-router";
 import useSwalAlert from "../../hooks/useSwalAlert";
-
 import { getVehiclesByUserId } from "../../api/VehicleEndpoints";
-import useChangeRol from "../../hooks/useChangeRol";
 
 import useProvinceCitySelector from "../../hooks/useProvinceCitySelector";
 
@@ -60,7 +58,6 @@ const CustomerProfile = () => {
   const [guardado, setGuardado] = useState(false);
   const navigate = useNavigate();
   const { showAlert } = useSwalAlert();
-  const { handleChangeRol } = useChangeRol(setUserData);
   const userIdFromState = useSelector((state) => state.auth.userId);
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -275,8 +272,7 @@ const CustomerProfile = () => {
               sx={{ width: 120, height: 120, mb: 2 }}
             >
               {!userData.profileImage &&
-                `${userData.firstName?.[0] || ""}${
-                  userData.lastName?.[0] || ""
+                `${userData.firstName?.[0] || ""}${userData.lastName?.[0] || ""
                 }`}
             </Avatar>
 
@@ -395,8 +391,7 @@ const CustomerProfile = () => {
                 >
                   {!profilePic &&
                     !selectedFile &&
-                    `${editData.firstName?.[0] || ""}${
-                      editData.lastName?.[0] || ""
+                    `${editData.firstName?.[0] || ""}${editData.lastName?.[0] || ""
                     }`}
                 </Avatar>
 

@@ -1,5 +1,5 @@
 import "./App.css";
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layout/MainLayout.jsx";
 import Login from "./components/Login.jsx";
 import ForgotPassword from "./components/ForgotPassword.jsx";
@@ -35,237 +35,102 @@ import ReviewListByUser from "./components/ReviewListByUser.jsx";
 import ChangePassword from "./components/ChangePassword.jsx";
 
 function App() {
-  const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.auth);
-  const auth = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+    const { loading } = useSelector((state) => state.auth);
+    const auth = useSelector((state) => state.auth);
 
-  useEffect(() => {
-    dispatch(initializeAuth());
-  }, []);
+    useEffect(() => {
+        dispatch(initializeAuth());
+    }, []);
 
-  if (auth.loading) {
-    return <div>Cargando...</div>;
-  }
+    if (auth.loading) {
+        return <div>Cargando...</div>;
+    }
 
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: (
-        <MainLayout>
-          <Home />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/login",
-      element: (
-        <MainLayout>
-          <Login />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/register",
-      element: (
-        <MainLayout>
-          <Register />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/profile",
-      element: (
-        <ProtectedRoute allowedRoles={["Admin", "Prestador", "User"]}>
-          <MainLayout>
-            <CustomerProfile />
-          </MainLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/vehicle-list/:eventId",
-      element: (
-        <MainLayout>
-          <VehicleList />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/trip-detail/:tripId",
-      element: (
-        <MainLayout>
-          <TripDetail />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/add-vehicle",
-      element: (
-        <ProtectedRoute allowedRoles={["Admin", "Prestador", "User"]}>
-          <MainLayout>
-            <AddVehicle />
-          </MainLayout>
-        </ProtectedRoute>
-      ),
-    },
-
-    {
-      path: "/add-event",
-      element: (
-        <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
-          <MainLayout>
-            <AddEvent />
-          </MainLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/add-vehicle-event/:eventId",
-      element: (
-        <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
-          <MainLayout>
-            <AddVehicleEvent />
-          </MainLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/booking",
-      element: (
-        <ProtectedRoute allowedRoles={["Admin", "User"]}>
-          <MainLayout>
-            <Booking />
-          </MainLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/forgot-password",
-      element: (
-        <MainLayout>
-          <ForgotPassword />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/reset-password",
-      element: (
-        <MainLayout>
-          <ResetPasswordWithCode />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/change-password",
-      element: (
-        <MainLayout>
-          <ChangePassword />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/activate-account",
-      element: (
-        <MainLayout>
-          <ActivateAccount />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/about-us",
-      element: (
-        <MainLayout>
-          <AboutUs />
-        </MainLayout>
-      ),
-    },
-
-    {
-      path: "/admin-dashboard",
-      element: (
-        <ProtectedRoute allowedRoles={["Admin"]}>
-          <MainLayout>
-            <AdminDashboard />
-          </MainLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/provider-dashboard",
-      element: (
-        <ProtectedRoute allowedRoles={["Prestador", "Admin"]}>
-          <MainLayout>
-            <ProviderDashboard />
-          </MainLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/booking-list",
-      element: (
-        <MainLayout>
-          <BookingList />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/review-list",
-      element: (
-        <MainLayout>
-          <ReviewList />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/review-list-user",
-      element: (
-        <MainLayout>
-          <ReviewListByUser />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/booking/:bookingId",
-      element: (
-        <MainLayout>
-          <BookingDetail />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/contact",
-      element: (
-        <MainLayout>
-          <Contact />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "/instructivo",
-      element: (
-        <MainLayout>
-          <Instructive />
-        </MainLayout>
-      ),
-    },
-    {
-      path: "*",
-      element: (
-        <MainLayout>
-          <NotFound />
-        </MainLayout>
-      ),
-    },
-  ]);
-
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <div style={{ flex: 1, width: "100%", height: "100%" }}>
-        <RouterProvider router={router} />
-      </div>
-    </ThemeProvider>
-  );
+    return (
+        <BrowserRouter>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <div style={{ flex: 1, width: "100%", height: "100%" }}>
+                    <Routes>
+                        <Route path="/" element={<MainLayout><Home /></MainLayout>} />
+                        <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
+                        <Route path="/register" element={<MainLayout><Register /></MainLayout>} />
+                        <Route
+                            path="/profile"
+                            element={
+                                <ProtectedRoute allowedRoles={["Admin", "Prestador", "User"]}>
+                                    <MainLayout><CustomerProfile /></MainLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="/vehicle-list/:eventId" element={<MainLayout><VehicleList /></MainLayout>} />
+                        <Route path="/trip-detail/:tripId" element={<MainLayout><TripDetail /></MainLayout>} />
+                        <Route
+                            path="/add-vehicle"
+                            element={
+                                <ProtectedRoute allowedRoles={["Admin", "Prestador", "User"]}>
+                                    <MainLayout><AddVehicle /></MainLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/add-event"
+                            element={
+                                <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
+                                    <MainLayout><AddEvent /></MainLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/add-vehicle-event/:eventId"
+                            element={
+                                <ProtectedRoute allowedRoles={["Admin", "Prestador"]}>
+                                    <MainLayout><AddVehicleEvent /></MainLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/booking"
+                            element={
+                                <ProtectedRoute allowedRoles={["Admin", "User"]}>
+                                    <MainLayout><Booking /></MainLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="/forgot-password" element={<MainLayout><ForgotPassword /></MainLayout>} />
+                        <Route path="/reset-password" element={<MainLayout><ResetPasswordWithCode /></MainLayout>} />
+                        <Route path="/change-password" element={<MainLayout><ChangePassword /></MainLayout>} />
+                        <Route path="/activate-account" element={<MainLayout><ActivateAccount /></MainLayout>} />
+                        <Route path="/about-us" element={<MainLayout><AboutUs /></MainLayout>} />
+                        <Route
+                            path="/admin-dashboard"
+                            element={
+                                <ProtectedRoute allowedRoles={["Admin"]}>
+                                    <MainLayout><AdminDashboard /></MainLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/provider-dashboard"
+                            element={
+                                <ProtectedRoute allowedRoles={["Prestador", "Admin"]}>
+                                    <MainLayout><ProviderDashboard /></MainLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="/booking-list" element={<MainLayout><BookingList /></MainLayout>} />
+                        <Route path="/review-list" element={<MainLayout><ReviewList /></MainLayout>} />
+                        <Route path="/review-list-user" element={<MainLayout><ReviewListByUser /></MainLayout>} />
+                        <Route path="/booking/:bookingId" element={<MainLayout><BookingDetail /></MainLayout>} />
+                        <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
+                        <Route path="/instructivo" element={<MainLayout><Instructive /></MainLayout>} />
+                        <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
+                    </Routes>
+                </div>
+            </ThemeProvider>
+        </BrowserRouter>
+    );
 }
 
 export default App;
