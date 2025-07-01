@@ -14,6 +14,8 @@ import {
   Box,
   InputAdornment,
   Collapse,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import ExpandLess from "@mui/icons-material/ExpandLess";
@@ -38,6 +40,13 @@ const HeaderPerfil = () => {
   const [openActividad, setOpenActividad] = useState(false);
   const [openOpciones, setOpenOpciones] = useState(false);
   const [openPerfil, setOpenPerfil] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,6 +69,7 @@ const HeaderPerfil = () => {
 
   const handleSearch = () => {
     dispatch(filterEventsThunk());
+    if (isMobile) setSearchOpen(false);
   };
 
   const handleChangeRol = useChangeRol();
@@ -81,131 +91,267 @@ const HeaderPerfil = () => {
   const toggleOpciones = () => setOpenOpciones(!openOpciones);
   const toggleActividad = () => setOpenActividad(!openActividad);
   const togglePerfil = () => setOpenPerfil(!openPerfil);
+  const toggleSearch = () => setSearchOpen(!searchOpen);
+
+  // Renderizar barra de búsqueda según el tamaño de pantalla
+  const renderSearchBar = () => {
+    if (!isHomePage) return null;
+
+    if (isMobile) {
+      return (
+        <>
+          <IconButton 
+            onClick={toggleSearch} 
+            sx={{ color: "white", display: { xs: 'block', md: 'none' } }}
+          >
+            <SearchIcon />
+          </IconButton>
+          <Collapse in={searchOpen} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000 }}>
+            <Box
+              sx={{
+                backgroundColor: Colors.azul,
+                padding: 2,
+                borderTop: '1px solid rgba(255,255,255,0.2)',
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: 'column',
+                  gap: 1,
+                  backgroundColor: "white",
+                  borderRadius: "10px",
+                  padding: "10px",
+                }}
+              >
+                <TextField
+                  placeholder="Buscar evento..."
+                  variant="standard"
+                  value={searchName}
+                  onChange={(e) => dispatch(setSearchName(e.target.value))}
+                  InputProps={{
+                    disableUnderline: true,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                  fullWidth
+                />
+                <TextField
+                  type="date"
+                  variant="standard"
+                  value={searchDate}
+                  onChange={(e) => dispatch(setSearchDate(e.target.value))}
+                  InputProps={{ disableUnderline: true }}
+                  fullWidth
+                />
+                <Button
+                  onClick={handleSearch}
+                  variant="contained"
+                  sx={{
+                    backgroundColor: Colors.azul,
+                    color: 'white',
+                    "&:hover": { backgroundColor: Colors.azul },
+                  }}
+                  fullWidth
+                >
+                  Buscar
+                </Button>
+              </Box>
+            </Box>
+          </Collapse>
+        </>
+      );
+    }
+
+    return (
+      <Box
+        sx={{
+          display: { xs: 'none', md: 'flex' },
+          alignItems: "center",
+          backgroundColor: "white",
+          borderRadius: "20px",
+          padding: "0 10px",
+          marginRight: "10px",
+          flexShrink: 0,
+        }}
+      >
+        <TextField
+          placeholder="Buscar evento..."
+          variant="standard"
+          value={searchName}
+          onChange={(e) => dispatch(setSearchName(e.target.value))}
+          InputProps={{
+            disableUnderline: true,
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ 
+            width: isTablet ? "150px" : "200px",
+            '& input': {
+              fontSize: isTablet ? '0.875rem' : '1rem'
+            }
+          }}
+        />
+        <TextField
+          type="date"
+          variant="standard"
+          value={searchDate}
+          onChange={(e) => dispatch(setSearchDate(e.target.value))}
+          InputProps={{ disableUnderline: true }}
+          sx={{ 
+            width: isTablet ? "110px" : "130px",
+            '& input': {
+              fontSize: isTablet ? '0.875rem' : '1rem'
+            }
+          }}
+        />
+        <Button
+          onClick={handleSearch}
+          sx={{
+            minWidth: "40px",
+            color: Colors.azul,
+            "&:hover": { backgroundColor: "transparent" },
+            fontSize: isTablet ? '0.875rem' : '1rem'
+          }}
+        >
+          Ir
+        </Button>
+      </Box>
+    );
+  };
 
   return (
     <div
       style={{
         backgroundColor: Colors.azul,
         width: "100%",
-        padding: "10px 20px",
+        padding: isSmall ? "8px 12px" : "10px 20px",
         boxSizing: "border-box",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        position: 'relative',
+        minHeight: isSmall ? '56px' : '64px',
       }}
     >
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <IconButton onClick={toggleDrawer(true)} sx={{ color: "white" }}>
+      {/* Logo y menú hamburguesa */}
+      <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+        <IconButton onClick={toggleDrawer(true)} sx={{ color: "white", p: isSmall ? 1 : 1.5 }}>
           <MenuIcon />
         </IconButton>
         <Link to="/" style={{ textDecoration: "none" }}>
           <img
             src={logo}
             alt="Logo"
-            style={{ width: "auto", height: "7vh", marginLeft: 10 }}
+            style={{ 
+              width: "auto", 
+              height: isSmall ? "5vh" : "7vh", 
+              marginLeft: isSmall ? 5 : 10,
+              minHeight: '32px',
+              maxHeight: isSmall ? '40px' : '56px'
+            }}
           />
         </Link>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "140px" }}>
-        {isHomePage && (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: "white",
-              borderRadius: "20px",
-              padding: "0 10px",
-              marginRight: "10px",
-            }}
-          >
-            <TextField
-              placeholder="Buscar evento..."
-              variant="standard"
-              value={searchName}
-              onChange={(e) => dispatch(setSearchName(e.target.value))}
-              InputProps={{
-                disableUnderline: true,
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ width: "200px" }}
-            />
-            <TextField
-              type="date"
-              variant="standard"
-              value={searchDate}
-              onChange={(e) => dispatch(setSearchDate(e.target.value))}
-              InputProps={{ disableUnderline: true }}
-              sx={{ width: "130px" }}
-            />
+      {/* Contenedor central con búsqueda */}
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        flex: 1,
+        justifyContent: isMobile ? 'flex-end' : 'center',
+        gap: isMobile ? "8px" : "20px",
+        marginLeft: isMobile ? 0 : "20px",
+        marginRight: isMobile ? 0 : "20px",
+      }}>
+        {renderSearchBar()}
+      </div>
+
+      {/* Botones de autenticación */}
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: isSmall ? "4px" : "8px",
+        flexShrink: 0
+      }}>
+        {!logueado ? (
+          <>
             <Button
-              onClick={handleSearch}
+              onClick={() => navigate("/login")}
+              variant="contained"
+              size={isSmall ? "small" : "medium"}
               sx={{
-                minWidth: "40px",
+                borderRadius: 15,
                 color: Colors.azul,
-                "&:hover": { backgroundColor: "transparent" },
+                backgroundColor: Colors.naranjaOscuro,
+                fontSize: isSmall ? '0.75rem' : '0.875rem',
+                padding: isSmall ? '4px 12px' : '6px 16px',
+                minWidth: isSmall ? '60px' : 'auto',
               }}
             >
-              Ir
+              Login
             </Button>
-          </Box>
-        )}
-
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {!logueado ? (
-            <>
-              <Button
-                onClick={() => navigate("/login")}
-                variant="contained"
-                sx={{
-                  borderRadius: 15,
-                  color: Colors.azul,
-                  backgroundColor: Colors.naranjaOscuro,
-                  marginX: 1,
-                }}
-              >
-                Login
-              </Button>
-              <Button
-                onClick={() => navigate("/register")}
-                variant="outlined"
-                sx={{
-                  borderRadius: 15,
-                  color: Colors.naranjaOscuro,
-                  borderColor: Colors.naranjaOscuro,
-                  fontWeight: "600",
-                  marginX: 1,
-                }}
-              >
-                Registro
-              </Button>
-            </>
-          ) : (
             <Button
-              onClick={handleLogout}
+              onClick={() => navigate("/register")}
               variant="outlined"
+              size={isSmall ? "small" : "medium"}
               sx={{
                 borderRadius: 15,
                 color: Colors.naranjaOscuro,
                 borderColor: Colors.naranjaOscuro,
                 fontWeight: "600",
-                marginX: 1,
+                fontSize: isSmall ? '0.75rem' : '0.875rem',
+                padding: isSmall ? '4px 12px' : '6px 16px',
+                minWidth: isSmall ? '70px' : 'auto',
               }}
             >
-              Logout
+              {isSmall ? 'Reg.' : 'Registro'}
             </Button>
-          )}
-        </div>
+          </>
+        ) : (
+          <Button
+            onClick={handleLogout}
+            variant="outlined"
+            size={isSmall ? "small" : "medium"}
+            sx={{
+              borderRadius: 15,
+              color: Colors.naranjaOscuro,
+              borderColor: Colors.naranjaOscuro,
+              fontWeight: "600",
+              fontSize: isSmall ? '0.75rem' : '0.875rem',
+              padding: isSmall ? '4px 12px' : '6px 16px',
+              minWidth: isSmall ? '60px' : 'auto',
+            }}
+          >
+            Logout
+          </Button>
+        )}
       </div>
 
-      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-        <List sx={{ width: 250, paddingTop: 2 }}>
+      {/* Drawer lateral */}
+      <Drawer 
+        anchor="left" 
+        open={drawerOpen} 
+        onClose={toggleDrawer(false)}
+        PaperProps={{
+          sx: {
+            width: isSmall ? '280px' : '300px',
+            maxWidth: '85vw'
+          }
+        }}
+      >
+        <List sx={{ width: '100%', paddingTop: 2 }}>
           <ListItem>
-            <Typography variant="h6">
+            <Typography variant={isSmall ? "subtitle1" : "h6"} sx={{ 
+              wordBreak: 'break-word',
+              fontSize: isSmall ? '1rem' : '1.25rem'
+            }}>
               {logueado ? `${fullName} - ${role}` : "Menú"}
             </Typography>
           </ListItem>
@@ -248,22 +394,25 @@ const HeaderPerfil = () => {
             <ListItem button onClick={() => handleNavigate("/admin-dashboard")}>
               <ListItemText primary="Dashboard" />
             </ListItem>
-          )}{role === "Prestador" && (
-            <ListItem
-              button
-              onClick={() => handleNavigate("/provider-summary")}
-            >
-              <ListItemText primary="Métricas" />
-            </ListItem>
           )}
+          
           {role === "Prestador" && (
-            <ListItem
-              button
-              onClick={() => handleNavigate("/provider-dashboard")}
-            >
-              <ListItemText primary="Dashboard" />
-            </ListItem>
+            <>
+              <ListItem
+                button
+                onClick={() => handleNavigate("/provider-summary")}
+              >
+                <ListItemText primary="Estadísticas" />
+              </ListItem>
+              <ListItem
+                button
+                onClick={() => handleNavigate("/provider-dashboard")}
+              >
+                <ListItemText primary="Panel de Gestión" />
+              </ListItem>
+            </>
           )}
+          
           {role === "User" && (
             <>
               <ListItem button onClick={toggleActividad}>
@@ -287,9 +436,10 @@ const HeaderPerfil = () => {
                     <ListItemText primary="Mis Reseñas" />
                   </ListItem>
                 </List>
-              </Collapse>{" "}
+              </Collapse>
             </>
           )}
+          
           {logueado && (
             <>
               <ListItem button onClick={toggleOpciones}>
@@ -334,6 +484,7 @@ const HeaderPerfil = () => {
               </Collapse>
             </>
           )}
+          
           <ListItem button onClick={() => handleNavigate("/about-us")}>
             <ListItemText primary="Nosotros" />
           </ListItem>

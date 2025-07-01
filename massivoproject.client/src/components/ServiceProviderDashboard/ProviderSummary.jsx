@@ -463,7 +463,7 @@ const loadDashboardData = async () => {
                   },
                 }}
               >
-                Dashboard - Prestador
+                Estadísticas - Prestador
               </Typography>
               <IconButton 
                 onClick={handleRefresh} 
