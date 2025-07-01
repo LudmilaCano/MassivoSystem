@@ -28,14 +28,15 @@ namespace Application.Models.Responses
                 Date = bookingEntity.Date,
                 BookingStatus = bookingEntity.BookingStatus,
                 SeatNumber = bookingEntity.SeatNumber,
-                Event = new()
-                {
-                    EventId = eventEntity.EventId,
-                    Location = eventEntity.Location?.Name,
-                    Name = eventEntity.Name,
-                    Type = eventEntity.Type,
-                    EventDate = eventEntity.EventDate
-                },
+                //Event = new()
+                //{
+                //    EventId = eventEntity.EventId,
+                //    Location = eventEntity.Location?.Name,
+                //    Name = eventEntity.Name,
+                //    Type = eventEntity.Type,
+                //    EventDate = eventEntity.EventDate
+                //}
+                Event = EventDto.Create(eventEntity),
                 Vehicle = new()
                 {
                     LicensePlate = vehicle.LicensePlate,

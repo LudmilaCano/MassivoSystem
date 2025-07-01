@@ -33,6 +33,7 @@ import Instructive from "./components/Instructive.jsx";
 import ReviewList from "./components/ReviewList.jsx";
 import ReviewListByUser from "./components/ReviewListByUser.jsx";
 import ChangePassword from "./components/ChangePassword.jsx";
+import ProviderSummary from "./components/ServiceProviderDashboard/ProviderSummary.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -196,6 +197,16 @@ function App() {
         <ProtectedRoute allowedRoles={["Prestador", "Admin"]}>
           <MainLayout>
             <ProviderDashboard />
+          </MainLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/provider-summary",
+      element: (
+        <ProtectedRoute allowedRoles={["Prestador"]}>
+          <MainLayout>
+            <ProviderSummary />
           </MainLayout>
         </ProtectedRoute>
       ),

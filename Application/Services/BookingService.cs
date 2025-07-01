@@ -331,6 +331,7 @@ namespace Application.Services
             // Se libera los espacio del vehiculo
             //vehicle.Available -= booking.SeatNumber;
             eventVehicle.Capacity += booking.SeatNumber;
+            eventVehicle.Occupation -= booking.SeatNumber;
             await _vehicleRepository.UpdateAsync(vehicle);
 
             // Se realiza el reembolso del pago

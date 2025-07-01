@@ -248,6 +248,13 @@ const HeaderPerfil = () => {
             <ListItem button onClick={() => handleNavigate("/admin-dashboard")}>
               <ListItemText primary="Dashboard" />
             </ListItem>
+          )}{role === "Prestador" && (
+            <ListItem
+              button
+              onClick={() => handleNavigate("/provider-summary")}
+            >
+              <ListItemText primary="Métricas" />
+            </ListItem>
           )}
           {role === "Prestador" && (
             <ListItem
