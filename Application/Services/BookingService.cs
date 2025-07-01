@@ -22,6 +22,7 @@ namespace Application.Services
         private readonly IEventRepository _eventRepository;
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IPaymentRepository _paymentRepository;
+        private readonly IEventVehicleRepository _eventVehicleRepository;
 
         private readonly IPaymentService _paymentService;
         private readonly IUserRepository _userRepository;
@@ -29,7 +30,7 @@ namespace Application.Services
         private readonly IEmailService _emailService;
         private readonly IStripeService _stripeService;
 
-        public BookingService(INotificationService notificationService,IUserRepository userRepository, IPaymentService paymentService, IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository, IEmailService emailService, IStripeService stripeService)
+        public BookingService(INotificationService notificationService, IUserRepository userRepository, IPaymentService paymentService, IBookingRepository bookingRepository, IEventRepository eventRepository, IVehicleRepository vehicleRepository, IPaymentRepository paymentRepository, IEmailService emailService, IStripeService stripeService, IEventVehicleRepository eventVehicleRepository)
 
         {
             _bookingRepository = bookingRepository;
@@ -41,6 +42,7 @@ namespace Application.Services
             _notificationService = notificationService;
             _emailService = emailService;
             _stripeService = stripeService;
+            _eventVehicleRepository = eventVehicleRepository;
         }
 
         public async Task<List<BookingDto>> GetBookingsAsync()
@@ -117,7 +119,7 @@ namespace Application.Services
                 throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago");
 
             //if (string.IsNullOrEmpty(ownerUser.MercadoPagoAccessToken)) 
-                //throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago");
+            //throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago");
 
             Payment payment;
 
@@ -127,7 +129,7 @@ namespace Application.Services
                     throw new InvalidOperationException("El usuario dueño del vehículo no tiene configurado MercadoPago.");
 
                 string paymentUrl = await _paymentService.CrearPreferenciaPagoAsync(
-                accessToken: ownerUser.MercadoPagoAccessToken, 
+                accessToken: ownerUser.MercadoPagoAccessToken,
                 title: $"Reserva para {eventEntity.Name}",
                 amount: (decimal)addBookingRequest.Payment.Amount,
                 externalReference: Guid.NewGuid().ToString(),
@@ -203,7 +205,7 @@ namespace Application.Services
             //vehicle.Available += booking.SeatNumber;
             eventVehicle.Capacity -= booking.SeatNumber;
             eventVehicle.Occupation += booking.SeatNumber;
-            await _vehicleRepository.UpdateAsync(vehicle);
+            await _eventVehicleRepository.UpdateAsync(eventVehicle);
 
             bookingSaved.Payment = paymentSaved;
 
@@ -235,7 +237,7 @@ namespace Application.Services
                     _ = Task.Run(async () =>
                     {
                         await Task.Delay(15000);
-                        await _emailService.SendEmailAsync( user.Email,
+                        await _emailService.SendEmailAsync(user.Email,
                             "🎟 Confirmación de tu reserva en Massivo App",
                             $@"
                             <p>¡Hola {user.FirstName}!</p>
@@ -332,7 +334,8 @@ namespace Application.Services
             //vehicle.Available -= booking.SeatNumber;
             eventVehicle.Capacity += booking.SeatNumber;
             eventVehicle.Occupation -= booking.SeatNumber;
-            await _vehicleRepository.UpdateAsync(vehicle);
+
+            await _eventVehicleRepository.UpdateAsync(eventVehicle);
 
             // Se realiza el reembolso del pago
             payment.PaymentStatus = PaymentStatus.Refunded;
