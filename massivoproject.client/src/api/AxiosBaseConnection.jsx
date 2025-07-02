@@ -72,13 +72,28 @@ api.interceptors.response.use(
                     text: 'No tenés permisos para acceder a este recurso.'
                 });
                 break;
-            case 404:
-                Swal.fire({
-                    icon: 'error',
-                    title: 'No encontrado',
-                    text: 'Recurso no encontrado.'
-                });
+            case 404: {
+                const knownHandledUrls = [
+                    "/EventVehicle/",
+                    "/Event/",
+                    "/Booking/",
+                ];
+
+                const isKnownDetailRoute = knownHandledUrls.some(fragment =>
+                    response.config.url.includes(fragment)
+                );
+
+                if (isKnownDetailRoute) {
+                    window.location.href = "/notfound";
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No encontrado',
+                        text: 'Recurso no encontrado.'
+                    });
+                }
                 break;
+            }
             case 408:
                 Swal.fire({
                     icon: 'error',

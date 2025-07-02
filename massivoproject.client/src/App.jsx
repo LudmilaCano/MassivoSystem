@@ -56,6 +56,9 @@ function App() {
                         <Route path="/" element={<MainLayout><Home /></MainLayout>} />
                         <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
                         <Route path="/register" element={<MainLayout><Register /></MainLayout>} />
+                        <Route path="/forgot-password" element={<MainLayout><ForgotPassword /></MainLayout>} />
+                        <Route path="/reset-password" element={<MainLayout><ResetPasswordWithCode /></MainLayout>} />
+                        <Route path="/activate-account" element={<MainLayout><ActivateAccount /></MainLayout>} />
                         <Route
                             path="/profile"
                             element={
@@ -98,10 +101,6 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
-                        <Route path="/forgot-password" element={<MainLayout><ForgotPassword /></MainLayout>} />
-                        <Route path="/reset-password" element={<MainLayout><ResetPasswordWithCode /></MainLayout>} />
-                        <Route path="/change-password" element={<MainLayout><ChangePassword /></MainLayout>} />
-                        <Route path="/activate-account" element={<MainLayout><ActivateAccount /></MainLayout>} />
                         <Route path="/about-us" element={<MainLayout><AboutUs /></MainLayout>} />
                         <Route
                             path="/admin-dashboard"
@@ -125,6 +124,8 @@ function App() {
                         <Route path="/booking/:bookingId" element={<MainLayout><BookingDetail /></MainLayout>} />
                         <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
                         <Route path="/instructivo" element={<MainLayout><Instructive /></MainLayout>} />
+                        <Route path="/change-password" element={<MainLayout><ChangePassword /></MainLayout>} />
+                        <Route path="/notfound" element={<MainLayout><NotFound /></MainLayout>} />
                         <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
                     </Routes>
                 </div>

@@ -59,6 +59,9 @@ const VehicleList = () => {
             }
             setLoadingEvent(false);
         };
+        if (!(/^\d+$/.test(eventId ?? ""))) {
+            navigate('/not-found');
+        }
         fetchEvent();
     }, [eventId]);
 
@@ -101,7 +104,10 @@ const VehicleList = () => {
                 setFilteredVehicles([]);
             }
         };
-        if (eventId) fetchVehicles();
+        if (!(/^\d+$/.test(eventId ?? ""))) {
+            navigate('/not-found');
+        }
+        fetchVehicles();
     }, [eventId]);
 
     const handleSelectVehicle = (vehicleId) => {
@@ -369,7 +375,7 @@ const VehicleList = () => {
             }}>
                 {currentItems.length !== 0 ? (
                     currentItems.map((item, index) => {
-                        const lugaresDisponibles = item.capacity - item.occupation;
+                        const lugaresDisponibles = item.vehicle.capacity - item.occupation;
 
                         return (
                             <Paper
@@ -427,7 +433,7 @@ const VehicleList = () => {
                                         </Typography>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
                                             <Typography variant="body2" color="text.secondary">
-                                                👥 {item.capacity} personas máximo
+                                                👥 {item.vehicle.capacity} personas máximo
                                             </Typography>
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>

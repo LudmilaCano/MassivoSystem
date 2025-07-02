@@ -20,7 +20,7 @@ const ProviderDashboard = () => {
         <Grid item xs={12}>
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h4" gutterBottom component="div" sx={{ color: Colors.azul }}>
-              Panel de Proveedor
+              Panel de Gestión - Proveedor
             </Typography>
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
               <Tabs 
