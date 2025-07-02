@@ -7,6 +7,8 @@ import {
 } from '@mui/material';
 import { adminUpdateVehicle, toggleVehicleStatus } from '../../api/VehicleEndpoints';
 import Swal from 'sweetalert2';
+import { uploadFile } from '../../api/FileEndpoints'
+
 
 const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAlert }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -74,59 +76,45 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
         showErrorAlert(`Error al actualizar vehículo: ${error.message}`);
       }
     }; */
-  const handleSaveVehicle = async () => {
-    if (!validateForm()) {
-      showErrorAlert("Por favor complete todos los campos obligatorios");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      let imageUrl = selectedVehicle.imagePath;
-
-      // Si hay un archivo seleccionado, súbelo primero
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-
-        const response = await fetch('https://localhost:7089/api/File/upload/vehicle', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al subir la imagen');
+    const handleSaveVehicle = async () => {
+        if (!validateForm()) {
+            showErrorAlert("Por favor complete todos los campos obligatorios");
+            return;
         }
 
-        const data = await response.json();
-        imageUrl = data.url;
-      }
+        try {
+            setLoading(true);
 
-      // Crear objeto con todos los datos, incluyendo la URL de la imagen
-      const vehicleData = {
-        licensePlate: selectedVehicle.licensePlate,
-        name: selectedVehicle.name,
-        description: selectedVehicle.description,
-        capacity: parseInt(selectedVehicle.capacity),
-        type: parseInt(selectedVehicle.type),
-        driverName: selectedVehicle.driverName,
-        yearModel: parseInt(selectedVehicle.yearModel),
-        imagePath: imageUrl
-      };
+            let imageUrl = selectedVehicle.imagePath;
 
-      await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
-      showSuccessAlert("Vehículo actualizado correctamente");
-      onRefresh();
-      handleCloseDialog();
-      setSelectedFile(null);
-    } catch (error) {
-      console.error("Error updating vehicle:", error);
-      showErrorAlert(`Error al actualizar vehículo: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+            if (selectedFile) {
+                const { url } = await uploadFile(selectedFile, 'vehicle'); 
+                imageUrl = url;
+            }
+
+            const vehicleData = {
+                licensePlate: selectedVehicle.licensePlate,
+                name: selectedVehicle.name,
+                description: selectedVehicle.description,
+                capacity: parseInt(selectedVehicle.capacity),
+                type: parseInt(selectedVehicle.type),
+                driverName: selectedVehicle.driverName,
+                yearModel: parseInt(selectedVehicle.yearModel),
+                imagePath: imageUrl
+            };
+
+            await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
+            showSuccessAlert("Vehículo actualizado correctamente");
+            onRefresh();
+            handleCloseDialog();
+            setSelectedFile(null);
+        } catch (error) {
+            console.error("Error updating vehicle:", error);
+            showErrorAlert(`Error al actualizar vehículo: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
 
   const handleViewVehicleDetails = (vehicle) => {
     const content = `

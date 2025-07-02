@@ -12,6 +12,8 @@ import Colors from '../../layout/Colors';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EventIcon from '@mui/icons-material/Event';
 import useProvinceCitySelector from '../../hooks/useProvinceCitySelector';
+import { uploadFile } from '../../api/FileEndpoints'
+
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -114,17 +116,17 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
             showAlert("Por favor complete todos los campos obligatorios", "error");
             return;
         }
+
         try {
             setLoading(true);
+
             let profileImageUrl = null;
+
             if (userSelectedFile) {
-                const formData = new FormData();
-                formData.append('file', userSelectedFile);
-                const response = await fetch('https://localhost:7089/api/File/upload/user', { method: 'POST', body: formData });
-                if (!response.ok) throw new Error('Error al subir la imagen');
-                const data = await response.json();
-                profileImageUrl = data.url;
+                const { url } = await uploadFile(userSelectedFile, 'user'); 
+                profileImageUrl = url;
             }
+
             const userData = {
                 firstName: userForm.firstName,
                 lastName: userForm.lastName,
@@ -136,9 +138,12 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                 province: parseInt(userForm.provinceId),
                 profileImage: profileImageUrl
             };
+
             await createUser(userData);
+
             showAlert("Usuario creado correctamente", "success");
             onSuccess();
+
             setUserForm({
                 firstName: '',
                 lastName: '',
@@ -151,6 +156,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                 provinceId: '',
                 role: 'Customer'
             });
+
             userProvinceCity.handleProvinceChange('');
             onClose();
         } catch (error) {

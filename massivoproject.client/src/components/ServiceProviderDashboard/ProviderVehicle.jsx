@@ -9,6 +9,7 @@ import { getVehiclesByUserId } from '../../api/VehicleEndpoints';
 import { adminUpdateVehicle } from '../../api/VehicleEndpoints';
 import Swal from 'sweetalert2';
 import useSwalAlert from '../../hooks/useSwalAlert';
+import { uploadFile } from '../../api/FileEndpoints'
 
 const ProviderVehicle = ({ userId }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -68,54 +69,41 @@ const ProviderVehicle = ({ userId }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSaveVehicle = async () => {
-    if (!validateForm()) {
-      showAlert("Por favor complete todos los campos obligatorios", "error");
-      return;
-    }
-
-    try {
-      let imageUrl = selectedVehicle.image;
-
-      // Si hay un archivo seleccionado, súbelo primero
-      if (vehicleSelectedFile) {
-        const formData = new FormData();
-        formData.append('file', vehicleSelectedFile);
-
-        const response = await fetch('https://localhost:7089/api/File/upload/vehicle', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al subir la imagen');
+    const handleSaveVehicle = async () => {
+        if (!validateForm()) {
+            showAlert("Por favor complete todos los campos obligatorios", "error");
+            return;
         }
 
-        const data = await response.json();
-        imageUrl = data.url;
-      }
-      // Crear objeto con la estructura esperada por el backend
-      const vehicleData = {
-        licensePlate: selectedVehicle.licensePlate,
-        name: selectedVehicle.name,
-        description: selectedVehicle.description,
-        capacity: parseInt(selectedVehicle.capacity),
-        type: parseInt(selectedVehicle.type),
-        driverName: selectedVehicle.driverName,
-        yearModel: parseInt(selectedVehicle.yearModel),
-        imagePath: imageUrl
-      };
+        try {
+            let imageUrl = selectedVehicle.image;
 
-      await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
-      //showSuccessAlert("Vehículo actualizado correctamente");
-      showAlert("Vehículo actualizado correctamente", "success");
-      fetchVehicles(); // Refrescar la lista de vehículos
-      handleCloseDialog();
-    } catch (error) {
-      console.error("Error updating vehicle:", error);
-      showAlert(`Error al actualizar vehículo: ${error.message}`, "error");
-    }
-  };
+            if (vehicleSelectedFile) {
+                const { url } = await uploadFile(vehicleSelectedFile, 'vehicle');
+                imageUrl = url;
+            }
+
+            const vehicleData = {
+                licensePlate: selectedVehicle.licensePlate,
+                name: selectedVehicle.name,
+                description: selectedVehicle.description,
+                capacity: parseInt(selectedVehicle.capacity),
+                type: parseInt(selectedVehicle.type),
+                driverName: selectedVehicle.driverName,
+                yearModel: parseInt(selectedVehicle.yearModel),
+                imagePath: imageUrl
+            };
+
+            await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
+
+            showAlert("Vehículo actualizado correctamente", "success");
+            fetchVehicles();
+            handleCloseDialog();
+        } catch (error) {
+            console.error("Error updating vehicle:", error);
+            showAlert(`Error al actualizar vehículo: ${error.message}`, "error");
+        }
+    };
 
   const handleViewVehicleDetails = (vehicle) => {
     const content = `

@@ -23,6 +23,7 @@ import {
   VEHICLE_TYPE_LABELS,
 } from "../constants/vehicleType";
 import { useSelector } from "react-redux";
+import { uploadFile } from "../api/FileEndpoints";
 
 const AddVehicle = () => {
   const userId = useSelector((state) => state.auth.userId);
@@ -110,66 +111,57 @@ const AddVehicle = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
-    console.log("formdata: ", formData);
+    const handleSubmit = async () => {
+        console.log("formdata: ", formData);
 
-    if (validateForm()) {
-      try {
-        let imageUrl = null;
+        if (validateForm()) {
+            try {
+                let imageUrl = null;
 
-        // Si hay un archivo seleccionado, súbelo primero
-        if (vehicleSelectedFile) {
-          const formData = new FormData();
-          formData.append('file', vehicleSelectedFile);
+                if (vehicleSelectedFile) {
+                    const { url } = await uploadFile(vehicleSelectedFile, 'vehicle'); 
+                    imageUrl = url;
+                }
 
-          const response = await fetch('https://localhost:7089/api/File/upload/vehicle', {
-            method: 'POST',
-            body: formData
-          });
+                console.log("imageUrl: ", imageUrl);
 
-          if (!response.ok) {
-            throw new Error('Error al subir la imagen');
-          }
+                const payload = {
+                    userId: Number(userId),
+                    licensePlate: formData.licensePlate,
+                    name: formData.name,
+                    description: formData.description,
+                    imagePath: imageUrl || "https://picsum.photos/200/300", 
+                    driverName: formData.driverName,
+                    capacity: Number(formData.capacity),
+                    yearModel: Number(formData.yearModel),
+                    type: Number(formData.type),
+                };
 
-          const data = await response.json();
-          imageUrl = data.url;
+                console.log("payload content: ", payload);
+
+                await createVehicle(payload);
+
+                showAlert("El vehículo se registró correctamente!", "success");
+
+                setFormData({
+                    userId: null,
+                    licensePlate: "",
+                    name: "",
+                    description: "",
+                    imagePath: "",
+                    driverName: "",
+                    capacity: "",
+                    yearModel: "",
+                    type: "",
+                });
+
+                navigate("/");
+            } catch (err) {
+                console.error("Error: ", err.message);
+                showAlert("Algo salió mal...no se puede registrar el vehículo, intentalo más tarde!", "warning");
+            }
         }
-        console.log("imageUrl: ", imageUrl);
-        const payload = {
-          userId: Number(userId),
-          licensePlate: formData.licensePlate,
-          name: formData.name,
-          description: formData.description,
-          imagePath: imageUrl || "https://picsum.photos/200/300",
-          driverName: formData.driverName,
-          capacity: Number(formData.capacity),
-          yearModel: Number(formData.yearModel),
-          type: Number(formData.type),
-        };
-        console.log("payload content: ", payload);
-        await createVehicle(payload);
-        showAlert(
-          "El vehículo se registró correctamente!",
-          "success"
-        );
-        setFormData({
-          userId: null,
-          licensePlate: "",
-          name: "",
-          description: "",
-          imagePath: "",
-          driverName: "",
-          capacity: "",
-          yearModel: "",
-          type: "",
-        });
-        navigate("/");
-      } catch (err) {
-        console.error("Error: ", err.message);
-        showAlert("Algo salió mal...no se puede registrar el vehículo, intentalo más tarde!", "warning");
-      }
-    }
-  };
+    };
 
   return (
     <div
