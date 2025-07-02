@@ -2,14 +2,22 @@ import { useState } from "react";
 import { Box, TextField, Button, Typography, Paper, Grid } from "@mui/material";
 import Colors from "../layout/Colors";
 import Logo2 from "../images/logo2.png";
+import changepass from "../images/ChangePassword.png"
 import useSwalAlert from "../hooks/useSwalAlert";
-import { ChangePasswordService } from "../api/AuthenticationEndPoints"; // Lo vas a crear
+import { ChangePasswordService } from "../api/AuthenticationEndPoints";
+import { IconButton, InputAdornment } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const ChangePassword = () => {
   const { showAlert } = useSwalAlert();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +60,7 @@ const ChangePassword = () => {
           xs={false}
           md={5}
           sx={{
-            backgroundImage: `url(${Logo2})`,
+            backgroundImage: `url(${changepass})`,
             backgroundRepeat: "no-repeat",
             backgroundSize: "contain",
             backgroundPosition: "center",
@@ -96,35 +104,61 @@ const ChangePassword = () => {
             >
               <TextField
                 label="Contraseña Actual"
-                type="password"
+                type={showCurrentPassword ? "text" : "password"}
                 size="small"
                 fullWidth
                 sx={textFieldStyle}
                 required
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
+                InputProps={{
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)} edge="end">
+          {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+        </IconButton>
+      </InputAdornment>
+    ),
+  }}
               />
               <TextField
                 label="Nueva Contraseña"
-                type="password"
+                type={showNewPassword ? "text" : "password"}
                 size="small"
                 fullWidth
                 sx={textFieldStyle}
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-              />
+              InputProps={{
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
+          {showNewPassword ? <VisibilityOff /> : <Visibility />}
+        </IconButton>
+      </InputAdornment>
+    ),
+  }}
+/>
               <TextField
                 label="Confirmar Nueva Contraseña"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 size="small"
                 fullWidth
                 sx={textFieldStyle}
                 required
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
-              />
-
+              InputProps={{
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+        </IconButton>
+      </InputAdornment>
+    ),
+  }}
+/>
               <Button
                 variant="contained"
                 type="submit"

@@ -7,6 +7,8 @@ import {
   Paper,
   Grid,
 } from "@mui/material";
+import { IconButton, InputAdornment } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Colors from "../layout/Colors";
 import Logo2 from "../images/logo2.png";
 import loginIllustration from "../images/register.svg";
@@ -18,6 +20,10 @@ const ResetPasswordWithCode = () => {
   const [email, setEmail] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showRecoveryCode, setShowRecoveryCode] = useState(false);
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -108,25 +114,45 @@ const ResetPasswordWithCode = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <TextField
-                label="Clave Provisoria"
-                type="text"
-                size="small"
-                fullWidth
-                sx={textFieldStyle}
-                required
-                value={recoveryCode}
-                onChange={(e) => setRecoveryCode(e.target.value)}
-              />
+  label="Clave Provisoria"
+  type={showRecoveryCode ? "text" : "password"}
+  size="small"
+  fullWidth
+  sx={textFieldStyle}
+  required
+  value={recoveryCode}
+  onChange={(e) => setRecoveryCode(e.target.value)}
+  InputProps={{
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton onClick={() => setShowRecoveryCode(!showRecoveryCode)} edge="end">
+          {showRecoveryCode ? <VisibilityOff /> : <Visibility />}
+        </IconButton>
+      </InputAdornment>
+    ),
+  }}
+/>
+
               <TextField
-                label="Nueva Contraseña"
-                type="password"
-                size="small"
-                fullWidth
-                sx={textFieldStyle}
-                required
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+  label="Nueva Contraseña"
+  type={showNewPassword ? "text" : "password"}
+  size="small"
+  fullWidth
+  sx={textFieldStyle}
+  required
+  value={newPassword}
+  onChange={(e) => setNewPassword(e.target.value)}
+  InputProps={{
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
+          {showNewPassword ? <VisibilityOff /> : <Visibility />}
+        </IconButton>
+      </InputAdornment>
+    ),
+  }}
+/>
+
 
               <Button
                 variant="contained"
