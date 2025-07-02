@@ -34,20 +34,17 @@ export const { setSearchName, setSearchDate, setShowInNavbar, setEvents, resetSe
 
 // Thunk para filtrar eventos
 export const filterEventsThunk = () => async (dispatch, getState) => {
-  const { searchName, searchDate } = getState().search;
-  
-  try {
-    const response = await fetch(`https://localhost:7089/api/Event/filter?name=${searchName}&date=${searchDate}`);
-    if (!response.ok) {
-      throw new Error('Error filtrando eventos');
+    const { filterEvents } = await import('../api/EventEndpoints');
+    const { searchName, searchDate } = getState().search;
+    try {
+        const data = await filterEvents(searchName, searchDate);
+        dispatch(setEvents(data));
+        return data;
+    } catch (error) {
+        console.error('Error filtrando eventos:', error);
+        return [];
     }
-    const data = await response.json();
-    dispatch(setEvents(data));
-    return data;
-  } catch (error) {
-    console.error('Error filtrando eventos:', error);
-    return [];
-  }
 };
+
 
 export default searchSlice.reducer;

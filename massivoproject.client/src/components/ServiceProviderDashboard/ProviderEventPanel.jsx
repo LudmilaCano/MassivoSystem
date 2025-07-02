@@ -14,6 +14,7 @@ import Swal from 'sweetalert2';
 import useSwalAlert from '../../hooks/useSwalAlert';
 import { getAllProvince } from '../../api/ProvinceEndpoints';
 import { getCitiesByProvince } from '../../api/CityEndpoints';
+import { uploadFile } from '../../api/FileEndpoints'
 
 const ProviderEventPanel = ({ userId }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -215,54 +216,41 @@ const ProviderEventPanel = ({ userId }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSaveEvent = async () => {
-    if (!validateForm()) {
-      showAlert("Por favor complete todos los campos obligatorios", "error");
-      return;
-    }
-
-    try {
-      let imageUrl = selectedEvent.image;
-
-      // Si hay un archivo seleccionado, súbelo primero
-      if (eventSelectedFile) {
-        const formData = new FormData();
-        formData.append('file', eventSelectedFile);
-
-        const response = await fetch('https://localhost:7089/api/File/upload/event', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al subir la imagen');
+    const handleSaveEvent = async () => {
+        if (!validateForm()) {
+            showAlert("Por favor complete todos los campos obligatorios", "error");
+            return;
         }
 
-        const data = await response.json();
-        imageUrl = data.url;
-      }
-      const eventData = {
-        eventId: selectedEvent.eventId,
-        name: selectedEvent.name,
-        description: selectedEvent.description,
-        eventDate: selectedEvent.eventDate,
-        type: parseInt(selectedEvent.type),
-        image: imageUrl,
-        locationId: selectedEvent.locationId,
-        userId: selectedEvent.userId
-      };
+        try {
+            let imageUrl = selectedEvent.image;
 
-      await adminUpdateEvent(selectedEvent.eventId, eventData);
-      showAlert("Evento actualizado correctamente", "success");
+            if (eventSelectedFile) {
+                const { url } = await uploadFile(eventSelectedFile, 'event');
+                imageUrl = url;
+            }
 
-      fetchEvents();
-      handleCloseDialog();
-    } catch (error) {
-      console.error("Error updating event:", error);
-      showAlert("Error al actualizar el evento", "error");
-    }
-  };
+            const eventData = {
+                eventId: selectedEvent.eventId,
+                name: selectedEvent.name,
+                description: selectedEvent.description,
+                eventDate: selectedEvent.eventDate,
+                type: parseInt(selectedEvent.type),
+                image: imageUrl,
+                locationId: selectedEvent.locationId,
+                userId: selectedEvent.userId
+            };
 
+            await adminUpdateEvent(selectedEvent.eventId, eventData);
+            showAlert("Evento actualizado correctamente", "success");
+
+            fetchEvents(); 
+            handleCloseDialog(); 
+        } catch (error) {
+            console.error("Error updating event:", error);
+            showAlert("Error al actualizar el evento", "error");
+        }
+    };
   const handleViewEventDetails = (event) => {
     const content = `
       <div>
