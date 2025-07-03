@@ -56,6 +56,7 @@ const CustomerProfile = () => {
     const { userId } = useSelector((state) => state.auth);
     const [userData, setUserData] = useState(null);
     const [editData, setEditData] = useState({});
+    const [dataStart, setDataStart] = useState({});
     const [profilePic, setProfilePic] = useState(null);
     const [open, setOpen] = useState(false);
     const [guardado, setGuardado] = useState(false);
@@ -64,6 +65,7 @@ const CustomerProfile = () => {
     const { handleChangeRol } = useChangeRol(setUserData);
     const userIdFromState = useSelector((state) => state.auth.userId);
     const [selectedFile, setSelectedFile] = useState(null);
+
 
     const {
         provinces,
@@ -103,6 +105,22 @@ const CustomerProfile = () => {
                 });
 
                 console.log("Datos del usuario:", data);
+
+                setDataStart({
+                    userId: data.userId,
+                    firstName: data.firstName || "",
+                    lastName: data.lastName || "",
+                    email: data.email || "",
+                    dniNumber: data.identificationNumber || "",
+                    profilePic: data.profilePic || "",
+                    password: "",
+                    birthDate: data.birthDate || "",
+                    phone: data.phone || "",
+                    province: data.provinceId,
+                    city: data.cityId,
+                    role: data.role || "User",
+                    isActive: data.isActive ?? 1,
+                });
 
                 setEditData({
                     userId: data.userId,
@@ -204,6 +222,8 @@ const CustomerProfile = () => {
             showAlert("¡Datos guardados correctamente!", "success");
             navigate("/");
         } catch (error) {
+            setOpen(false);
+            setEditData(dataStart);
             showAlert("Error al guardar los datos", "error");
             if (error.response) {
                 console.error("Error al actualizar usuario:", error.response.data);
@@ -231,6 +251,7 @@ const CustomerProfile = () => {
     };
 
     if (!userData) return <div>Cargando datos del perfil...</div>;
+
 
     return (
         <div
@@ -408,6 +429,7 @@ const CustomerProfile = () => {
                                         if (file) {
                                             const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
                                             if (!validTypes.includes(file.type)) {
+                                                setOpen(false);
                                                 showAlert("Formato de imagen no válido. Usa JPG, PNG o WEBP.", "error");
                                                 setSelectedFile(null);
                                                 return;
