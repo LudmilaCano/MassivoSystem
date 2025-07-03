@@ -133,8 +133,8 @@ namespace Application.Services
                 title: $"Reserva para {eventEntity.Name}",
                 amount: (decimal)addBookingRequest.Payment.Amount,
                 externalReference: Guid.NewGuid().ToString(),
-                successUrl: "https://localhost:5173/booking-list/",
-                failureUrl: "https://localhost:5173/booking-list/"
+                successUrl: "https://massivo-ahhgf7drf3hsdrba.canadacentral-01.azurewebsites.net/booking-list/",
+                failureUrl: "https://massivo-ahhgf7drf3hsdrba.canadacentral-01.azurewebsites.net/booking-list/"
             );
 
                 payment = new Payment

@@ -5,7 +5,7 @@ import { showAlert } from '../hooks/AlertHelper';
 // conexion base con Axios
 
 const api = axios.create({
-    baseURL: 'https://localhost:7089/api',
+    baseURL: '/api',
     headers: {
         'Content-Type': 'application/json',
 

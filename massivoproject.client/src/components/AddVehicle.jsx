@@ -15,7 +15,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Colors from "../layout/Colors";
 import loginIllustration from "../images/add-vehicle.svg";
 import Logo2 from "../images/logo2.png";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import useSwalAlert from "../hooks/useSwalAlert";
 import { createVehicle } from "../api/VehicleEndpoints";
 import {

@@ -1,16 +1,19 @@
 ﻿using Stripe;
 using Application.Interfaces;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services
 {
     public class StripeService : IStripeService
     {
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public StripeService(IConfiguration configuration)
+        public StripeService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
             StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
         }
 
@@ -21,7 +24,7 @@ namespace Infrastructure.Services
                 var priceOptions = new PriceCreateOptions
                 {
                     UnitAmount = (long)(amount * 100),
-                    Currency = "ars", 
+                    Currency = "ars",
                     ProductData = new PriceProductDataOptions
                     {
                         Name = description ?? "Reserva de viaje - Massivo App",
@@ -30,7 +33,11 @@ namespace Infrastructure.Services
 
                 var priceService = new PriceService();
                 var price = await priceService.CreateAsync(priceOptions);
-                var url = "https://localhost:5173/booking-list";
+
+                // ✅ CONSTRUIR URL COMPLETA DINÁMICAMENTE
+                var request = _httpContextAccessor.HttpContext?.Request;
+                var baseUrl = $"{request?.Scheme}://{request?.Host}";
+                var successUrl = $"{baseUrl}/booking-list";
 
                 var paymentLinkOptions = new PaymentLinkCreateOptions
                 {
@@ -47,7 +54,7 @@ namespace Infrastructure.Services
                         Type = "redirect",
                         Redirect = new PaymentLinkAfterCompletionRedirectOptions
                         {
-                            Url = url, 
+                            Url = successUrl,
                         },
                     },
                 };
@@ -64,4 +71,3 @@ namespace Infrastructure.Services
         }
     }
 }
-

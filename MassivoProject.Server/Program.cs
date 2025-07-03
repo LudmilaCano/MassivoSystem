@@ -112,6 +112,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IPaymentService, MercadoPagoService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
+builder.Services.AddHttpContextAccessor();
 //builder.Services.AddSingleton<IHashingService, Pbkdf2HashingService>();
 
 // Authentification
@@ -125,7 +126,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("https://localhost:5173") 
+            policy.WithOrigins("https://massivo-ahhgf7drf3hsdrba.canadacentral-01.azurewebsites.net") 
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });

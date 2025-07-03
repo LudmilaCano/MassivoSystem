@@ -17,7 +17,7 @@ import loginIllustration from "../images/register.svg";
 import Logo2 from "../images/logo2.png";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { createUser } from "../api/UserEndpoints";
 
 import useSwalAlert from "../hooks/useSwalAlert";

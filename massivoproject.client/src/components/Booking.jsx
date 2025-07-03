@@ -11,7 +11,7 @@ import {
 import Logo2 from "../images/logo2.png";
 import bookingIllustration from "../images/booking.svg";
 import Colors from "../layout/Colors";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation } from "react-router-dom";
 import useSwalAlert from "../hooks/useSwalAlert";
 import { createBooking } from "../api/BookingEndpoints";
 import Swal from "sweetalert2";

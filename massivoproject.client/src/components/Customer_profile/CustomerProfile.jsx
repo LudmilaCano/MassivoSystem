@@ -25,7 +25,7 @@ import {
     getUserById,
     updateUser,
 } from "../../api/UserEndpoints";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import useSwalAlert from "../../hooks/useSwalAlert";
 import { getVehiclesByUserId } from "../../api/VehicleEndpoints";
 
