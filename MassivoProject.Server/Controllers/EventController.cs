@@ -85,7 +85,7 @@ namespace MassivoProject.Server.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Prestador")]
         [HttpPut("admin/{id}")]
         public async Task<IActionResult> AdminUpdateEvent(int id, [FromBody] AdminEventUpdateRequest request)
         {

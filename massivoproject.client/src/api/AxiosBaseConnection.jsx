@@ -1,16 +1,19 @@
 import axios from 'axios';
 import { store } from '../redux/Store';
 import { logout } from '../redux/AuthSlice'; // revisar
-import Swal from 'sweetalert2';
+import { showAlert } from '../hooks/AlertHelper';
+// conexion base con Axios
 
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: 'https://localhost:7089/api',
     headers: {
         'Content-Type': 'application/json',
+
     }
 });
 
 //se agrega el JWT a cada solicitud para no repetir esto manualmente en todas las solicitudes (Si es que hay un token en el local storage )
+
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
@@ -29,11 +32,7 @@ api.interceptors.response.use(
         const { response } = error;
 
         if (!response) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de conexión',
-                text: 'No se pudo conectar con el servidor.'
-            });
+            showAlert('No se pudo conectar con el servidor.', 'error');
             return Promise.reject(error);
         }
 
@@ -42,41 +41,25 @@ api.interceptors.response.use(
 
         switch (status) {
             case 400:
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: mensaje
-                });
+                showAlert(mensaje, 'error');
                 break;
             case 401:
                 if (response.config.url.includes('/authentication/Authenticate')) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error de autenticación',
-                        text: 'Credenciales inválidas.'
-                    });
+                    showAlert('Credenciales inválidas.', 'error');
                 } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Sesión expirada',
-                        text: 'Por favor, iniciá sesión nuevamente.'
-                    });
+                    showAlert('Sesión expirada. Por favor, iniciá sesión nuevamente.', 'warning');
                     store.dispatch(logout());
                     window.location.href = '/login';
                 }
                 break;
             case 403:
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Acceso denegado',
-                    text: 'No tenés permisos para acceder a este recurso.'
-                });
+                showAlert('No tenés permisos para acceder a este recurso.', 'error');
                 break;
             case 404: {
                 const knownHandledUrls = [
-                    "/EventVehicle/",
-                    "/Event/",
-                    "/Booking/",
+                    "/EventVehicle/", 
+                    "/Event/", 
+                    "/Booking/",      
                 ];
 
                 const isKnownDetailRoute = knownHandledUrls.some(fragment =>
@@ -86,53 +69,30 @@ api.interceptors.response.use(
                 if (isKnownDetailRoute) {
                     window.location.href = "/notfound";
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'No encontrado',
-                        text: 'Recurso no encontrado.'
-                    });
+                    showAlert("Recurso no encontrado.", "error");
                 }
                 break;
             }
             case 408:
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Tiempo agotado',
-                    text: 'Tiempo de espera agotado. Intentalo nuevamente.'
-                });
+                showAlert('Tiempo de espera agotado. Intentalo nuevamente.', 'error');
                 break;
             case 409:
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Conflicto',
-                    text: 'Conflicto en la operación.'
-                });
+                showAlert('Conflicto en la operación.', 'warning');
                 break;
             case 500:
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error del servidor',
-                    text: 'Error interno del servidor.'
-                });
+                showAlert('Error interno del servidor.', 'error');
                 break;
             case 501:
-                Swal.fire({
-                    icon: 'error',
-                    title: 'No implementado',
-                    text: 'Funcionalidad no implementada.'
-                });
+                showAlert('Funcionalidad no implementada.', 'error');
                 break;
             default:
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: mensaje
-                });
+                showAlert(mensaje, 'error');
                 break;
         }
 
         return Promise.reject(error);
     }
 );
+
 
 export default api;

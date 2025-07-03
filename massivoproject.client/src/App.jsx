@@ -9,6 +9,7 @@ import ProtectedRoute from "./ProtectedRoute.jsx";
 import Register from "./components/Register.jsx";
 import Home from "./components/Home.jsx";
 import ProviderDashboard from "./components/ServiceProviderDashboard/ProviderDashboard.jsx";
+import ProviderSummary from "./components/ServiceProviderDashboard/ProviderSummary.jsx";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "./layout/Theme.jsx";
@@ -115,6 +116,14 @@ function App() {
                             element={
                                 <ProtectedRoute allowedRoles={["Prestador", "Admin"]}>
                                     <MainLayout><ProviderDashboard /></MainLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/provider-summary"
+                            element={
+                                <ProtectedRoute allowedRoles={["Prestador"]}>
+                                    <MainLayout><ProviderSummary /></MainLayout>
                                 </ProtectedRoute>
                             }
                         />

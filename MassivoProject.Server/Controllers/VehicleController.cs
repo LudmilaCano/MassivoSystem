@@ -96,7 +96,7 @@ namespace MassivoProject.Server.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Prestador")]
         [HttpPut("admin/{licensePlate}")]
         public async Task<IActionResult> AdminUpdateVehicle(string licensePlate, [FromBody] AdminVehicleUpdateRequest request)
         {

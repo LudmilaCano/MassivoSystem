@@ -114,17 +114,37 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
             showAlert("Por favor complete todos los campos obligatorios", "error");
             return;
         }
+
         try {
             setLoading(true);
+
             let profileImageUrl = null;
+
             if (userSelectedFile) {
-                const formData = new FormData();
-                formData.append('file', userSelectedFile);
-                const response = await fetch('/api/File/upload/user', { method: 'POST', body: formData });
-                if (!response.ok) throw new Error('Error al subir la imagen');
-                const data = await response.json();
-                profileImageUrl = data.url;
+                try {
+                    // Intentar usar la función de endpoints si está disponible
+                    const { uploadFile } = await import('../../api/FileEndpoints');
+                    const { url } = await uploadFile(userSelectedFile, 'user');
+                    profileImageUrl = url;
+                } catch (importError) {
+                    // Fallback al método directo si no se puede importar
+                    const formData = new FormData();
+                    formData.append('file', userSelectedFile);
+
+                    const response = await fetch('/api/File/upload/user', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error al subir la imagen');
+                    }
+
+                    const data = await response.json();
+                    profileImageUrl = data.url;
+                }
             }
+
             const userData = {
                 firstName: userForm.firstName,
                 lastName: userForm.lastName,
@@ -136,9 +156,12 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                 province: parseInt(userForm.provinceId),
                 profileImage: profileImageUrl
             };
+
             await createUser(userData);
+
             showAlert("Usuario creado correctamente", "success");
             onSuccess();
+
             setUserForm({
                 firstName: '',
                 lastName: '',
@@ -151,6 +174,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                 provinceId: '',
                 role: 'Customer'
             });
+
             userProvinceCity.handleProvinceChange('');
             onClose();
         } catch (error) {
@@ -195,23 +219,42 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleCreateEvent = async e => {
+    const handleCreateEvent = async (e) => {
         e.preventDefault();
         if (!validateEventForm()) {
             showAlert("Por favor complete todos los campos obligatorios", "error");
             return;
         }
+
         try {
             setLoading(true);
             let imageUrl = eventForm.image;
+
             if (eventSelectedFile) {
-                const formData = new FormData();
-                formData.append('file', eventSelectedFile);
-                const response = await fetch('/api/File/upload/event', { method: 'POST', body: formData });
-                if (!response.ok) throw new Error('Error al subir la imagen');
-                const data = await response.json();
-                imageUrl = data.url;
+                try {
+                    // Intentar usar la función de endpoints si está disponible
+                    const { uploadFile } = await import('../../api/FileEndpoints');
+                    const { url } = await uploadFile(eventSelectedFile, 'event');
+                    imageUrl = url;
+                } catch (importError) {
+                    // Fallback al método directo si no se puede importar
+                    const formData = new FormData();
+                    formData.append('file', eventSelectedFile);
+
+                    const response = await fetch('/api/File/upload/event', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error al subir la imagen');
+                    }
+
+                    const data = await response.json();
+                    imageUrl = data.url;
+                }
             }
+
             const payload = {
                 userId: auth.userId,
                 locationId: Number(eventForm.locationId),
@@ -221,6 +264,7 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                 type: Number(eventForm.type),
                 image: imageUrl
             };
+
             console.log(auth);
             await createEvent(payload);
             showAlert("Evento creado correctamente", "success");
@@ -536,11 +580,18 @@ const AdminCreatePanel = ({ open, onClose, onSuccess }) => {
                                                 onChange={handleEventInputChange}
                                                 label="Tipo de Evento"
                                             >
-                                                <MenuItem value={0}>Concierto</MenuItem>
-                                                <MenuItem value={1}>Deportivo</MenuItem>
-                                                <MenuItem value={2}>Festival</MenuItem>
-                                                <MenuItem value={3}>Conferencia</MenuItem>
-                                                <MenuItem value={4}>Otro</MenuItem>
+                                                <MenuItem value={0}>Música</MenuItem>
+                                                <MenuItem value={1}>Entretenimiento</MenuItem>
+                                                <MenuItem value={2}>Deporte</MenuItem>
+                                                <MenuItem value={3}>Negocios</MenuItem>
+                                                <MenuItem value={4}>Convención</MenuItem>
+                                                <MenuItem value={5}>Festival</MenuItem>
+                                                <MenuItem value={6}>Gastronomía</MenuItem>
+                                                <MenuItem value={7}>Gaming</MenuItem>
+                                                <MenuItem value={8}>Aire libre</MenuItem>
+                                                <MenuItem value={9}>Bienestar</MenuItem>
+                                                <MenuItem value={10}>Cultural</MenuItem>
+                                                <MenuItem value={11}>Tecnología</MenuItem>
                                             </Select>
                                             {eventErrors.type && <Typography color="error" variant="caption">{eventErrors.type}</Typography>}
                                         </FormControl>
