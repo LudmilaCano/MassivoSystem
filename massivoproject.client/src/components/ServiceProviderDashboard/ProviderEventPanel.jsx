@@ -26,6 +26,7 @@ const ProviderEventPanel = ({ userId }) => {
   const [events, setEvents] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [selectedProvince, setSelectedProvince] = useState(null);
+  const [selectedProvinceName, setSelectedProvinceName] = useState('');
   const [citiesByProvince, setCitiesByProvince] = useState([]);
   const [selectedCity, setSelectedCity] = useState(null);
   const [eventSelectedFile, setEventSelectedFile] = useState(null);
@@ -40,6 +41,7 @@ const ProviderEventPanel = ({ userId }) => {
     try {
       setLoading(true);
       const data = await getEventsByUserId(userId);
+      console.log(data)
       setEvents(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -53,8 +55,7 @@ const ProviderEventPanel = ({ userId }) => {
   const fetchProvinces = async () => {
     try {
       const provincesData = await getAllProvince();
-      // Asegurarse de que provincesData.result sea un array
-      setProvinces(provincesData?.result || []);
+      setProvinces(Array.isArray(provincesData) ? provincesData : []);
     } catch (error) {
       console.error("Error fetching provinces:", error);
       showAlert("Error al cargar las provincias", "error");
@@ -116,42 +117,38 @@ const ProviderEventPanel = ({ userId }) => {
     setErrors({});
 
     try {
-      // Primero, abrir el diálogo para mostrar que está cargando
-      setOpenDialog(true);
+      // 1. Cargar provincias si no están
+      let provinceList = provinces;
+      if (!provinceList || provinceList.length === 0) {
+        const provincesData = await getAllProvince();
+        provinceList = provincesData?.result || [];
+        setProvinces(provinceList);
+      }
 
-      // Si el evento tiene una ciudad, buscar sus detalles
+      // 2. Obtener ciudad y setear provincia seleccionada
+      let provinceIdToSelect = '';
       if (event.locationId) {
-        // Obtener detalles de la ciudad
         const cityData = await getCityById(event.locationId);
-        console.log("Ciudad obtenida:", cityData);
+        setSelectedCity(cityData);
 
-        if (cityData) {
-          // Guardar la ciudad seleccionada
-          setSelectedCity(cityData);
+        if (cityData && cityData.provinceId) {
+          provinceIdToSelect = String(cityData.provinceId);
+          setSelectedProvince(provinceIdToSelect);
 
-          // Si la ciudad tiene provincia, establecerla
-          if (cityData.provinceId) {
-            setSelectedProvince(cityData.provinceId);
-
-            // Cargar las ciudades de esa provincia
-            const citiesData = await getCitiesByProvince(cityData.provinceId);
-            const citiesArray = Array.isArray(citiesData) ? citiesData : [];
-
-            // Verificar si la ciudad actual está en la lista
-            const cityExists = citiesArray.some(city => city.id === cityData.id);
-
-            // Si la ciudad no está en la lista, añadirla
-            if (!cityExists) {
-              setCitiesByProvince([...citiesArray, cityData]);
-            } else {
-              setCitiesByProvince(citiesArray);
-            }
+          const citiesData = await getCitiesByProvince(cityData.provinceId);
+          const citiesArray = Array.isArray(citiesData) ? citiesData : [];
+          const cityExists = citiesArray.some(city => city.id === cityData.id);
+          if (!cityExists) {
+            setCitiesByProvince([...citiesArray, cityData]);
+          } else {
+            setCitiesByProvince(citiesArray);
           }
         }
       }
+      // Si no hay locationId, no selecciona provincia
+      setOpenDialog(true);
     } catch (error) {
       console.error("Error al preparar el formulario:", error);
-      showAlert("Error al cargar los datos del evento", "error");
     } finally {
       setDialogLoading(false);
     }
@@ -216,41 +213,41 @@ const ProviderEventPanel = ({ userId }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-    const handleSaveEvent = async () => {
-        if (!validateForm()) {
-            showAlert("Por favor complete todos los campos obligatorios", "error");
-            return;
-        }
+  const handleSaveEvent = async () => {
+    if (!validateForm()) {
+      showAlert("Por favor complete todos los campos obligatorios", "error");
+      return;
+    }
 
-        try {
-            let imageUrl = selectedEvent.image;
+    try {
+      let imageUrl = selectedEvent.image;
 
-            if (eventSelectedFile) {
-                const { url } = await uploadFile(eventSelectedFile, 'event');
-                imageUrl = url;
-            }
+      if (eventSelectedFile) {
+        const { url } = await uploadFile(eventSelectedFile, 'event');
+        imageUrl = url;
+      }
 
-            const eventData = {
-                eventId: selectedEvent.eventId,
-                name: selectedEvent.name,
-                description: selectedEvent.description,
-                eventDate: selectedEvent.eventDate,
-                type: parseInt(selectedEvent.type),
-                image: imageUrl,
-                locationId: selectedEvent.locationId,
-                userId: selectedEvent.userId
-            };
+      const eventData = {
+        eventId: selectedEvent.eventId,
+        name: selectedEvent.name,
+        description: selectedEvent.description,
+        eventDate: selectedEvent.eventDate,
+        type: parseInt(selectedEvent.type),
+        image: imageUrl,
+        locationId: selectedEvent.locationId,
+        userId: selectedEvent.userId
+      };
 
-            await adminUpdateEvent(selectedEvent.eventId, eventData);
-            showAlert("Evento actualizado correctamente", "success");
+      await adminUpdateEvent(selectedEvent.eventId, eventData);
+      showAlert("Evento actualizado correctamente", "success");
 
-            fetchEvents(); 
-            handleCloseDialog(); 
-        } catch (error) {
-            console.error("Error updating event:", error);
-            showAlert("Error al actualizar el evento", "error");
-        }
-    };
+      fetchEvents();
+      handleCloseDialog();
+    } catch (error) {
+      console.error("Error updating event:", error);
+      showAlert("Error al actualizar el evento", "error");
+    }
+  };
   const handleViewEventDetails = (event) => {
     const content = `
       <div>
@@ -274,11 +271,18 @@ const ProviderEventPanel = ({ userId }) => {
 
   const getEventTypeName = (type) => {
     switch (parseInt(type)) {
-      case 0: return 'Concierto';
-      case 1: return 'Deportivo';
-      case 2: return 'Festival';
-      case 3: return 'Conferencia';
-      case 4: return 'Otro';
+      case 0: return 'Música';
+      case 1: return 'Entretenimiento';
+      case 2: return 'Deporte';
+      case 3: return 'Negocios';
+      case 4: return 'Convención';
+      case 5: return 'Festival';
+      case 6: return 'Gastronomía';
+      case 7: return 'Gaming';
+      case 8: return 'Aire libre';
+      case 9: return 'Bienestar';
+      case 10: return 'Cultural';
+      case 11: return 'Tecnología';
       default: return 'Desconocido';
     }
   };
@@ -307,40 +311,46 @@ const ProviderEventPanel = ({ userId }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) :
               events.length === 0 ? (
-                <Typography color="textSecondary" align="center" sx={{ mt: 2 }}>
-                  No tienes eventos disponibles
-                </Typography>
-              ) : (
+            <Typography color="textSecondary" align="center" sx={{ mt: 2 }}>
+              No tienes eventos disponibles
+            </Typography>
+            ) : (
                 events.map((event) => (
-                  <TableRow key={event.eventId}>
-                    <TableCell>{event.eventId}</TableCell>
-                    <TableCell>{event.name}</TableCell>
-                    <TableCell>{event.location}</TableCell>
-                    <TableCell>{new Date(event.eventDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{getEventTypeName(event.type)}</TableCell>
-                    <TableCell>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleEditEvent(event)}
-                        sx={{ mr: 1 }}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="info"
-                        onClick={() => handleViewEventDetails(event)}
-                      >
-                        Detalles
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )
-                ))}
+            <TableRow key={event.eventId}>
+              <TableCell>{event.eventId}</TableCell>
+              <TableCell>{event.name}</TableCell>
+              <TableCell> {cities.find(city => city.id === event.locationId)?.name || 'No especificada'}</TableCell>
+              <TableCell>{new Date(event.eventDate).toLocaleDateString()}</TableCell>
+              <TableCell>{getEventTypeName(event.type)}</TableCell>
+              <TableCell>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => handleEditEvent(event)}
+                  sx={{ mr: 1 }}
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="info"
+                  onClick={() => handleViewEventDetails(event)}
+                >
+                  Detalles
+                </Button>
+              </TableCell>
+            </TableRow>
+            ))
+                )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -397,11 +407,18 @@ const ProviderEventPanel = ({ userId }) => {
                   onChange={handleInputChange}
                   label="Tipo *"
                 >
-                  <MenuItem value={0}>Concierto</MenuItem>
-                  <MenuItem value={1}>Deportivo</MenuItem>
-                  <MenuItem value={2}>Festival</MenuItem>
-                  <MenuItem value={3}>Conferencia</MenuItem>
-                  <MenuItem value={4}>Otro</MenuItem>
+                  <MenuItem value={0}>Música</MenuItem>
+                  <MenuItem value={1}>Entretenimiento</MenuItem>
+                  <MenuItem value={2}>Deporte</MenuItem>
+                  <MenuItem value={3}>Negocios</MenuItem>
+                  <MenuItem value={4}>Convención</MenuItem>
+                  <MenuItem value={5}>Festival</MenuItem>
+                  <MenuItem value={6}>Gastronomía</MenuItem>
+                  <MenuItem value={7}>Gaming</MenuItem>
+                  <MenuItem value={8}>Aire libre</MenuItem>
+                  <MenuItem value={9}>Bienestar</MenuItem>
+                  <MenuItem value={10}>Cultural</MenuItem>
+                  <MenuItem value={11}>Tecnología</MenuItem>
                 </Select>
                 {errors.type && <Box sx={{ color: 'error.main', fontSize: '0.75rem', mt: 0.5 }}>{errors.type}</Box>}
               </FormControl>
@@ -417,12 +434,16 @@ const ProviderEventPanel = ({ userId }) => {
                       label="Provincia *"
                     >
                       {Array.isArray(provinces) && provinces.map((province) => (
-                        <MenuItem key={province.id} value={province.id}>
+                        <MenuItem key={String(province.id)} value={String(province.id)}>
                           {province.name}
                         </MenuItem>
                       ))}
                     </Select>
-                    {errors.provinceId && <Box sx={{ color: 'error.main', fontSize: '0.75rem', mt: 0.5 }}>{errors.provinceId}</Box>}
+                    {errors.provinceId && (
+                      <Box sx={{ color: 'error.main', fontSize: '0.75rem', mt: 0.5 }}>
+                        {errors.provinceId}
+                      </Box>
+                    )}
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} sm={6}>

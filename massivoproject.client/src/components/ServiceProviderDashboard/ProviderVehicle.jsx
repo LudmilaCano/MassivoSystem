@@ -39,10 +39,13 @@ const ProviderVehicle = ({ userId }) => {
   };
 
   const handleEditVehicle = (vehicle) => {
-    setSelectedVehicle({ ...vehicle });
-    setErrors({});
-    setOpenDialog(true);
-  };
+  setSelectedVehicle({
+    ...vehicle,
+    imagePath: vehicle.imagePath || vehicle.image // Soporta ambos campos
+  });
+  setErrors({});
+  setOpenDialog(true);
+};
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -64,46 +67,47 @@ const ProviderVehicle = ({ userId }) => {
     if (!selectedVehicle.yearModel) newErrors.yearModel = "El año del modelo es obligatorio";
     if (!selectedVehicle.imagePath) newErrors.imagePath = "La URL de imagen es obligatoria";
     if (selectedVehicle.available === undefined || selectedVehicle.available === null) newErrors.available = "La disponibilidad es obligatoria";
-
+    if (!selectedVehicle.capacity || selectedVehicle.capacity < 4) newErrors.capacity = "La capacidad mínima es 4";
+    if (!selectedVehicle.imagePath && !vehicleSelectedFile) newErrors.imagePath = "La imagen es obligatoria";
+    console.log(selectedVehicle)
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-    const handleSaveVehicle = async () => {
-        if (!validateForm()) {
-            showAlert("Por favor complete todos los campos obligatorios", "error");
-            return;
-        }
+  const handleSaveVehicle = async () => {
+    if (!validateForm()) {
+      showAlert("Por favor complete todos los campos obligatorios", "error");
+      return;
+    }
 
-        try {
-            let imageUrl = selectedVehicle.image;
+    try {
+      let imageUrl = selectedVehicle.imagePath;
+      if (vehicleSelectedFile) {
+        const { url } = await uploadFile(vehicleSelectedFile, 'vehicle');
+        imageUrl = url;
+      }
 
-            if (vehicleSelectedFile) {
-                const { url } = await uploadFile(vehicleSelectedFile, 'vehicle');
-                imageUrl = url;
-            }
+      const vehicleData = {
+        licensePlate: selectedVehicle.licensePlate,
+        name: selectedVehicle.name,
+        description: selectedVehicle.description,
+        capacity: parseInt(selectedVehicle.capacity),
+        type: parseInt(selectedVehicle.type),
+        driverName: selectedVehicle.driverName,
+        yearModel: parseInt(selectedVehicle.yearModel),
+        imagePath: imageUrl
+      };
+      console.log(vehicleData)
+      await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
 
-            const vehicleData = {
-                licensePlate: selectedVehicle.licensePlate,
-                name: selectedVehicle.name,
-                description: selectedVehicle.description,
-                capacity: parseInt(selectedVehicle.capacity),
-                type: parseInt(selectedVehicle.type),
-                driverName: selectedVehicle.driverName,
-                yearModel: parseInt(selectedVehicle.yearModel),
-                imagePath: imageUrl
-            };
-
-            await adminUpdateVehicle(selectedVehicle.licensePlate, vehicleData);
-
-            showAlert("Vehículo actualizado correctamente", "success");
-            fetchVehicles();
-            handleCloseDialog();
-        } catch (error) {
-            console.error("Error updating vehicle:", error);
-            showAlert(`Error al actualizar vehículo: ${error.message}`, "error");
-        }
-    };
+      showAlert("Vehículo actualizado correctamente", "success");
+      fetchVehicles();
+      handleCloseDialog();
+    } catch (error) {
+      console.error("Error updating vehicle:", error);
+      showAlert(`Error al actualizar vehículo: ${error.message}`, "error");
+    }
+  };
 
   const handleViewVehicleDetails = (vehicle) => {
     const content = `
@@ -138,6 +142,7 @@ const ProviderVehicle = ({ userId }) => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedVehicle(null);
+    setVehicleSelectedFile(null);
     setErrors({});
   };
 
@@ -156,7 +161,13 @@ const ProviderVehicle = ({ userId }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) :
               vehicles.length === 0 ? (
                 <Typography color="textSecondary" align="center" sx={{ mt: 2 }}>
                   No tienes vehículos disponibles
@@ -247,6 +258,7 @@ const ProviderVehicle = ({ userId }) => {
                 required
                 error={!!errors.capacity}
                 helperText={errors.capacity}
+                inputProps={{ min: 4 }}
               />
               <TextField
                 label="Conductor *"
@@ -273,10 +285,14 @@ const ProviderVehicle = ({ userId }) => {
                 <Typography variant="subtitle1">Foto de vehículo</Typography>
 
                 {/* Vista previa de la imagen */}
-                {vehicleSelectedFile && (
+                {(vehicleSelectedFile || selectedVehicle.imagePath) && (
                   <Box sx={{ textAlign: 'center', mb: 2 }}>
                     <img
-                      src={URL.createObjectURL(vehicleSelectedFile)}
+                      src={
+                        vehicleSelectedFile
+                          ? URL.createObjectURL(vehicleSelectedFile)
+                          : selectedVehicle.imagePath
+                      }
                       alt="Vista previa"
                       style={{
                         maxWidth: '100%',
@@ -310,6 +326,11 @@ const ProviderVehicle = ({ userId }) => {
                     Seleccionar Imagen de vehículo
                   </Button>
                 </label>
+                {errors.imagePath && (
+                  <Box sx={{ color: 'error.main', fontSize: '0.75rem', mt: 0.5 }}>
+                    {errors.imagePath}
+                  </Box>
+                )}
               </Grid>
               {/* <TextField
                 label="URL de imagen *"

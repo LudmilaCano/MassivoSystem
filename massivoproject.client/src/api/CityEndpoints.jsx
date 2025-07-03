@@ -6,7 +6,7 @@ export const getCitiesByProvince = async (provinceId) => {
 };
 
 export const getCityById = async (cityId) => {
-  const response = await api.get(`/City/${cityId}`);
+  const response = await api.get(`/City/GetCityById/${cityId}`);
   return response.data;
 };
 

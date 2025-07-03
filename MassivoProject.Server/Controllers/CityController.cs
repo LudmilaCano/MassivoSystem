@@ -53,5 +53,15 @@ namespace MassivoProject.Server.Controllers
 
             return Ok(new { city.Latitude, city.Longitude });
         }
+
+        [HttpGet("GetCityById/{cityId}")]
+        public async Task<IActionResult> GetCityById(int cityId)
+        {
+            var city = await _cityService.GetCityByIdAsync(cityId);
+            if (city == null)
+                return NotFound();
+
+            return Ok(city);
+        }
     }
 }
