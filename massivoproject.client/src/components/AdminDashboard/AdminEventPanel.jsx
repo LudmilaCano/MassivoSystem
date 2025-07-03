@@ -4,7 +4,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, FormControl, InputLabel, Select, MenuItem, Box,
-  Autocomplete,Typography,CircularProgress
+  Autocomplete, Typography, CircularProgress
 } from '@mui/material';
 import { adminUpdateEvent, toggleEventStatus } from '../../api/EventEndpoints';
 import { getAllCities } from '../../api/CityEndpoints';
@@ -37,8 +37,28 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
     fetchCities();
   }, []);
 
-  const handleEditEvent = (event) => {
+  /* const handleEditEvent = (event) => {
     setSelectedEvent({ ...event });
+    setErrors({});
+    setOpenDialog(true);
+  }; */
+
+  const handleEditEvent = async (event) => {
+    if (cities.length === 0) {
+      setLoading(true);
+      const citiesData = await getAllCities();
+      setCities(citiesData);
+      setLoading(false);
+    }
+
+    // Buscar el id de la ciudad por el nombre (location)
+    let locationId = event.locationId;
+    if (!locationId && event.location && Array.isArray(cities)) {
+      const city = cities.find(c => c.name === event.location);
+      locationId = city ? city.id : '';
+    }
+
+    setSelectedEvent({ ...event, locationId });
     setErrors({});
     setOpenDialog(true);
   };
@@ -106,45 +126,45 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
     }
   }; */
 
-    const handleSaveEvent = async () => {
-        if (!validateForm()) {
-            showErrorAlert("Por favor complete todos los campos obligatorios");
-            return;
-        }
+  const handleSaveEvent = async () => {
+    if (!validateForm()) {
+      showErrorAlert("Por favor complete todos los campos obligatorios");
+      return;
+    }
 
-        try {
-            setLoading(true);
+    try {
+      setLoading(true);
 
-            let imageUrl = selectedEvent.image;
+      let imageUrl = selectedEvent.image;
 
-            if (selectedFile) {
-                const { url } = await uploadFile(selectedFile, 'event'); 
-                imageUrl = url;
-            }
+      if (selectedFile) {
+        const { url } = await uploadFile(selectedFile, 'event');
+        imageUrl = url;
+      }
 
-            const eventData = {
-                eventId: selectedEvent.eventId,
-                name: selectedEvent.name,
-                description: selectedEvent.description,
-                eventDate: selectedEvent.eventDate,
-                type: parseInt(selectedEvent.type),
-                locationId: parseInt(selectedEvent.locationId),
-                image: imageUrl,
-                userId: selectedEvent.userId
-            };
+      const eventData = {
+        eventId: selectedEvent.eventId,
+        name: selectedEvent.name,
+        description: selectedEvent.description,
+        eventDate: selectedEvent.eventDate,
+        type: parseInt(selectedEvent.type),
+        locationId: parseInt(selectedEvent.locationId),
+        image: imageUrl,
+        userId: selectedEvent.userId
+      };
 
-            await adminUpdateEvent(selectedEvent.eventId, eventData);
-            showSuccessAlert("Evento actualizado correctamente");
-            onRefresh();
-            handleCloseDialog();
-            setSelectedFile(null);
-        } catch (error) {
-            console.error("Error updating event:", error);
-            showErrorAlert(`Error al actualizar evento: ${error.message}`);
-        } finally {
-            setLoading(false);
-        }
-    };
+      await adminUpdateEvent(selectedEvent.eventId, eventData);
+      showSuccessAlert("Evento actualizado correctamente");
+      onRefresh();
+      handleCloseDialog();
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Error updating event:", error);
+      showErrorAlert(`Error al actualizar evento: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleViewEventDetails = (event) => {
     const content = `
@@ -169,11 +189,18 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
 
   const getEventTypeName = (type) => {
     switch (parseInt(type)) {
-      case 0: return 'Concierto';
-      case 1: return 'Deportivo';
-      case 2: return 'Festival';
-      case 3: return 'Conferencia';
-      case 4: return 'Otro';
+      case 0: return 'Música';
+      case 1: return 'Entretenimiento';
+      case 2: return 'Deporte';
+      case 3: return 'Negocios';
+      case 4: return 'Convención';
+      case 5: return 'Festival';
+      case 6: return 'Gastronomía';
+      case 7: return 'Gaming';
+      case 8: return 'Aire libre';
+      case 9: return 'Bienestar';
+      case 10: return 'Cultural';
+      case 11: return 'Tecnología';
       default: return 'Desconocido';
     }
   };
@@ -297,11 +324,18 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
                   onChange={handleInputChange}
                   label="Tipo *"
                 >
-                  <MenuItem value={0}>Concierto</MenuItem>
-                  <MenuItem value={1}>Deportivo</MenuItem>
-                  <MenuItem value={2}>Festival</MenuItem>
-                  <MenuItem value={3}>Conferencia</MenuItem>
-                  <MenuItem value={4}>Otro</MenuItem>
+                  <MenuItem value={0}>Música</MenuItem>
+                  <MenuItem value={1}>Entretenimiento</MenuItem>
+                  <MenuItem value={2}>Deporte</MenuItem>
+                  <MenuItem value={3}>Negocios</MenuItem>
+                  <MenuItem value={4}>Convención</MenuItem>
+                  <MenuItem value={5}>Festival</MenuItem>
+                  <MenuItem value={6}>Gastronomía</MenuItem>
+                  <MenuItem value={7}>Gaming</MenuItem>
+                  <MenuItem value={8}>Aire libre</MenuItem>
+                  <MenuItem value={9}>Bienestar</MenuItem>
+                  <MenuItem value={10}>Cultural</MenuItem>
+                  <MenuItem value={11}>Tecnología</MenuItem>
                 </Select>
                 {errors.type && <FormHelperText>{errors.type}</FormHelperText>}
               </FormControl>
@@ -361,7 +395,11 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
               <Autocomplete
                 options={cities}
                 getOptionLabel={(option) => option.name || ''}
-                value={cities.find(city => city.id === selectedEvent.locationId) || null}
+                value={
+                  cities.find(
+                    city => String(city.id) === String(selectedEvent.locationId)
+                  ) || null
+                }
                 onChange={handleCityChange}
                 loading={loading}
                 renderInput={(params) => (

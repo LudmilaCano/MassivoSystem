@@ -43,6 +43,7 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
     if (!selectedVehicle.yearModel) newErrors.yearModel = "El año del modelo es obligatorio";
     if (!selectedVehicle.imagePath) newErrors.imagePath = "La URL de imagen es obligatoria";
     if (selectedVehicle.available === undefined || selectedVehicle.available === null) newErrors.available = "La disponibilidad es obligatoria";
+    if (!selectedVehicle.capacity || selectedVehicle.capacity < 4) newErrors.capacity = "La capacidad debe ser al menos 4"; 
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -270,6 +271,7 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
                 required
                 error={!!errors.capacity}
                 helperText={errors.capacity}
+                inputProps={{ min: 4 }}
               />
               <TextField
                 label="Conductor *"
