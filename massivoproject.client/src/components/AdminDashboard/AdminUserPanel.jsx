@@ -308,7 +308,7 @@ const AdminUserPanel = ({
                     color={user.isActive === "Active" ? "error" : "success"}
                     onClick={() => handleToggleStatus(user.userId)}
                   >
-                    {user.isActive === 0 ? "Desactivar" : "Activar"}
+                    {user.isActive === 1 ? "Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>

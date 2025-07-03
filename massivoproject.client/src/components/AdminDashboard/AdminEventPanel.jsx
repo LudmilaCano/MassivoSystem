@@ -267,7 +267,7 @@ const AdminEventPanel = ({ events, onRefresh, showSuccessAlert, showErrorAlert }
                     onClick={() => handleToggleStatus(event.eventId)}
                     sx={{ mr: 1, ml: 1 }}
                   >
-                    {event.isActive == 0 ? "Desactivar" : "Activar"}
+                    {event.isActive == 1 ? "Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>

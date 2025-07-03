@@ -209,7 +209,7 @@ const AdminVehiclePanel = ({ vehicles, onRefresh, showSuccessAlert, showErrorAle
                     onClick={() => handleToggleStatus(vehicle.licensePlate)}
                     sx={{ mr: 1, ml: 1 }}
                   >
-                    {vehicle.isActive == 0 ? " Desactivar" : "Activar"}
+                    {vehicle.isActive == 1 ? " Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>
